@@ -42,15 +42,12 @@ const handleRequest = (req, res, store) => {
                 }
                 // Promise.all in fetchData waits until all Promises from the Components are resolved and only then starts to render the  result.
                 fetchData(store, renderProps).then(() => {
-                    console.log("Data fetched");
                     let component = (
                         <Provider store={store}>
                             <RoutingContext {...renderProps} ></RoutingContext>
                         </Provider>
                     );
-                    console.log("Component", component);
                     const html = renderToString(<Html component={component} store={store}/>);
-                    console.log("Html", html);
                     const response = `<!doctype html>\n${html}`;
                     res
                         .send(response)

@@ -3,11 +3,10 @@ import cookieParser                             from 'cookie-parser'
 import bodyParser                               from 'body-parser'
 import methodOverride                           from 'method-override'
 import session                                  from 'express-session'
-import passportInit                             from './passportInit'
-import path                                     from 'path';
+import path                                     from 'path'
 import React                                    from 'react'
-import qs                                       from 'query-string';
-import routes                                   from './routes'
+import qs                                       from 'query-string'
+import passportInit                             from './passportInit'
 import handleRequest                            from './handleRequest'
 
 const passport = passportInit();
