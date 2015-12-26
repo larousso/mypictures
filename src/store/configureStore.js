@@ -4,10 +4,10 @@ import rootReducer from '../reducer'
 
 const createStoreWithMiddleware = applyMiddleware(
     thunk
-)(createStore)
+)(createStore);
 
 export default function configureStore(initialState) {
-    const store = createStoreWithMiddleware(rootReducer, initialState)
+    const store = createStoreWithMiddleware(rootReducer, initialState);
 
     if (module.hot) {
         // Enable Webpack hot module replacement for reducers

@@ -7,27 +7,19 @@ import config                                   from '../config'
 export default () => {
 
     passport.serializeUser(function(user, done) {
+        console.log("Serializing user", user);
         done(null, user);
     });
 
-    passport.deserializeUser(function(obj, done) {
-        done(null, obj);
+    passport.deserializeUser(function(user, done) {
+        console.log("Deserializing user", user);
+        done(null, user);
+        //User.get(id).subscribe(
+        //    user => done(null, user),
+        //    err => done(err, null)
+        //)
     });
 
-    console.log("Initializing facebook", config.facebook);
-
-    passport.use(new FacebookStrategy({
-            clientID: config.facebook.clientID,
-            clientSecret: config.facebook.clientSecret,
-            callbackURL: config.facebook.callbackURL
-        },
-        function(accessToken, refreshToken, profile, done) {
-            done(null, profile);
-            //process.nextTick(function () {
-            //    return done(null, profile);
-            //});
-        }
-    ));
 
     passport.use(new LocalStrategy((username, password, done) => {
             console.log("Login", username, password);
@@ -49,6 +41,21 @@ export default () => {
             );
         }
     ));
+    console.log("Initializing facebook", config.facebook);
+
+    //passport.use(new FacebookStrategy({
+    //        clientID: config.facebook.clientID,
+    //        clientSecret: config.facebook.clientSecret,
+    //        callbackURL: config.facebook.callbackURL
+    //    },
+    //    function(accessToken, refreshToken, profile, done) {
+    //        done(null, profile);
+    //        //process.nextTick(function () {
+    //        //    return done(null, profile);
+    //        //});
+    //    }
+    //));
+
 
     return passport;
 };

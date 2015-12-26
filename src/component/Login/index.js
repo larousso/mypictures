@@ -7,6 +7,7 @@ export default class Login extends Component {
     login = () => {
         fetch('/api/login', {
             method: 'post',
+            credentials: 'include',
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'

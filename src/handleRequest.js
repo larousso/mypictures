@@ -10,12 +10,15 @@ import configureStore                           from './store/configureStore'
 
 export default (req, res) => {
     const store = configureStore({});
+    //console.log(req.cookies);
+    const user = req.user;
+    console.log("User", user);
+    console.log("session", req.sessionID, req.session);
 
     if(req.isAuthenticated()) {
         console.log("Authenticated");
-        store.dispatch(loadUser(req.session.passport.user)).then(() => {
-            handleRequest(req, res, store);
-        });
+        store.dispatch(loadUser(user));
+        handleRequest(req, res, store);
     } else {
         console.log("Not authenticated");
         handleRequest(req, res, store);
@@ -24,7 +27,6 @@ export default (req, res) => {
 
 const handleRequest = (req, res, store) => {
     console.log("Url", req.originalUrl);
-    console.log("Routes", routes)
     match(
         { routes, location: req.originalUrl },
         (error, redirectLocation, renderProps) => {
@@ -44,7 +46,7 @@ const handleRequest = (req, res, store) => {
                 fetchData(store, renderProps).then(() => {
                     let component = (
                         <Provider store={store}>
-                            <RoutingContext {...renderProps} ></RoutingContext>
+                            <RoutingContext {...renderProps} />
                         </Provider>
                     );
                     const html = renderToString(<Html component={component} store={store}/>);
