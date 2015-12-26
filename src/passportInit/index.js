@@ -43,18 +43,18 @@ export default () => {
     ));
     console.log("Initializing facebook", config.facebook);
 
-    //passport.use(new FacebookStrategy({
-    //        clientID: config.facebook.clientID,
-    //        clientSecret: config.facebook.clientSecret,
-    //        callbackURL: config.facebook.callbackURL
-    //    },
-    //    function(accessToken, refreshToken, profile, done) {
-    //        done(null, profile);
-    //        //process.nextTick(function () {
-    //        //    return done(null, profile);
-    //        //});
-    //    }
-    //));
+    passport.use(new FacebookStrategy({
+            clientID: config.facebook.clientID,
+            clientSecret: config.facebook.clientSecret,
+            callbackURL: config.facebook.callbackURL
+        },
+        function(accessToken, refreshToken, profile, done) {
+            done(null, profile);
+            //process.nextTick(function () {
+            //    return done(null, profile);
+            //});
+        }
+    ));
 
 
     return passport;

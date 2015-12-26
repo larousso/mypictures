@@ -18,37 +18,30 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(methodOverride());
 app.use(session({
     secret: 'mypicturessecret',
-    name: "alex",
     resave: true,
     rolling: true,
     saveUninitialized: true,
     cookie: {secure: false}
-    //cookie: {secure: false, httpOnly: false, maxAge: (4 * 60 * 60 * 1000) }
 }));
 
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(express.static(path.join(__dirname, '..', 'static')));
-//
-//app.get('/auth/facebook', passport.authenticate('facebook'), (req, res) => {
-//    req.session.redirect = req.query.redirect;
-//});
-//
-//app.get('/auth/facebook/callback',
-//    passport.authenticate('facebook', { failureRedirect: '/unauthorized' }),
-//    function(req, res) {
-//        res.redirect(req.session.redirect || "/");
-//        delete req.session.redirect;
-//    }
-//);
 
-//app.use ((req, res, next) => {
-//    res.header('Access-Control-Allow-Origin', 'http://localhost:9000');
-//    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, X-AUTHENTICATION, X-IP, Content-Type, Accept');
-//    res.header('Access-Control-Allow-Credentials', true);
-//    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-//    next();
-//});
+app.get('/auth/facebook', (req, res, next) => {
+    console.log("Facebook", req.query);
+    req.session.redirect = req.query.redirect;
+    next();
+}, passport.authenticate('facebook'));
+
+app.get('/auth/facebook/callback',
+    passport.authenticate('facebook', { failureRedirect: '/unauthorized' }),
+    function(req, res) {
+        console.log("Facebook redirect", req.query);
+        res.redirect(req.session.redirect || "/");
+        delete req.session.redirect;
+    }
+);
 
 app.post('/api/login',
     passport.authenticate('local'),
