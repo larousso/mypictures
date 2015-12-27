@@ -27,20 +27,24 @@ class Home extends Component {
         });
     };
 
+    greeting = () => {
+        if(this.props.user) return `Hello ${this.props.user.name}`
+    };
+
     render() {
         return (
             <div>
-                Home {this.props.sandwiches.who
-            }
+                Home {this.props.sandwiches.sandwiches.who}
+                <br/>
+                {this.greeting()}
             </div>
         )
     }
 }
 
 export default connect(
-    state => {
-        return {
-            sandwiches: state.sandwiches
-        };
-    }
+    state => ({
+        sandwiches: state.sandwiches,
+        user: state.auth.user
+    })
 )(Home);

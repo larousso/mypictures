@@ -3,6 +3,7 @@ import {Strategy as LocalStrategy}              from 'passport-local'
 import {Strategy as FacebookStrategy}           from 'passport-facebook'
 import {User}                                   from '../repository'
 import config                                   from '../config'
+import Roles                                    from './roles'
 
 export default () => {
 
@@ -14,12 +15,7 @@ export default () => {
     passport.deserializeUser(function(user, done) {
         console.log("Deserializing user", user);
         done(null, user);
-        //User.get(id).subscribe(
-        //    user => done(null, user),
-        //    err => done(err, null)
-        //)
     });
-
 
     passport.use(new LocalStrategy((username, password, done) => {
             console.log("Login", username, password);
@@ -41,7 +37,6 @@ export default () => {
             );
         }
     ));
-    console.log("Initializing facebook", config.facebook);
 
     passport.use(new FacebookStrategy({
             clientID: config.facebook.clientID,
@@ -49,13 +44,20 @@ export default () => {
             callbackURL: config.facebook.callbackURL
         },
         function(accessToken, refreshToken, profile, done) {
-            done(null, profile);
-            //process.nextTick(function () {
-            //    return done(null, profile);
-            //});
+            done(null, facebookToUser(profile));
         }
     ));
 
+
+    function facebookToUser(profile) {
+        return {
+            id:profile.id,
+            username: profile.displayName,
+            name: profile.name.familyName,
+            surname: profile.name.givenName,
+            role: Roles.GUEST
+        }
+    }
 
     return passport;
 };

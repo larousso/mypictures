@@ -2,7 +2,7 @@ import React                                    from 'react'
 import {renderToString}                         from 'react-dom/server'
 import { match, RoutingContext }                from 'react-router'
 import {Provider}                               from 'react-redux';
-import routes                                   from './routes'
+import getRoutes                                from './routes'
 import Html                                     from './layout/Html'
 import createHistory                            from 'history/lib/createMemoryHistory';
 import {loadUser}                               from './reducer/auth'
@@ -18,6 +18,7 @@ export default (req, res) => {
     if(req.isAuthenticated()) {
         console.log("Authenticated");
         store.dispatch(loadUser(user));
+        console.log(store.getState());
         handleRequest(req, res, store);
     } else {
         console.log("Not authenticated");
@@ -26,6 +27,7 @@ export default (req, res) => {
 }
 
 const handleRequest = (req, res, store) => {
+    const routes = getRoutes(store);
     console.log("Url", req.originalUrl);
     match(
         { routes, location: req.originalUrl },
@@ -67,6 +69,7 @@ const handleRequest = (req, res, store) => {
 function fetchData(store, routerState) {
     const promises = routerState.components
         .filter(component => (component && component.preRender))
-        .map(component => component.preRender(store, routerState));
+        .map(component => component.preRender(store, routerState))
+        .filter(elt => !!elt);
     return Promise.all(promises);
 }

@@ -5,7 +5,7 @@ import reducer                                  from './reducer'
 import thunk                                    from 'redux-thunk';
 import { Router}                                from 'react-router'
 import BrowserHistory                           from 'react-router/lib/History'
-import routes                                   from './routes'
+import getRoutes                                from './routes'
 import debug                                    from 'debug';
 import createHistory                            from 'history/lib/createBrowserHistory';
 import Html                                     from './layout/Html'
@@ -26,7 +26,7 @@ syncReduxAndRouter(history, store);
 ReactDOM.render(
     <Provider store={store}>
         <Router history={history} >
-            {routes}
+            {getRoutes(store)}
         </Router>
     </Provider>,
     document.getElementById('app')

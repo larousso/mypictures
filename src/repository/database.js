@@ -45,7 +45,7 @@ export default class Database {
             return rx.Observable.create(observer => {
                 context.db.put(context.data.id, context.data, (error) => {
                     if(error) observer.onError(error);
-                    observer.onNext();
+                    observer.onNext(context.data);
                     observer.onCompleted();
                 });
             });

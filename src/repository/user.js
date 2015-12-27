@@ -1,9 +1,10 @@
 import Database, {dbInstance}         from './database'
 import Secondary        from 'level-secondary';
 import rx               from 'rx'
+import Roles            from '../authentication/roles'
 
 const db = dbInstance('users');
-db.byName = Secondary(db, 'name');
+db.byName = Secondary(db, 'username');
 
 class User extends Database {
 
@@ -26,10 +27,9 @@ class User extends Database {
     }
 }
 
-
-console.log("Creating user alex");
-new User({id:'alex', name: 'alex', password: 'alex'})
-    .save()
-    .subscribe(ok => console.log("ok", ok), ko => console.log("ko", ko));
+rx.Observable.zip(
+    new User({id:'adelegue', username: 'adelegue', name: 'Delègue', surname:'Alexandre', password: 'alex', role: Roles.ADMIN}).save(),
+    new User({id:'invite', username: 'invite', name: 'invite', surname:'invite', password: 'invite', role: Roles.GUEST}).save()
+).subscribe(ok => console.log("ok", ok), ko => console.log("ko", ko));
 
 export default User;

@@ -6,11 +6,11 @@ import morgan                                   from 'morgan'
 import path                                     from 'path'
 import React                                    from 'react'
 import qs                                       from 'query-string'
-import passportInit                             from './passportInit'
+import passportInit                             from './authentication'
 import handleRequest                            from './handleRequest'
+import Roles                                    from './authentication/roles'
 
 const app = express();
-let passport = passportInit();
 
 //app.use(morgan('combined'));
 app.use(bodyParser.json());
@@ -23,7 +23,7 @@ app.use(session({
     saveUninitialized: true,
     cookie: {secure: false}
 }));
-
+const passport = passportInit();
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(express.static(path.join(__dirname, '..', 'static')));
@@ -43,6 +43,19 @@ app.get('/auth/facebook/callback',
     }
 );
 
+const hasRole = (role) => (req, res, next) => {
+    if(req.isAuthenticated()) {
+        if(req.user.role === role) {
+            next();
+        } else {
+            console.log('Unauthorized');
+            res.send('Unauthorized').code(401);
+        }
+    } else {
+        res.send('Forbidden').code(403);
+    }
+};
+
 app.post('/api/login',
     passport.authenticate('local'),
     (req, res, next) => {
@@ -57,7 +70,7 @@ app.post('/api/login',
 
     });
 
-app.get('/api', function(req, res) {
+app.get('/api', hasRole(Roles.ADMIN), function(req, res) {
     console.log("Auth session", req.sessionID, req.session);
     res.send('hello world');
 });
