@@ -1,7 +1,11 @@
-import React, { Component, PropTypes }  from 'react';
+import React, { Component, PropTypes }      from 'react';
+import { connect }                          from 'react-redux'
+import { pushPath }                         from 'redux-simple-router'
+import {loadUser}                           from '../../reducer/auth'
 
-export default class Login extends Component {
+class Login extends Component {
     static propTypes = {
+        routing: PropTypes.object
     };
 
     login = () => {
@@ -18,8 +22,10 @@ export default class Login extends Component {
             })
         })
         .then(rep => rep.json())
-        .then(rep => {
-            console.log("reponse", rep)
+        .then(user => {
+            this.props.login(user);
+            let { query: { redirect } } = this.props.location;
+            this.props.goTo(redirect || '/');
         });
     };
 
@@ -35,3 +41,17 @@ export default class Login extends Component {
         )
     }
 }
+
+export default connect(
+    state => ({
+        routing: state.routing
+    }),
+    dispatch => ({
+        login: (user) => {
+            dispatch(loadUser(user))
+        },
+        goTo: (path) => {
+            dispatch(pushPath(path))
+        }
+    })
+)(Login);

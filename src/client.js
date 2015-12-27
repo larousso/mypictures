@@ -13,8 +13,6 @@ import Html                                     from './layout/Html'
 import { syncReduxAndRouter }                   from 'redux-simple-router'
 import {Provider}                               from 'react-redux';
 
-console.log("Initializing state", window.__INITIAL_STATE__);
-
 const store = configureStore(window.__INITIAL_STATE__);
 const history = createHistory();
 window.React = React; // For chrome dev tool support

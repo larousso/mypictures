@@ -43,6 +43,12 @@ app.get('/auth/facebook/callback',
     }
 );
 
+app.post('/api/login',
+    passport.authenticate('local'),
+    (req, res) => {
+        res.json(req.user);
+});
+
 const hasRole = (role) => (req, res, next) => {
     if(req.isAuthenticated()) {
         if(req.user.role === role) {
@@ -56,19 +62,6 @@ const hasRole = (role) => (req, res, next) => {
     }
 };
 
-app.post('/api/login',
-    passport.authenticate('local'),
-    (req, res, next) => {
-        // If this function gets called, authentication was successful.
-        // `req.user` contains the authenticated user.
-        console.log("Login ok", req.user);
-        console.log("Session", req.session);
-        const user = req.user;
-        let session = req.session;
-        session.myUser = { id: user.id, username: user.name };
-        res.json({ id: user.id, username: user.name });
-
-    });
 
 app.get('/api', hasRole(Roles.ADMIN), function(req, res) {
     console.log("Auth session", req.sessionID, req.session);
