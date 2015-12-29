@@ -9,6 +9,7 @@ import qs                                       from 'query-string'
 import passportInit                             from './authentication'
 import handleRequest                            from './handleRequest'
 import Roles                                    from './authentication/roles'
+import api                                      from './routes/api'
 
 const app = express();
 
@@ -54,24 +55,7 @@ app.post('/api/login',
         res.json(req.user);
 });
 
-const hasRole = (role) => (req, res, next) => {
-    if(req.isAuthenticated()) {
-        if(req.user.role === role) {
-            next();
-        } else {
-            console.log('Unauthorized');
-            res.send('Unauthorized').code(401);
-        }
-    } else {
-        res.send('Forbidden').code(403);
-    }
-};
-
-
-app.get('/api', hasRole(Roles.ADMIN), function(req, res) {
-    console.log("Auth session", req.sessionID, req.session);
-    res.send('hello world');
-});
+app.use('/api', api());
 
 app.use(handleRequest);
 

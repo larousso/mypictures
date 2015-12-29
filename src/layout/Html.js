@@ -8,13 +8,13 @@ export default (props) => {
     return (
         <html lang="fr">
             <head>
+                <link href="/styles.css" rel="stylesheet" type="text/css"/>
+                <link href="/flexboxgrid.min.css" rel="stylesheet" type="text/css"/>
             </head>
             <body>
                 <div id="app" dangerouslySetInnerHTML={{__html: content}}></div>
                 <script dangerouslySetInnerHTML={{__html: `window.__INITIAL_STATE__=${serialize(store.getState())};`}} charSet="UTF-8"></script>
                 <script src="/client.js" ></script>
-                <link href="/styles.css" rel="stylesheet" type="text/css"/>
-                <link href="/flexboxgrid.min.css" rel="stylesheet" type="text/css"/>
             </body>
         </html>
     );

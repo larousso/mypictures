@@ -8,12 +8,10 @@ import Roles                                    from './roles'
 export default () => {
 
     passport.serializeUser(function(user, done) {
-        console.log("Serializing user", user);
         done(null, user);
     });
 
     passport.deserializeUser(function(user, done) {
-        console.log("Deserializing user", user);
         done(null, user);
     });
 

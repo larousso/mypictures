@@ -12,16 +12,12 @@ export default (req, res) => {
     const store = configureStore({});
     //console.log(req.cookies);
     const user = req.user;
-    console.log("User", user);
     console.log("session", req.sessionID, req.session);
 
     if(req.isAuthenticated()) {
-        console.log("Authenticated");
         store.dispatch(loadUser(user));
-        console.log(store.getState());
         handleRequest(req, res, store);
     } else {
-        console.log("Not authenticated");
         handleRequest(req, res, store);
     }
 }

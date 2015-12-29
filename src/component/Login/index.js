@@ -30,7 +30,7 @@ class Login extends Component {
         .then(user => {
             this.props.login(user);
             let { query: { redirect } } = this.props.location;
-            this.props.goTo(redirect || '/');
+            this.props.goTo(redirect || '/account/'+user.username);
         });
     };
 
@@ -60,11 +60,14 @@ class Login extends Component {
                             <TextField hintText="Login" floatingLabelText="Login" ref="username" fullWidth={true} onChange={this.setUsername}/>
                             <br />
                             <TextField hintText="Mot de passe" floatingLabelText="Mot de passe" ref="password" type="password" fullWidth={true} onChange={this.setPassword}/>
-                            <br />
-                            <FlatButton label="Se connecter" primary={true} onClick={this.login} />
                         </div>
                     </div>
                     <div className="col-xs-3"></div>
+                </div>
+                <div className="row center-xs">
+                    <div className="col-xs-12">
+                        <FlatButton label="Se connecter" primary={true} onClick={this.login} />
+                    </div>
                 </div>
             </div>
         )

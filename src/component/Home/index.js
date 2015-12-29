@@ -34,7 +34,7 @@ class Home extends Component {
     render() {
         return (
             <div>
-                Home {this.props.sandwiches.sandwiches.who}
+                Home
                 <br/>
                 {this.greeting()}
             </div>
@@ -44,7 +44,7 @@ class Home extends Component {
 
 export default connect(
     state => ({
-        sandwiches: state.sandwiches,
+        //sandwiches: state.sandwiches,
         user: state.auth.user
     })
 )(Home);
