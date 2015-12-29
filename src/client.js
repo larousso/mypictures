@@ -12,6 +12,9 @@ import Html                                     from './layout/Html'
 //import { DevTools, DebugPanel, LogMonitor }     from 'redux-devtools/lib/react';
 import { syncReduxAndRouter }                   from 'redux-simple-router'
 import {Provider}                               from 'react-redux';
+import injectTapEventPlugin                     from 'react-tap-event-plugin';
+
+injectTapEventPlugin();
 
 const store = configureStore(window.__INITIAL_STATE__);
 const history = createHistory();

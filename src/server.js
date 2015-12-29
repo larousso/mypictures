@@ -27,7 +27,12 @@ const passport = passportInit();
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(express.static(path.join(__dirname, '..', 'static')));
-
+app.use(function(req, res, next) {
+    GLOBAL.navigator = {
+        userAgent: req.headers['user-agent']
+    };
+    next();
+});
 app.get('/auth/facebook', (req, res, next) => {
     console.log("Facebook", req.query);
     req.session.redirect = req.query.redirect;
