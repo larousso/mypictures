@@ -1,10 +1,11 @@
 import React, { Component, PropTypes }  from 'react';
 import { connect }                      from 'react-redux'
 import {loadingAccount, loadAccountFail, loadAccount} from '../../reducer/account'
-import httpConfig                       from '../../httpConfig'
+import FlatButton                       from 'material-ui/lib/flat-button';
+import CreateAlbum                      from './createAlbum';
 
 function fetchAccount(username) {
-    return fetch(`${httpConfig.base()}/api/accounts/${username}`, {
+    return fetch(`/api/accounts/${username}`, {
                 credentials: 'include',
                 headers: {
                     'Accept': 'application/json',
@@ -19,6 +20,13 @@ class Account extends Component {
     static propTypes = {
     };
 
+    constructor(args) {
+        super(args);
+        this.state = {
+            open: false
+        }
+    }
+
     static preRender = (store, renderProps) => {
         if(__SERVER__) {
             import User from '../../repository/user'
@@ -26,10 +34,7 @@ class Account extends Component {
             return store.dispatch(dispatch => {
                 if (username) {
                     return User
-                        .findByName(username)
-                        .map(rep => rep.data)
-                        .toPromise()
-                        .then(
+                        .findByName(username).map(rep => rep.data).toPromise().then(
                             user => {
                                 console.log('preRender OK', user);
                                 return dispatch(loadAccount(user))
@@ -42,34 +47,39 @@ class Account extends Component {
                 } else {
                     Promise.resolve(loadAccountFail({message: 'no user'}));
                 }
-
             })
         }
     };
 
     componentDidMount() {
         let {params:{username}, account: {loaded}} = this.props;
-        this.props.loadingAccount();
+
         if(username && !loaded) {
+            this.props.loadingAccount();
+            console.log("Loading account");
             fetchAccount(username)
             .then(
                 user => this.props.loadAccount(user),
                 err => this.props.loadAccountFail(err)
             );
         } else {
-            this.props.loadAccountFail({message: 'no user'});
+            //this.props.loadAccountFail({message: 'no user'});
         }
     }
 
-    greeting = () => {
-        if(this.props.user) return `Hi ${this.props.user.username}`
+    createAlbum = () => {
+        this.setState({
+            open: true
+        })
     };
 
     render() {
-        let {params:{username}} =this.props;
-
+        console.log("Username", this.props.account.user.username);
         return (
             <div>
+                <CreateAlbum
+                    username={this.props.account.user.username}
+                    open={this.state.open} />
                 <div className="row center-xs">
                     <div className="col-xs-12">
                         <h1>Mes albums</h1>
@@ -78,6 +88,7 @@ class Account extends Component {
                 <div className="row">
                     <div className="col-xs-3"></div>
                     <div className="col-xs-6">
+                        <FlatButton label="Créer un album" onClick={this.createAlbum} />
                     </div>
                     <div className="col-xs-3"></div>
                 </div>

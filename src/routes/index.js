@@ -12,7 +12,7 @@ import {
     Forbidden
 } from '../component'
 
-export default  (store, clientSide) => {
+export default  (store) => {
     const hasRole = role => (nextState, replaceState) => {
         const { auth: { user }} = store.getState();
         if (!user) {
@@ -21,10 +21,6 @@ export default  (store, clientSide) => {
             replaceState(null, '/forbidden');
         }
     };
-
-    if(clientSide) {
-        delete Account['preRender'];
-    }
 
     return (
         <Route path="/" component={App}>

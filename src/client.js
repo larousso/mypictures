@@ -27,7 +27,7 @@ syncReduxAndRouter(history, store);
 ReactDOM.render(
     <Provider store={store}>
         <Router history={history} >
-            {getRoutes(store, true)}
+            {getRoutes(store)}
         </Router>
     </Provider>,
     document.getElementById('app')
