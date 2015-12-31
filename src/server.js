@@ -10,7 +10,7 @@ import passportInit                             from './authentication'
 import handleRequest                            from './handleRequest'
 import Roles                                    from './authentication/roles'
 import api                                      from './routes/api'
-var cookieSession = require('cookie-session')
+import cookieSession                            from 'cookie-session'
 
 
 const app = express();
@@ -63,6 +63,7 @@ app.post('/api/login',
     passport.authenticate('local'),
     (req, res) => {
         res.json(req.user);
+        res.end();
 });
 
 app.use('/api', api());

@@ -53,6 +53,15 @@ class Account extends Component {
 
     componentDidMount() {
         let {params:{username}, account: {loaded}} = this.props;
+        fetch(`/api/accounts/${username}/albums`, {
+            credentials: 'include',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        }).then(rep => rep.json()).then(next=>{
+            console.log("Albums", next);
+        });
 
         if(username && !loaded) {
             this.props.loadingAccount();
@@ -74,7 +83,6 @@ class Account extends Component {
     };
 
     render() {
-        console.log("Username", this.props.account.user.username);
         return (
             <div>
                 <CreateAlbum
