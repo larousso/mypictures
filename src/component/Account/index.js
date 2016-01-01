@@ -1,18 +1,19 @@
 import React, { Component, PropTypes }  from 'react';
 import { connect }                      from 'react-redux'
-import {loadingAccount, loadAccountFail, loadAccount} from '../../reducer/account'
+import {loadingAccount, loadAccountFail, loadAccount}   from '../../reducer/account'
+import {loadingAlbums, loadAlbumsFail, loadAlbums}      from '../../reducer/albums'
 import FlatButton                       from 'material-ui/lib/flat-button';
 import CreateAlbum                      from './createAlbum';
 
-function fetchAccount(username) {
-    return fetch(`/api/accounts/${username}`, {
-                credentials: 'include',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(rep => rep.json());
+function getJson(url) {
+    return fetch(url, {
+        credentials: 'include',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(rep => rep.json());
 }
 
 
@@ -30,6 +31,7 @@ class Account extends Component {
     static preRender = (store, renderProps) => {
         if(__SERVER__) {
             import User from '../../repository/user'
+            import Album from '../../repository/album'
             let {params:{username}} = renderProps;
             return store.dispatch(dispatch => {
                 if (username) {
@@ -43,33 +45,43 @@ class Account extends Component {
                                 console.log('preRender fail', err);
                                 return dispatch(loadAccountFail(err));
                             }
+                        ).then(_ =>
+                            Album.listByUsername(username).toPromise().then(
+                                albums => {
+                                    console.log('preRender OK', albums);
+                                    return dispatch(loadAlbums(albums))
+                                },
+                                err => {
+                                    console.log('preRender fail', err);
+                                    return dispatch(loadAlbumsFail(err));
+                                }
+                            )
                         );
                 } else {
                     Promise.resolve(loadAccountFail({message: 'no user'}));
                 }
-            })
+            });
         }
     };
 
     componentDidMount() {
         let {params:{username}, account: {loaded}} = this.props;
-        fetch(`/api/accounts/${username}/albums`, {
-            credentials: 'include',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            }
-        }).then(rep => rep.json()).then(next=>{
-            console.log("Albums", next);
-        });
 
         if(username && !loaded) {
             this.props.loadingAccount();
             console.log("Loading account");
-            fetchAccount(username)
+            getJson(`/api/accounts/${username}`)
             .then(
                 user => this.props.loadAccount(user),
                 err => this.props.loadAccountFail(err)
+            )
+            .then(_ => getJson(`/api/accounts/${username}/albums`))
+            .then(
+                albums=>{
+                    console.log("Albums", albums);
+                    this.props.loadAlbums(albums)
+                },
+                err => this.props.loadAlbumsFail(err)
             );
         } else {
             //this.props.loadAccountFail({message: 'no user'});
@@ -83,10 +95,11 @@ class Account extends Component {
     };
 
     render() {
+        let {params:{username}} = this.props;
         return (
             <div>
                 <CreateAlbum
-                    username={this.props.account.user.username}
+                    username={username}
                     open={this.state.open} />
                 <div className="row center-xs">
                     <div className="col-xs-12">
@@ -113,7 +126,8 @@ export default connect(
     state => ({
         user: state.auth.user,
         routing: state.routing,
-        account: state.account
+        account: state.account,
+        albums: state.albums,
     }),
     dispatch => ({
         loadAccount: (user) => {
@@ -124,6 +138,15 @@ export default connect(
         },
         loadAccountFail: (err) => {
             dispatch(loadAccountFail(err))
+        },
+        loadAlbums: (user) => {
+            dispatch(loadAlbums(user))
+        },
+        loadingAlbums: () => {
+            dispatch(loadingAlbums())
+        },
+        loadAlbumsFail: (err) => {
+            dispatch(loadAlbumsFail(err))
         }
     })
 )(Account);

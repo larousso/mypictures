@@ -28,7 +28,7 @@ app.use(session({
     secret: 'mypicturessecret',
     resave: true,
     rolling: true,
-    saveUninitialized: false,
+    saveUninitialized: true,
     cookie: { secure: false, maxAge:  (60 * 60 * 1000) }
 }));
 

@@ -10,17 +10,19 @@ const HttpUtils = {
                 next();
             } else {
                 console.log('Unauthorized');
-                res.send('Unauthorized').code(401);
+                res.send('Unauthorized').status(401).end();
             }
         } else {
-            res.send('Forbidden').code(403);
+            console.log('Forbidden');
+            res.send('Forbidden').status(403).end();
         }
     },
     isAuthenticated: (req, res, next) => {
         if(req.isAuthenticated()) {
             next();
         } else {
-            res.json({message:'Forbidden'}).code(403);
+            console.log('Forbidden', req.session);
+            res.json({message:'Forbidden'}).status(403).end();
         }
     },
 
@@ -46,10 +48,7 @@ export default () => {
             User.findByName(req.params.username)
                 .map(user => user.data)
                 .subscribe(
-                    user => {
-                        delete user[password];
-                        res.json(rest)
-                    },
+                    user => res.json(user),
                     err => res.json(err).code(400)
                 );
         });

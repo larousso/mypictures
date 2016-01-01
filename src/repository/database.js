@@ -107,19 +107,15 @@ export default class Database {
         return rx.Observable.create(observer => {
             stream
                 .on('data', (data) => {
-                    console.log(data, data.key, '=', data.value);
                     observer.onNext(data.value);
                 })
                 .on('error', (errors) => {
-                    console.log('Oh my!', errors);
                     observer.onError({type:'technical', errors});
                 })
                 .on('close', function () {
-                    console.log('Stream closed');
                     observer.onCompleted();
                 })
                 .on('end', function () {
-                    console.log('Stream closed');
                     observer.onCompleted();
                 });
         });
@@ -131,15 +127,12 @@ export default class Database {
                     observer.onNext(data);
                 })
                 .on('error', (errors) => {
-                    console.log('Oh my!', errors);
                     observer.onError({type:'technical', errors});
                 })
                 .on('close', function () {
-                    console.log('Stream closed');
                     observer.onCompleted();
                 })
                 .on('end', function () {
-                    console.log('Stream closed');
                     observer.onCompleted();
                 });
         });

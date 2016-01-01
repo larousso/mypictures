@@ -28,10 +28,6 @@ const Schema = {
         role: {
             type: 'string',
             required: true
-        },
-        albums: {
-            type: 'array',
-            required: false
         }
     }
 };
