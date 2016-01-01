@@ -1,4 +1,5 @@
 const LOADING = 'albums/LOADING';
+const ADD_ALBUM = 'albums/ADD_ALBUM';
 const LOAD_SUCCESS = 'albums/LOAD_SUCCESS';
 const LOAD_FAIL = 'albums/LOAD_FAIL';
 
@@ -17,6 +18,13 @@ export default function reducer(state = initialState, action = {}) {
                 loaded: true,
                 albums: action.result
             };
+        case ADD_ALBUM:
+            return {
+                ...state,
+                loading: false,
+                loaded: true,
+                albums: [action.result, ...state.albums]
+            };
         case LOAD_FAIL:
             return {
                 ...state,
@@ -34,6 +42,14 @@ export default function reducer(state = initialState, action = {}) {
         default:
             return state;
     }
+}
+
+
+export function addAlbum(album) {
+    return {
+        type: ADD_ALBUM,
+        result: album
+    };
 }
 
 export function loadingAlbums() {
