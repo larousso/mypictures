@@ -71,9 +71,8 @@ export default () => {
         (req, res) => {
             Album
                 .listByUsername(req.params.username)
-                .toArray()
                 .subscribe(
-                    albums => res.json(albums),
+                    albums => res.json(albums).end(),
                     err => {
                         HttpUtils.handleErrors(err, res);
                     }
@@ -87,11 +86,23 @@ export default () => {
             next();
         },
         (req, res) => {
-            console.log("Creating album on account", req.body)
             new Album(req.body)
                 .save()
                 .subscribe(
                     album => res.json(album),
+                    err => {
+                        HttpUtils.handleErrors(err, res);
+                    }
+                );
+        });
+
+    app.get('/accounts/:username/albums/:id',
+        HttpUtils.hasRole(Roles.ADMIN),
+        (req, res) => {
+            Album
+                .get(req.params.id)
+                .subscribe(
+                    album => res.json(album).end(),
                     err => {
                         HttpUtils.handleErrors(err, res);
                     }

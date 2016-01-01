@@ -1,16 +1,14 @@
 import React                from 'react';
 import {IndexRoute, Route}  from 'react-router';
 import Roles                from '../authentication/roles'
-
-import {
-    App,
-    Account,
-    Home,
-    NotFound,
-    Login,
-    Unauthorized,
-    Forbidden
-} from '../component'
+import App                  from '../component/App'
+import Home                 from '../component/Home'
+import Account              from '../component/Account'
+import Album                from '../component/Album'
+import Login                from '../component/Login'
+import NotFound             from '../component/NotFound'
+import Unauthorized         from '../component/Unauthorized'
+import Forbidden            from '../component/Forbidden'
 
 export default  (store) => {
     const hasRole = role => (nextState, replaceState) => {
@@ -28,6 +26,7 @@ export default  (store) => {
             <IndexRoute component={Home}/>
             { /* Catch all route */ }
             <Route onEnter={hasRole(Roles.ADMIN)} path="account/:username" component={Account}/>
+            <Route onEnter={hasRole(Roles.ADMIN)} path="account/:username/:albumId" component={Album}/>
             <Route path="login" component={Login}/>
             <Route path="unauthorized" component={Unauthorized}/>
             <Route path="forbidden" component={Forbidden}/>

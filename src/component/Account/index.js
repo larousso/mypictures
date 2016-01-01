@@ -3,7 +3,11 @@ import { connect }                      from 'react-redux'
 import {loadingAccount, loadAccountFail, loadAccount}   from '../../reducer/account'
 import {loadingAlbums, loadAlbumsFail, loadAlbums}      from '../../reducer/albums'
 import FlatButton                       from 'material-ui/lib/flat-button';
+import GridList                         from 'material-ui/lib/grid-list/grid-list';
+import GridTile                         from 'material-ui/lib/grid-list/grid-tile';
 import CreateAlbum                      from './createAlbum';
+import FontIcon                         from 'material-ui/lib/font-icon';
+import {Link }                          from 'react-router'
 
 function getJson(url) {
     return fetch(url, {
@@ -37,28 +41,16 @@ class Account extends Component {
                 if (username) {
                     return User
                         .findByName(username).map(rep => rep.data).toPromise().then(
-                            user => {
-                                console.log('preRender OK', user);
-                                return dispatch(loadAccount(user))
-                            },
-                            err => {
-                                console.log('preRender fail', err);
-                                return dispatch(loadAccountFail(err));
-                            }
+                            user => dispatch(loadAccount(user)),
+                            err => dispatch(loadAccountFail(err))
                         ).then(_ =>
                             Album.listByUsername(username).toPromise().then(
-                                albums => {
-                                    console.log('preRender OK', albums);
-                                    return dispatch(loadAlbums(albums))
-                                },
-                                err => {
-                                    console.log('preRender fail', err);
-                                    return dispatch(loadAlbumsFail(err));
-                                }
+                                albums => dispatch(loadAlbums(albums)),
+                                err => dispatch(loadAlbumsFail(err))
                             )
                         );
                 } else {
-                    Promise.resolve(loadAccountFail({message: 'no user'}));
+                    return Promise.resolve(loadAccountFail({message: 'no user'}));
                 }
             });
         }
@@ -69,22 +61,21 @@ class Account extends Component {
 
         if(username && !loaded) {
             this.props.loadingAccount();
-            console.log("Loading account");
             getJson(`/api/accounts/${username}`)
             .then(
                 user => this.props.loadAccount(user),
                 err => this.props.loadAccountFail(err)
             )
-            .then(_ => getJson(`/api/accounts/${username}/albums`))
+            .then(_ => {
+                this.props.loadingAlbums();
+                return getJson(`/api/accounts/${username}/albums`)
+            })
             .then(
-                albums=>{
-                    console.log("Albums", albums);
-                    this.props.loadAlbums(albums)
-                },
+                albums => this.props.loadAlbums(albums),
                 err => this.props.loadAlbumsFail(err)
             );
         } else {
-            //this.props.loadAccountFail({message: 'no user'});
+            this.props.loadAccountFail({message: 'no user'});
         }
     }
 
@@ -94,8 +85,12 @@ class Account extends Component {
         })
     };
 
+    getImage = (album) => {
+        return <img src="/image-not-found.png" />;
+    };
+
     render() {
-        let {params:{username}} = this.props;
+        let {params:{username}, albums:{albums}} = this.props;
         return (
             <div>
                 <CreateAlbum
@@ -114,8 +109,17 @@ class Account extends Component {
                     <div className="col-xs-3"></div>
                 </div>
                 <div className="row center-xs">
-                    <div className="col-xs-12">
+                    <div className="col-xs-2"></div>
+                    <div className="col-xs-8">
+                        <GridList cellHeight={200} cols={4} >
+                            {albums.map(album => (
+                                <GridTile key={album.id} title={album.title}>
+                                    <Link to={`/account/${username}/${album.id}`}>{this.getImage(album)}</Link>
+                                </GridTile>
+                            ))}
+                        </GridList>
                     </div>
+                    <div className="col-xs-2"></div>
                 </div>
             </div>
         )

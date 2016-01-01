@@ -40,6 +40,6 @@ export default class Album extends Database {
         if(!username) {
             return rx.Observable.empty();
         }
-        return Database.streamQueryToRx(db.query({username: username}));
+        return Database.streamQueryToRx(db.query({username: username})).toArray();
     }
 }
