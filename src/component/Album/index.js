@@ -15,6 +15,15 @@ function getJson(url) {
 
 class Album extends Component {
     static propTypes = {
+        routing: PropTypes.object.isRequired,
+        account: PropTypes.object.isRequired,
+        album: PropTypes.object.isRequired,
+        loadAccount: PropTypes.func,
+        loadingAccount: PropTypes.func,
+        loadAccountFail: PropTypes.func,
+        loadAlbum: PropTypes.func,
+        loadingAlbum: PropTypes.func,
+        loadAlbumFail: PropTypes.func
     };
 
     static preRender = (store, renderProps) => {

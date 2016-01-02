@@ -92,7 +92,7 @@ export default class Database {
         if(id) {
             let context = this;
             return rx.Observable.create(observer => {
-                context.db.delete(id, (error) => {
+                context.db.del(id, (error) => {
                     if (error) observer.onError(error);
                     observer.onNext();
                     observer.onCompleted();

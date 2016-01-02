@@ -31,6 +31,9 @@ export default class Album extends Database {
     static get(id) {
         return new Album().get(id);
     }
+    static delete(id) {
+        return new Album().delete(id);
+    }
 
     static listAll() {
         return Database.streamToRx(db.createReadStream());

@@ -89,12 +89,43 @@ export default () => {
             new Album(req.body)
                 .save()
                 .subscribe(
-                    album => res.json(album),
+                    album => res.json(album).end(),
                     err => {
                         HttpUtils.handleErrors(err, res);
                     }
                 );
         });
+
+    app.put('/accounts/:username/albums/:id',
+        HttpUtils.hasRole(Roles.ADMIN),
+        (req, res, next) => {
+            req.body.username = req.params.username;
+            next();
+        },
+        (req, res) => {
+            new Album(req.body)
+                .save(req.params.id)
+                .subscribe(
+                    album => res.json(album).end(),
+                    err => {
+                        HttpUtils.handleErrors(err, res);
+                    }
+                );
+        });
+
+    app.delete('/accounts/:username/albums/:id',
+        HttpUtils.hasRole(Roles.ADMIN),
+        (req, res) => {
+            Album
+                .delete(req.params.id)
+                .subscribe(
+                    album => res.json({}).end(),
+                    err => {
+                        HttpUtils.handleErrors(err, res);
+                    }
+                );
+        });
+
 
     app.get('/accounts/:username/albums/:id',
         HttpUtils.hasRole(Roles.ADMIN),

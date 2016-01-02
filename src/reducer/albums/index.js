@@ -1,5 +1,6 @@
 const LOADING = 'albums/LOADING';
 const ADD_ALBUM = 'albums/ADD_ALBUM';
+const DELETE_ALBUM = 'albums/DELETE_ALBUM';
 const LOAD_SUCCESS = 'albums/LOAD_SUCCESS';
 const LOAD_FAIL = 'albums/LOAD_FAIL';
 
@@ -19,12 +20,29 @@ export default function reducer(state = initialState, action = {}) {
                 albums: action.result
             };
         case ADD_ALBUM:
+            let {id} = action.result;
+            if(id) {
+                return {
+                    ...state,
+                    loading: false,
+                    loaded: true,
+                    albums: [action.result, ...state.albums.filter(a => a.id !== id)]
+                };
+            } else {
+                return {
+                    ...state,
+                    loading: false,
+                    loaded: true,
+                    albums: [action.result, ...state.albums]
+                };
+            }
+        case DELETE_ALBUM:
             return {
                 ...state,
                 loading: false,
                 loaded: true,
-                albums: [action.result, ...state.albums]
-            };
+                albums: [...state.albums.filter(a => a.id !== action.result)]
+            }
         case LOAD_FAIL:
             return {
                 ...state,
@@ -69,5 +87,12 @@ export function loadAlbums(albums) {
     return {
         type: LOAD_SUCCESS,
         result: albums
+    };
+}
+
+export function deleteAlbum(id) {
+    return {
+        type: DELETE_ALBUM,
+        result: id
     };
 }
