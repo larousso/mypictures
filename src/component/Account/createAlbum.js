@@ -1,20 +1,29 @@
 import React, { Component, PropTypes }  from 'react';
 import { connect }                      from 'react-redux'
-import {loadingAccount, loadAccountFail, loadAccount} from '../../reducer/account'
+import {addAlbum}                       from '../../reducer/albums'
 import FlatButton                       from 'material-ui/lib/flat-button';
 import Dialog                           from 'material-ui/lib/dialog';
 import TextField                        from 'material-ui/lib/text-field';
+import Http                             from '../http'
 
 class CreateAlbum extends Component {
 
     static propTypes = {
-        //username: PropTypes.string.required
+        username: PropTypes.string.isRequired,
+        handleClose: PropTypes.func,
+        addAlbum: PropTypes.func,
+        album: PropTypes.object
     };
 
     constructor(args) {
         super(args);
-        this.state = {
-            open: false
+        this.state = {};
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if(nextProps.album) {
+            let { album: { id, title, description } } = nextProps;
+            this.setState({id, title, description});
         }
     }
 
@@ -29,51 +38,45 @@ class CreateAlbum extends Component {
         })
     };
 
-    componentWillReceiveProps(nextProps) {
-        this.setState({open: nextProps.open});
-    }
-
-    handleClose = () => {
-        this.setState({open:false});
-    };
-
-    createAlbum = () => {
+    saveAlbum = () => {
         if(!this.state.title) {
             this.setState({
                 titreError: 'Le titre est obligatoire'
             })
         } else {
-            let {title, description} = this.state;
-            fetch(`/api/accounts/${this.props.username}/albums`, {
-                method: 'post',
-                credentials: 'include',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({title, description})
-            })
-            .then(rep => rep.json())
-            .then(rep => console.log("Json", rep), err => console.log("Err", err))
-
+            let url, response;
+            let {id, title, description} = this.state;
+            if(id) {
+                url = `/api/accounts/${this.props.username}/albums/${id}`;
+                response = Http.put(url, {id, title, description})
+            } else {
+                url = `/api/accounts/${this.props.username}/albums`;
+                response = Http.post(url, {id, title, description})
+            }
+            response
+                .then(rep => rep.json())
+                .then(
+                    rep => {
+                        console.log("Json", rep);
+                        this.props.addAlbum(rep);
+                        this.props.handleClose();
+                    },
+                    err => console.log("Err", err)
+                );
         }
     };
 
     render() {
-        let actions = [
-
-        ];
-
         return (
             <div>
                 <Dialog
                     title="Créer un album"
-                    actions={actions}
                     modal={false}
-                    open={this.state.open}
-                    onRequestClose={this.handleClose}>
+                    open={this.props.open}
+                    onRequestClose={this.props.handleClose}>
 
                     <TextField hintText="Titre"
+                               value={this.state.title}
                                floatingLabelText="Titre"
                                fullWidth={true} onChange={this.setTitle}
                                errorText={this.state.titreError}
@@ -81,14 +84,15 @@ class CreateAlbum extends Component {
                     <br/>
                     <TextField hintText="Description"
                                floatingLabelText="Description"
+                               value={this.state.description}
                                fullWidth={true}
                                multiLine={true}
                                rows={2}
                                onChange={this.setDescription}
                     />
                     <br/>
-                    <FlatButton label="Enregistrer" primary={true} onClick={this.createAlbum} />
-                    <FlatButton label="Annuler" onClick={this.handleClose} />
+                    <FlatButton label="Enregistrer" primary={true} onClick={this.saveAlbum} />
+                    <FlatButton label="Annuler" onClick={this.props.handleClose} />
                 </Dialog>
 
             </div>
@@ -102,14 +106,8 @@ export default connect(
         account: state.account
     }),
     dispatch => ({
-        loadAccount: (user) => {
-            dispatch(loadAccount(user))
-        },
-        loadingAccount: () => {
-            dispatch(loadingAccount())
-        },
-        loadAccountFail: (err) => {
-            dispatch(loadAccountFail(err))
+        addAlbum: (album) => {
+            dispatch(addAlbum(album))
         }
     })
 )(CreateAlbum);

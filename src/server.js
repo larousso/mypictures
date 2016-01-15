@@ -12,7 +12,6 @@ import Roles                                    from './authentication/roles'
 import api                                      from './routes/api'
 import cookieSession                            from 'cookie-session'
 
-
 const app = express();
 
 app.use(cookieSession({
@@ -21,8 +20,8 @@ app.use(cookieSession({
 }));
 
 //app.use(morgan('combined'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.json({limit: '50mb'}));
+//app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 app.use(methodOverride());
 app.use(session({
     secret: 'mypicturessecret',

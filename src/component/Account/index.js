@@ -1,38 +1,17 @@
 import React, { Component, PropTypes }  from 'react';
 import { connect }                      from 'react-redux';
-import {loadingAccount, loadAccountFail, loadAccount}   from '../../reducer/account';
-import {loadingAlbums, loadAlbumsFail, loadAlbums, deleteAlbum}      from '../../reducer/albums';
+import {Link }                          from 'react-router';
 import FlatButton                       from 'material-ui/lib/flat-button';
 import GridList                         from 'material-ui/lib/grid-list/grid-list';
 import GridTile                         from 'material-ui/lib/grid-list/grid-tile';
 import FontIcon                         from 'material-ui/lib/font-icon';
 import IconButton                       from 'material-ui/lib/icon-button';
 import CreateAlbum                      from './createAlbum';
-import {Link }                          from 'react-router';
-import Roles                            from '../../authentication/roles';
+import Http                             from '../http'
 import Habilitations                    from '../Habiliations'
-
-function getJson(url) {
-    return fetch(url, {
-        credentials: 'include',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(rep => rep.json());
-}
-function deleteJson(url) {
-    return fetch(url, {
-        method: 'delete',
-        credentials: 'include',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        }
-    })
-        .then(rep => rep.json());
-}
+import Roles                            from '../../authentication/roles';
+import {loadingAccount, loadAccountFail, loadAccount}   from '../../reducer/account';
+import {loadingAlbums, loadAlbumsFail, loadAlbums, deleteAlbum}      from '../../reducer/albums';
 
 class Account extends Component {
 
@@ -66,12 +45,12 @@ class Account extends Component {
                     return User
                         .findByName(username).map(rep => rep.data).toPromise().then(
                             user => dispatch(loadAccount(user)),
-                            err => dispatch(loadAccountFail(err))
-                        ).then(_ =>
-                            Album.listByUsername(username).toPromise().then(
-                                albums => dispatch(loadAlbums(albums)),
-                                err => dispatch(loadAlbumsFail(err))
-                            )
+                            err => dispatch(loadAccountFail(err)))
+                        .then(_ =>
+                            Album.listByUsername(username).toPromise())
+                        .then(
+                            albums => dispatch(loadAlbums(albums)),
+                            err => dispatch(loadAlbumsFail(err))
                         );
                 } else {
                     return Promise.resolve(loadAccountFail({message: 'no user'}));
@@ -85,19 +64,19 @@ class Account extends Component {
 
         if(username && !loaded) {
             this.props.loadingAccount();
-            getJson(`/api/accounts/${username}`)
-            .then(
-                user => this.props.loadAccount(user),
-                err => this.props.loadAccountFail(err)
-            )
-            .then(_ => {
-                this.props.loadingAlbums();
-                return getJson(`/api/accounts/${username}/albums`)
-            })
-            .then(
-                albums => this.props.loadAlbums(albums),
-                err => this.props.loadAlbumsFail(err)
-            );
+            Http.get(`/api/accounts/${username}`)
+                .then(
+                    user => this.props.loadAccount(user),
+                    err => this.props.loadAccountFail(err)
+                )
+                .then(_ => {
+                    this.props.loadingAlbums();
+                    return Http.get(`/api/accounts/${username}/albums`)
+                })
+                .then(
+                    albums => this.props.loadAlbums(albums),
+                    err => this.props.loadAlbumsFail(err)
+                );
         } else {
             this.props.loadAccountFail({message: 'no user'});
         }
@@ -108,25 +87,27 @@ class Account extends Component {
     };
 
     getImage = (album) => {
-        return <img src="/image-not-found.png" width="100%"/>;
+        return <img src="/image-not-found.png" height="100%" style={{position: 'absolute', display: 'block',margin: '0 auto', marginRight: 'auto',marginLeft: 'auto'}}/>;
     };
 
     deleteAlbum = id => () => {
         let {params:{username}} = this.props;
-        deleteJson(`/api/accounts/${username}/albums/${id}`)
+        Http.delete(`/api/accounts/${username}/albums/${id}`)
             .then(
                 _ => this.props.deleteAlbum(id),
-                err => console.log("Err", err)
-            )
+                err => console.log("Err", err));
     };
+
     createAlbum = () => {
         this.setState({open: true});
     };
+
     editAlbum = (id) => () => {
         if (id) {
             this.setState({album: this.props.albums.albums.find(album => album.id === id), open: true});
         }
     };
+
     render() {
         let {params:{username}, albums:{albums}, account:{user}} = this.props;
         return (
@@ -154,7 +135,7 @@ class Account extends Component {
                 <div className="row center-xs">
                     <div className="col-xs-2"></div>
                     <div className="col-xs-8">
-                        <GridList cellHeight={200} cols={4}>
+                        <GridList cellHeight={200} cols={4} >
                             {albums.map(album => (
                                 <GridTile key={album.id}
                                           title={album.title}

@@ -1,7 +1,14 @@
 import express                                  from 'express'
 import User                                     from '../repository/user'
 import Album                                    from '../repository/album'
+import Picture                                  from '../repository/picture'
 import Roles                                    from '../authentication/roles'
+import multer                                   from 'multer'
+import lwip                                     from 'lwip'
+import Jimp                                     from 'jimp'
+import fs                                       from 'fs'
+
+const upload = multer({ dest: 'uploads/' });
 
 const HttpUtils = {
     hasRole: (role) => (req, res, next) => {
@@ -139,6 +146,60 @@ export default () => {
                     }
                 );
         });
+
+    app.post('/accounts/:username/albums/:albumId/pictures',
+        HttpUtils.hasRole(Roles.ADMIN),
+        upload.array(),
+        (req, res) => {
+            req.files.map(file => {
+                Jimp.read()
+                lwip
+                    .open(file)
+                    .scale()
+            });
+
+        });
+
+
+    app.post('/accounts/:username/albums/:albumId/pictures/:id',
+        HttpUtils.hasRole(Roles.ADMIN),
+        upload.single('file'),
+        (req, res) => {
+            console.log('Saving picture', req.file.path);
+            let buffer = new Buffer(fs.readFileSync(req.file.path), 'base64');
+            Picture.compressAndSave(req.params.id, req.params.albumId, req.file.originalname, buffer).subscribe(
+                picture => res.json(picture).end(),
+                err => {
+                    HttpUtils.handleErrors(err, res);
+                }
+            );
+        });
+
+    app.get('/accounts/:username/albums/:albumId/pictures/:id',
+        HttpUtils.hasRole(Roles.ADMIN),
+        (req, res) => {
+            Picture.get(req.params.id)
+                .subscribe(
+                    picture => res.json(picture).end(),
+                    err => {
+                        HttpUtils.handleErrors(err, res);
+                    }
+                );
+        });
+
+    app.delete('/accounts/:username/albums/:albumId/pictures/:id',
+        HttpUtils.hasRole(Roles.ADMIN),
+        (req, res) => {
+            Picture
+                .delete(req.params.id)
+                .subscribe(
+                    album => res.json({}).end(),
+                    err => {
+                        HttpUtils.handleErrors(err, res);
+                    }
+                );
+        });
+
 
     return app;
 
