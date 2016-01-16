@@ -6,6 +6,7 @@ import GridList                         from 'material-ui/lib/grid-list/grid-lis
 import GridTile                         from 'material-ui/lib/grid-list/grid-tile';
 import CircularProgress                 from 'material-ui/lib/circular-progress';
 import IconButton                       from 'material-ui/lib/icon-button';
+import Colors                           from 'material-ui/lib/styles/colors'
 import FontIcon                         from 'material-ui/lib/font-icon';
 import {loadingAlbum, loadAlbumFail, loadAlbum}      from '../../reducer/album'
 import {loadingAccount, loadAccountFail, loadAccount}   from '../../reducer/account'
@@ -53,10 +54,7 @@ class Album extends Component {
                         return Picture.listByAlbum(albumId).toPromise();
                     })
                     .then(
-                        pictures => {
-                            console.log('Pictures', pictures.length);
-                            dispatch(loadPictures(pictures));
-                        },
+                        pictures => dispatch(loadPictures(pictures)),
                         err => dispatch(loadPicturesFail(err)))
                     .then(_ => {
                         console.log("Loading album finished");
@@ -82,7 +80,13 @@ class Album extends Component {
                 })
                 .then(
                     albums => this.props.loadAlbum(albums),
-                    err => this.props.loadAlbumFail(err));
+                    err => this.props.loadAlbumFail(err))
+                .then(_ => {
+                    this.props.loadingPictures();
+                    return Http.get(`/api/accounts/${username}/albums/${albumId}/pictures`)})
+                .then(
+                    pictures => this.props.loadPictures(pictures),
+                    err => this.props.loadPicturesFail(err));
         } else {
             //this.props.loadAccountFail({message: 'no user'});
         }
@@ -110,36 +114,39 @@ class Album extends Component {
                 })
                 .map(triplet => ({...triplet, blob: dataURLToBlob(triplet.src)}))
                 .flatMap(args => {
-                    let {src, blob, file, id} = args;
+                    let {blob, file, id} = args;
                     var data = new FormData();
                     data.append('file', blob);
+                    data.append('filename', file.name);
                     return rx.Observable.fromPromise(Http.postData(`/api/accounts/${username}/albums/${albumId}/pictures/${id}`, data));
                 })
                 .subscribe(
                     picture => {
-                        this.props.pictureCreated(picture);
-                        console.log('next', next);
+                        if(picture && picture.id) {
+                            this.props.pictureCreated(picture)
+                        }
                     },
-                    err => console.log('Error', err)
+                    err => {
+                        this.props.pictureCreationError(err);
+                        console.log('Error', err)
+                    }
                 );
         }
     };
 
     getImage = picture => {
-        if(picture.creating && ! picture.created) {
+        if(picture.creating && !picture.created) {
             if(picture.raw.src) {
                 return (
                     <div key={picture.id}>
                         <img src={picture.raw.src} height="200px"/>
-                        <CircularProgress mode="indeterminate" ></CircularProgress>
+                        <CircularProgress mode="indeterminate" />
                     </div>
                 );
             } else {
-                console.log('Picture', picture);
                 return(
                     <div>
-                        {/* <img src="/image-not-found.png" height="100%" style={{position: 'absolute', display: 'block',margin: '0 auto', marginRight: 'auto',marginLeft: 'auto'}}/>; */}
-                        <CircularProgress mode="indeterminate" ></CircularProgress>
+                        <CircularProgress mode="indeterminate" />
                     </div>
                 );
             }
@@ -147,7 +154,7 @@ class Album extends Component {
             return (
                 <div key={picture.id}>
                     <img src={picture.picture.file} height="200px"/>
-                    <CircularProgress mode="indeterminate" ></CircularProgress>
+                    <CircularProgress mode="indeterminate" />
                 </div>
             );
         }
@@ -192,10 +199,10 @@ class Album extends Component {
                                           title={picture.name || 'Image'}
                                           actionIcon={<div>
                                             <IconButton tooltip="Edit" onClick={this.editPicture(picture.id)}>
-                                                <FontIcon className="icon icon-pencil"  />
+                                                <FontIcon className="icon icon-pencil" color={Colors.white} />
                                             </IconButton>
                                             <IconButton tooltip="Delete" onClick={this.deletePicture(picture.id)}>
-                                                <FontIcon className="icon icon-bin"  />
+                                                <FontIcon className="icon icon-bin" color={Colors.white} />
                                             </IconButton>
                                           </div>}
                                 >
@@ -241,6 +248,15 @@ export default connect(
         },
         updateRawPicture: (picture) => {
             dispatch(updateRawPicture(picture))
+        },
+        loadingPictures: () => {
+            dispatch(loadingPictures())
+        },
+        loadPictures: pictures => {
+            dispatch(loadPictures(pictures))
+        },
+        loadPicturesFail: pictures => {
+            dispatch(loadPicturesFail(error))
         },
         pictureCreated: (picture) => {
             dispatch(pictureCreated(picture))

@@ -6,6 +6,7 @@ import GridList                         from 'material-ui/lib/grid-list/grid-lis
 import GridTile                         from 'material-ui/lib/grid-list/grid-tile';
 import FontIcon                         from 'material-ui/lib/font-icon';
 import IconButton                       from 'material-ui/lib/icon-button';
+import Colors                           from 'material-ui/lib/styles/colors'
 import CreateAlbum                      from './createAlbum';
 import Http                             from '../http'
 import Habilitations                    from '../Habiliations'
@@ -141,10 +142,10 @@ class Account extends Component {
                                           title={album.title}
                                           actionIcon={<div>
                                             <IconButton tooltip="Edit" onClick={this.editAlbum(album.id)}>
-                                                <FontIcon className="icon icon-pencil"  />
+                                                <FontIcon className="icon icon-pencil" color={Colors.white} />
                                             </IconButton>
                                             <IconButton tooltip="Delete" onClick={this.deleteAlbum(album.id)}>
-                                                <FontIcon className="icon icon-bin"  />
+                                                <FontIcon className="icon icon-bin" color={Colors.white} />
                                             </IconButton>
                                           </div>}
                                 >

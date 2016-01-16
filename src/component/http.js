@@ -16,21 +16,21 @@ export default {
         }).then(rep => rep.json());
     },
     post(url, body) {
-        fetch(url, {
+        return fetch(url, {
             method: 'post',
             body: JSON.stringify(body),
             ...options
         }).then(rep => rep.json());
     },
     postData(url, data) {
-        fetch(url, {
+        return fetch(url, {
             method: 'post',
             body: data,
             credentials: 'include'
-        }).then(rep => rep.json());
+        });
     },
     put(url, body) {
-        fetch(url, {
+        return fetch(url, {
             method: 'put',
             body: JSON.stringify(body),
             ...options

@@ -147,6 +147,19 @@ export default () => {
                 );
         });
 
+    app.get('/accounts/:username/albums/:albumId/pictures',
+        HttpUtils.hasRole(Roles.ADMIN),
+        upload.array(),
+        (req, res) => {
+            Picture.listByAlbum(req.params.albumId).subscribe(
+                pictures => res.json(pictures).end(),
+                err => {
+                    HttpUtils.handleErrors(err, res);
+                }
+            );
+        });
+
+
     app.post('/accounts/:username/albums/:albumId/pictures',
         HttpUtils.hasRole(Roles.ADMIN),
         upload.array(),
@@ -165,9 +178,9 @@ export default () => {
         HttpUtils.hasRole(Roles.ADMIN),
         upload.single('file'),
         (req, res) => {
-            console.log('Saving picture', req.file.path);
+            console.log('Saving picture', req.file.path, req.body.filename);
             let buffer = new Buffer(fs.readFileSync(req.file.path), 'base64');
-            Picture.compressAndSave(req.params.id, req.params.albumId, req.file.originalname, buffer).subscribe(
+            Picture.compressAndSave(req.params.id, req.params.albumId, req.body.filename, buffer).subscribe(
                 picture => res.json(picture).end(),
                 err => {
                     HttpUtils.handleErrors(err, res);

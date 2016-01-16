@@ -21,8 +21,10 @@ export default function reducer(state = initialState, action = {}) {
         id = action.result.picture.id;
     } else if(action.result && action.result.raw) {
         id = action.result.raw.id;
-    } else if(action.result) {
+    } else if(action.result && action.result.id) {
         id = action.result.id;
+    } else if(action.result) {
+        id = action.result;
     }
 
     switch (action.type) {
@@ -150,7 +152,12 @@ export function loadPicturesFail(error) {
 export function loadPictures(pictures) {
     return {
         type: LOAD_SUCCESS,
-        result: pictures.map(picture => ({picture, id: picture.id, name: picture.filename, creating: false, created:true}))
+        result: pictures
+            .map(picture => ({picture, id: picture.id, name: picture.filename, creating: false, created:true}))
+            .reduce((acc, elt) => {
+                acc[elt.id] = elt;
+                return acc;
+            }, {})
     };
 }
 
