@@ -109,14 +109,16 @@ class Album extends Component {
                     this.props.addRawPicture(pair);
                 })
                 .flatMap(pair => resize(pair.file).map(url => ({...pair, src:url})))
-                .do(triplet => {
-                    this.props.updateRawPicture(triplet);
-                })
+                //.do(triplet => {
+                //    this.props.updateRawPicture(triplet);
+                //})
                 .map(triplet => ({...triplet, blob: dataURLToBlob(triplet.src)}))
                 .flatMap(args => {
                     let {blob, file, id} = args;
                     var data = new FormData();
                     data.append('file', blob);
+                    data.append('type', file.type);
+                    console.log('Type', file.type);
                     data.append('filename', file.name);
                     return rx.Observable.fromPromise(Http.postData(`/api/accounts/${username}/albums/${albumId}/pictures/${id}`, data));
                 })
@@ -154,7 +156,6 @@ class Album extends Component {
             return (
                 <div key={picture.id}>
                     <img src={picture.picture.file} height="200px"/>
-                    <CircularProgress mode="indeterminate" />
                 </div>
             );
         }
@@ -255,14 +256,14 @@ export default connect(
         loadPictures: pictures => {
             dispatch(loadPictures(pictures))
         },
-        loadPicturesFail: pictures => {
+        loadPicturesFail: error => {
             dispatch(loadPicturesFail(error))
         },
         pictureCreated: (picture) => {
             dispatch(pictureCreated(picture))
         },
         pictureCreationError: (err) => {
-            dispatch(pictureCreationError(picture))
+            dispatch(pictureCreationError(err))
         },
         deletePicture: (id) => {
             dispatch(deletePicture(id))
@@ -293,7 +294,7 @@ function dataURLToBlob(dataURL) {
     }
 }
 
-function resize(current_file, maxWidth=1024, maxHeight=1024) {
+function resize(current_file, maxWidth=2048, maxHeight=2048) {
     return rx.Observable.create(observer => {
         var reader = new FileReader();
         if (current_file.type.indexOf('image') == 0) {

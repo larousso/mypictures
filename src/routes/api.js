@@ -7,6 +7,7 @@ import multer                                   from 'multer'
 import lwip                                     from 'lwip'
 import Jimp                                     from 'jimp'
 import fs                                       from 'fs'
+import rx                                   from 'rx'
 
 const upload = multer({ dest: 'uploads/' });
 
@@ -179,14 +180,27 @@ export default () => {
         upload.single('file'),
         (req, res) => {
             console.log('Saving picture', req.file.path, req.body.filename);
-            let buffer = new Buffer(fs.readFileSync(req.file.path), 'base64');
-            Picture.compressAndSave(req.params.id, req.params.albumId, req.body.filename, buffer).subscribe(
-                picture => res.json(picture).end(),
-                err => {
-                    HttpUtils.handleErrors(err, res);
-                }
-            );
+            rx.Observable.fromNodeCallback(fs.readFile)(req.file.path)
+                .map(file => new Buffer(file, 'base64'))
+                .flatMap(buffer => Picture.compressAndSave(req.params.id, req.params.albumId, req.body.filename, req.body.type, buffer))
+                .do(
+                    _ => deleteFile(req.file.path),
+                    _ => deleteFile(req.file.path)
+                )
+                .subscribe(
+                    picture => res.json(picture).end(),
+                    err => {
+                        HttpUtils.handleErrors(err, res);
+                    }
+                );
         });
+
+    function deleteFile(file) {
+        fs.unlink(file, (err) => {
+            if(err)
+                console.log(`Error removing ${req.file.path}`, err);
+        });
+    }
 
     app.get('/accounts/:username/albums/:albumId/pictures/:id',
         HttpUtils.hasRole(Roles.ADMIN),

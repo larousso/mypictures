@@ -27,7 +27,8 @@ export default {
             method: 'post',
             body: data,
             credentials: 'include'
-        });
+        })
+        .then(rep => rep.json());
     },
     put(url, body) {
         return fetch(url, {

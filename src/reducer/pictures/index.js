@@ -48,7 +48,7 @@ export default function reducer(state = initialState, action = {}) {
                 ...state,
                 loading: false,
                 loaded: true,
-                pictures: {[id]:{id, raw:action.result, name: action.result.file.name, creating: true, created:false}, ...state.pictures}
+                pictures: {[id]:{id, raw:action.result, name: action.result.file.filename, creating: true, created:false}, ...state.pictures}
             };
         case PICTURE_CREATED:
             delete state.pictures[id];
@@ -56,7 +56,7 @@ export default function reducer(state = initialState, action = {}) {
                 ...state,
                 loading: false,
                 loaded: true,
-                pictures: {[id]: {id, raw:{}, picture:action.result, name: action.result.name, creating: false, created:true}, ...state.pictures}
+                pictures: {[id]: {id, raw:{}, picture:action.result, name: action.result.filename, creating: false, created:true}, ...state.pictures}
             };
         case PICTURE_CREATION_ERROR:
             delete state.pictures[id];

@@ -1,4 +1,5 @@
-import levelup from 'levelup'
+//import level from 'level'
+import levelup from 'level'
 import Sublevel from 'level-sublevel'
 import uuid from 'node-uuid'
 import rx from 'rx'
@@ -6,7 +7,8 @@ import jsonschema from 'jsonschema'
 import levelQuery from 'level-queryengine'
 import jsonqueryEngine from 'jsonquery-engine'
 
-const db = Sublevel(levelup(__DBLOCATION__, { valueEncoding: 'json' }));
+const levelupDB = levelup(__DBLOCATION__, { valueEncoding: 'json' });
+const db = Sublevel(levelupDB);
 
 export function dbInstance(namespace) {
     const levelQueryDb = levelQuery(db.sublevel(namespace));
@@ -82,22 +84,29 @@ export default class Database {
                         }
                     });
                 }
-            });
+            }).do(
+                _ => {
+                    levelupDB.db.approximateSize('a', 'z', (err, size) => {
+                        console.log('Size', size, err);
+                    });
+                }
+            )
         } else {
             return rx.Observable.throw(new Error('Missing id or value'));
         }
     }
 
     delete(id) {
-        if(id) {
+        let deleteId = id || this.data.id;
+        if(deleteId) {
             let context = this;
             return rx.Observable.create(observer => {
-                context.db.del(id, (error) => {
+                context.db.del(deleteId, (error) => {
                     if (error) observer.onError(error);
                     observer.onNext();
                     observer.onCompleted();
                 })
-            });
+            })
         } else {
             return rx.Observable.throw(new Error('Missing id'));
         }

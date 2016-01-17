@@ -1,5 +1,6 @@
 import Database, {dbInstance}         from './database'
 import rx               from 'rx'
+import Picture          from './picture'
 
 const db = dbInstance('albums');
 db.ensureIndex('username');
@@ -32,7 +33,8 @@ export default class Album extends Database {
         return new Album().get(id);
     }
     static delete(id) {
-        return new Album().delete(id);
+        return Picture.deleteByAlbum(id)
+            .flatMap(_ => new Album().delete(id));;
     }
 
     static listAll() {
