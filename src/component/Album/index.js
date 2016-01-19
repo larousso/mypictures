@@ -195,6 +195,17 @@ class Album extends Component {
         this.setState({open: false});
     };
 
+    getTitle = picture => {
+        if (picture.raw && picture.raw.file && picture.raw.file.name) {
+            return picture.raw.file.name;
+        } else if (picture.picture && picture.picture.title) {
+            return picture.picture.title;
+        } else if (picture.picture && picture.picture.filename) {
+            return picture.picture.filename;
+        }
+        return 'Image';
+    };
+
     render() {
         let { params:{username}, album: { album: { title } }} = this.props;
         return (
@@ -220,7 +231,7 @@ class Album extends Component {
                         <GridList cellHeight={200} cols={4} >
                             {this.getPictures().map( (picture, index) =>
                                 <GridTile key={picture.id || index}
-                                          title={picture.name || 'Image'}
+                                          title={this.getTitle(picture)}
                                           actionIcon={<div>
                                             <IconButton tooltip="Edit" onClick={this.editPicture(picture.id)}>
                                                 <FontIcon className="icon icon-pencil" color={Colors.white} />

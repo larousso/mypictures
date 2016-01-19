@@ -21,8 +21,8 @@ class UpdatePicture extends Component {
 
     componentWillReceiveProps(nextProps) {
         if(nextProps.picture) {
-            let { picture: { props } } = nextProps;
-            this.setState({...props});
+            let { picture: { title, description } } = nextProps;
+            this.setState({title, description});
         }
     }
 

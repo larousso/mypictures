@@ -40,7 +40,7 @@ export default function reducer(state = initialState, action = {}) {
                 ...state,
                 loading: false,
                 loaded: true,
-                pictures: {[id]:{id, raw:action.result, name: action.result.file.name, creating: true, created:false}, ...state.pictures}
+                pictures: {[id]:{id, raw:action.result, creating: true, created:false}, ...state.pictures}
             };
         case UPDATE_RAW_PICTURE:
             delete state.pictures[id];
@@ -48,7 +48,7 @@ export default function reducer(state = initialState, action = {}) {
                 ...state,
                 loading: false,
                 loaded: true,
-                pictures: {[id]:{id, raw:action.result, name: action.result.file.filename, creating: true, created:false}, ...state.pictures}
+                pictures: {[id]:{id, raw:action.result, creating: true, created:false}, ...state.pictures}
             };
         case PICTURE_CREATED:
             delete state.pictures[id];
@@ -56,7 +56,7 @@ export default function reducer(state = initialState, action = {}) {
                 ...state,
                 loading: false,
                 loaded: true,
-                pictures: {[id]: {id, raw:{}, picture:action.result, name: action.result.filename, creating: false, created:true}, ...state.pictures}
+                pictures: {[id]: {id, raw:{}, picture:action.result, creating: false, created:true}, ...state.pictures}
             };
         case PICTURE_CREATION_ERROR:
             delete state.pictures[id];
@@ -67,14 +67,16 @@ export default function reducer(state = initialState, action = {}) {
                 pictures: {[id]: {error: action.error, raw:{}, picture:{}, creating: false, created:false}, ...state.pictures}
             };
         case ADD_PICTURE:
-            if(id) {
-                delete state.pictures[id];
+            let newPicture = action.result;
+            if(state.pictures[id].picture) {
+                newPicture = Object.assign({}, state.pictures[id].picture, action.result);
             }
+            delete state.pictures[id];
             return {
                 ...state,
                 loading: false,
                 loaded: true,
-                pictures: {[id]: {id, raw:{}, picture:action.result, creating: false, created:false}, ...state.pictures}
+                pictures: {[id]: {id, raw:{}, picture:newPicture, creating: false, created:false}, ...state.pictures}
             };
         case DELETE_PICTURE:
             delete state.pictures[id];
@@ -132,7 +134,7 @@ export function pictureCreationError(error) {
 export function addPicture(picture) {
     return {
         type: ADD_PICTURE,
-        result: {picture, creating: false, created:false}
+        result: picture
     };
 }
 
