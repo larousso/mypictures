@@ -33,6 +33,7 @@ export default class Album extends Database {
         return new Album().get(id);
     }
     static delete(id) {
+        console.log('Deleting album', id);
         return Picture.deleteByAlbum(id)
             .flatMap(_ => new Album().delete(id));;
     }

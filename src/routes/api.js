@@ -152,7 +152,7 @@ export default () => {
         HttpUtils.hasRole(Roles.ADMIN),
         upload.array(),
         (req, res) => {
-            Picture.listByAlbum(req.params.albumId).subscribe(
+            Picture.listByAlbum(req.params.albumId).toArray().subscribe(
                 pictures => res.json(pictures).end(),
                 err => {
                     HttpUtils.handleErrors(err, res);

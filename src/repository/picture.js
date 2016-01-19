@@ -6,6 +6,16 @@ import fs                           from 'fs'
 const db = dbInstance('picture');
 db.ensureIndex('album');
 
+function basePath() {
+    return '/Users/adelegue/tmpPictures';
+}
+function buildAlbumPath(albumId) {
+    return `${basePath()}/${albumId}`;
+}
+function buildPicturePath(id, albumId) {
+    return `${buildAlbumPath(albumId)}/${id}`;
+}
+
 const Schema = {
     id: 'Picture',
     type: 'object',
@@ -39,6 +49,7 @@ const Schema = {
 
 
 export default class Picture extends Database {
+
     constructor(picture) {
         super(db, Schema, picture);
     }
@@ -46,52 +57,61 @@ export default class Picture extends Database {
     static get(id) {
         return new Picture().get(id);
     }
-    static delete(id) {
-        return new Picture().delete(id);
+
+    static getPicture(id, albumId) {
+        return rx.Observable.fromCallback(fs.readFile)(buildPicturePath(id, albumId), 'utf-8').map(files => files[1]);
     }
 
     static compressAndSave(id, album, filename, type, file) {
         console.log(`Picture.compressAndSave id:${id}, album:${album}, filename:${filename}, type:${type}`);
         return rx.Observable
             .fromPromise(Jimp.read(file))
-            .flatMap(image => {
+            .map(image => {
                 let scale = calcScale(image);
+                if(scale < 1) {
+                    return image.scale(scale);
+                } else {
+                    return image;
+                }
+            })
+            .flatMap(image => {
                 switch (type) {
-                    case Jimp.MIME_JPEG: return toBuffer(image.scale(scale).quality(80), Jimp.MIME_JPEG);
-                    case Jimp.MIME_PNG: return toBuffer(image.scale(scale), Jimp.MIME_PNG);
-                    case Jimp.MIME_BMP: return toBuffer(image.scale(scale), Jimp.MIME_BMP);
+                    case Jimp.MIME_JPEG: return toBuffer(image.quality(60), Jimp.MIME_JPEG);
+                    case Jimp.MIME_PNG: return toBuffer(image, Jimp.MIME_PNG);
+                    case Jimp.MIME_BMP: return toBuffer(image, Jimp.MIME_BMP);
                     default : throw new Error(`Type ${type} is not handled`);
                 }
             })
-            .flatMap(file => rx.Observable.fromCallback(fs.writeFile)(`/Users/adelegue/tmpPictures/${id}`, `data:${Jimp.MIME_JPEG};base64, ${file.toString('base64')}`, 'utf-8'))
-            .flatMap(file =>
-                //new Picture({id, album, filename, type, file: `data:${Jimp.MIME_JPEG};base64, ${file.toString('base64')}`}).save()
-                new Picture({id, album, filename, type}).save()
-            )
-            .flatMap(picture => rx.Observable.fromCallback(fs.readFile)(`/Users/adelegue/tmpPictures/${picture.id}`, 'utf-8').map(file => ({file:file[1], ...picture})));
+            .flatMap(buffer => Picture.createPicture(id, album, buffer))
+            .flatMap(_ => new Picture({id, album, filename, type}).save())
+            .flatMap(picture => Picture.getPicture(id, album).map(file => ({file, ...picture})));
+    }
+
+    static createPicture(id, albumId, buffer) {
+        let albumPath = buildAlbumPath(albumId);
+        let picturePath = buildPicturePath(id, albumId);
+        console.log('3', picturePath);
+
+        let data = `data:${Jimp.MIME_JPEG};base64, ${buffer.toString('base64')}`;
+
+        console.log(`Creating picture ${picturePath}`);
+        return rx.Observable.fromCallback(fs.stat)(albumPath).flatMap(stats => {
+            if(stats.isDirectory()) {
+                console.log(`Directory ${albumPath} exists, creating file ${picturePath}`);
+                return rx.Observable.fromCallback(fs.writeFile)(picturePath, data, 'utf-8');
+            } else {
+                return rx.Observable.throw(`${albumPath} is not a directory`);
+            }
+        }).catch(_ => {
+            console.log(`Directory ${albumPath} doesn\'t exists, creating directory and file ${picturePath}`);
+            return rx.Observable
+                .fromCallback(fs.mkdir)(albumPath)
+                .flatMap(_ => rx.Observable.fromCallback(fs.writeFile)(picturePath, data, 'utf-8'));
+        });
     }
 
     static listAll() {
         return Database.streamToRx(db.createReadStream());
-    };
-
-    static deleteByAlbum(album) {
-        Picture
-            .listByAlbum(album)
-            .flatMap(p => new Picture(p)
-                .delete()
-                .map(_ => ({id}))
-                .catch(err => ({error:err, id: p.id}))
-            )
-            .filter(alt => elt.error)
-            .toArray()
-            .flatMap(arr => {
-                if(arr && arr.length > 0) {
-                    return rx.Observable.throw(arr);
-                } else {
-                    return rx.Observable.just();
-                }
-            });
     }
 
     static listByAlbum(album) {
@@ -100,8 +120,26 @@ export default class Picture extends Database {
         }
         return Database
             .streamQueryToRx(db.query({album}))
-            .flatMap(picture => rx.Observable.fromCallback(fs.readFile)(`/Users/adelegue/tmpPictures/${picture.id}`, 'utf-8').map(file => ({file:file[1], ...picture})))
-            .toArray();
+            .flatMap(picture => Picture.getPicture(picture.id, album).map(file => ({file, ...picture})));
+    }
+
+    static deleteByAlbum(album) {
+        console.log('Deleting pictures by album', album);
+        return Picture.listByAlbum(album)
+            .flatMap(p => Picture.delete(p.id))
+            .flatMap(p => rx.Observable.fromCallback(fs.rmdir)(buildAlbumPath(album)));
+    }
+
+    static delete(id) {
+        return Picture.get(id)
+            .flatMap(p => Picture.deletePicture(id, p.album).map(_ => p))
+            .flatMap(p => new Picture(p).delete());
+    }
+
+    static deletePicture(id, albumId) {
+        let path = buildPicturePath(id, albumId);
+        console.log(`Deleting picture ${path}`);
+        return rx.Observable.fromCallback(fs.unlink)(path);
     }
 }
 

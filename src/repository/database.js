@@ -84,13 +84,7 @@ export default class Database {
                         }
                     });
                 }
-            }).do(
-                _ => {
-                    levelupDB.db.approximateSize('a', 'z', (err, size) => {
-                        console.log('Size', size, err);
-                    });
-                }
-            )
+            })
         } else {
             return rx.Observable.throw(new Error('Missing id or value'));
         }

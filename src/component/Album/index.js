@@ -294,7 +294,7 @@ function dataURLToBlob(dataURL) {
     }
 }
 
-function resize(current_file, maxWidth=2048, maxHeight=2048) {
+function resize(current_file, maxWidth=1024, maxHeight=1024) {
     return rx.Observable.create(observer => {
         var reader = new FileReader();
         if (current_file.type.indexOf('image') == 0) {
