@@ -8,6 +8,7 @@ import CircularProgress                 from 'material-ui/lib/circular-progress'
 import IconButton                       from 'material-ui/lib/icon-button';
 import Colors                           from 'material-ui/lib/styles/colors'
 import FontIcon                         from 'material-ui/lib/font-icon';
+import UpdatePicture                    from './UpdatePicture'
 import {loadingAlbum, loadAlbumFail, loadAlbum}      from '../../reducer/album'
 import {loadingAccount, loadAccountFail, loadAccount}   from '../../reducer/account'
 import {addRawPicture, updateRawPicture, pictureCreated, pictureCreationError, loadingPictures, loadPictures, loadPicturesFail, deletePicture}   from '../../reducer/pictures'
@@ -30,6 +31,14 @@ class Album extends Component {
         loadAlbumFail: PropTypes.func
     };
 
+
+    constructor(args) {
+        super(args);
+        this.state = {
+            open: false
+        }
+    }
+
     static preRender = (store, renderProps) => {
         if(__SERVER__) {
             import User     from '../../repository/user';
@@ -41,24 +50,24 @@ class Album extends Component {
             if (username) {
                 return store.dispatch(dispatch =>
                     User.findByName(username).map(rep => rep.data).toPromise()
-                    .then(
-                        user => dispatch(loadAccount(user)),
-                        err => dispatch(loadAccountFail(err)))
-                    .then(_ =>
-                        Album.get(albumId).toPromise())
-                    .then(
-                        album => dispatch(loadAlbum(album)),
-                        err => dispatch(loadAlbumFail(err)))
-                    .then(_ => {
-                        dispatch(loadingPictures());
-                        return Picture.listByAlbum(albumId).toPromise();
-                    })
-                    .then(
-                        pictures => dispatch(loadPictures(pictures)),
-                        err => dispatch(loadPicturesFail(err)))
-                    .then(_ => {
-                        console.log("Loading album finished");
-                    }));
+                        .then(
+                            user => dispatch(loadAccount(user)),
+                            err => dispatch(loadAccountFail(err)))
+                        .then(_ =>
+                            Album.get(albumId).toPromise())
+                        .then(
+                            album => dispatch(loadAlbum(album)),
+                            err => dispatch(loadAlbumFail(err)))
+                        .then(_ => {
+                            dispatch(loadingPictures());
+                            return Picture.listByAlbum(albumId).toArray().toPromise();
+                        })
+                        .then(
+                            pictures => dispatch(loadPictures(pictures)),
+                            err => dispatch(loadPicturesFail(err)))
+                        .then(_ => {
+                            console.log("Loading album finished");
+                        }));
             } else {
                 console.log("No user !!!");
                 return Promise.resolve(loadAccountFail({message: 'no user'}));
@@ -175,13 +184,27 @@ class Album extends Component {
     };
 
     editPicture = id => () => {
+        console.log('Edit picture', id);
+        if (id && this.props.pictures.pictures && this.props.pictures.pictures[id]) {
+            let picture = this.props.pictures.pictures[id].picture;
+            this.setState({picture, open: true});
+        }
+    };
 
+    handleClose = () => {
+        this.setState({open: false});
     };
 
     render() {
-        let { album: { album: { title } }} = this.props;
+        let { params:{username}, album: { album: { title } }} = this.props;
         return (
             <div>
+                <UpdatePicture
+                    username={username}
+                    open={this.state.open}
+                    picture={this.state.picture}
+                    handleClose={this.handleClose}
+                />
                 <div className="row center-xs">
                     <div className="col-xs-12">
                         <h1>{title}</h1>

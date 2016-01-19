@@ -47,6 +47,7 @@ const handleRequest = (req, res, store) => {
                             <RoutingContext {...renderProps} />
                         </Provider>
                     );
+                    console.log('Generating html', renderProps.location);
                     const html = renderToString(<Html component={component} store={store}/>);
                     const response = `<!doctype html>\n${html}`;
                     res

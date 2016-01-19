@@ -1,18 +1,17 @@
 import React, { Component, PropTypes }  from 'react';
 import { connect }                      from 'react-redux'
-import {addAlbum}                       from '../../reducer/albums'
+import {addPicture}                       from '../../reducer/pictures'
 import FlatButton                       from 'material-ui/lib/flat-button';
 import Dialog                           from 'material-ui/lib/dialog';
 import TextField                        from 'material-ui/lib/text-field';
 import Http                             from '../http'
 
-class CreateAlbum extends Component {
+class UpdatePicture extends Component {
 
     static propTypes = {
         username: PropTypes.string.isRequired,
         handleClose: PropTypes.func,
-        addAlbum: PropTypes.func,
-        album: PropTypes.object
+        picture: PropTypes.object
     };
 
     constructor(args) {
@@ -21,9 +20,9 @@ class CreateAlbum extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        if(nextProps.album) {
-            let { album: { id, title, description } } = nextProps;
-            this.setState({id, title, description});
+        if(nextProps.picture) {
+            let { picture: { props } } = nextProps;
+            this.setState({...props});
         }
     }
 
@@ -38,38 +37,32 @@ class CreateAlbum extends Component {
         })
     };
 
-    saveAlbum = () => {
-        if(!this.state.title) {
-            this.setState({
-                titreError: 'Le titre est obligatoire'
-            })
-        } else {
-            let url, response;
-            let {id, title, description} = this.state;
-            if(id) {
-                url = `/api/accounts/${this.props.username}/albums/${id}`;
-                response = Http.put(url, {id, title, description})
-            } else {
-                url = `/api/accounts/${this.props.username}/albums`;
-                response = Http.post(url, {id, title, description})
-            }
-            response
-                .then(
-                    rep => {
-                        console.log("Json", rep);
-                        this.props.addAlbum(rep);
-                        this.props.handleClose();
-                    },
-                    err => console.log("Err", err)
-                );
-        }
+    savePicture = () => {
+        let { title, description } = this.state;
+        let { picture: { id, album} } = this.props;
+        let url = `/api/accounts/${this.props.username}/albums/${album}/pictures/${id}`;
+        let oldPicture = Object.assign({}, this.props.picture);
+        console.log('Old', oldPicture, this.props.picture);
+        delete oldPicture['file'];
+        let newPicture = Object.assign({}, oldPicture, {title, description});
+        console.log('Updating picture', newPicture);
+        Http.put(url, newPicture)
+            .then(
+                rep => {
+                    console.log("Json", rep);
+                    this.props.addPicture(rep);
+                    this.props.handleClose();
+                },
+                err => console.log("Err", err)
+            );
     };
 
     render() {
+        console.log('Open', this.props.open);
         return (
             <div>
                 <Dialog
-                    title="Créer un album"
+                    title="Mise à jour de l'image"
                     modal={false}
                     open={this.props.open}
                     onRequestClose={this.props.handleClose}>
@@ -90,7 +83,7 @@ class CreateAlbum extends Component {
                                onChange={this.setDescription}
                     />
                     <br/>
-                    <FlatButton label="Enregistrer" primary={true} onClick={this.saveAlbum} />
+                    <FlatButton label="Enregistrer" primary={true} onClick={this.savePicture} />
                     <FlatButton label="Annuler" onClick={this.props.handleClose} />
                 </Dialog>
 
@@ -102,11 +95,10 @@ class CreateAlbum extends Component {
 export default connect(
     state => ({
         routing: state.routing,
-        account: state.account
     }),
     dispatch => ({
-        addAlbum: (album) => {
-            dispatch(addAlbum(album))
+        addPicture: (picture) => {
+            dispatch(addPicture(picture))
         }
     })
-)(CreateAlbum);
+)(UpdatePicture);

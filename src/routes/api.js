@@ -195,6 +195,19 @@ export default () => {
                 );
         });
 
+    app.put('/accounts/:username/albums/:albumId/pictures/:id',
+        HttpUtils.hasRole(Roles.ADMIN),
+        (req, res) => {
+            new Picture(req.body)
+                .save(req.params.id)
+                .subscribe(
+                    picture => res.json(picture).end(),
+                    err => {
+                        HttpUtils.handleErrors(err, res);
+                    }
+                );
+        });
+
     function deleteFile(file) {
         fs.unlink(file, (err) => {
             if(err)
