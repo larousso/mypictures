@@ -1,5 +1,7 @@
 import React, { Component, PropTypes }  from 'react';
 import { connect }                      from 'react-redux'
+import { Link }                         from 'react-router'
+import { replacePath }                 from 'redux-simple-router'
 import rx                               from 'rx'
 import Http                             from '../http'
 import GridList                         from 'material-ui/lib/grid-list/grid-list';
@@ -9,6 +11,7 @@ import IconButton                       from 'material-ui/lib/icon-button';
 import Colors                           from 'material-ui/lib/styles/colors'
 import FontIcon                         from 'material-ui/lib/font-icon';
 import UpdatePicture                    from './UpdatePicture'
+import DisplayPicture                   from './DisplayPicture'
 import {loadingAlbum, loadAlbumFail, loadAlbum}      from '../../reducer/album'
 import {loadingAccount, loadAccountFail, loadAccount}   from '../../reducer/account'
 import {addRawPicture, updateRawPicture, pictureCreated, pictureCreationError, loadingPictures, loadPictures, loadPicturesFail, deletePicture}   from '../../reducer/pictures'
@@ -35,7 +38,8 @@ class Album extends Component {
     constructor(args) {
         super(args);
         this.state = {
-            open: false
+            open: false,
+            openPicture: false
         }
     }
 
@@ -162,9 +166,12 @@ class Album extends Component {
                 );
             }
         } else if(picture.picture && picture.picture.file) {
+            let { params:{username, albumId}} = this.props;
             return (
                 <div key={picture.id}>
-                    <img src={picture.picture.file} height="200px"/>
+                    <Link to={`/account/${username}/${albumId}/picture/${picture.id}`}>
+                        <img src={picture.picture.file} height="200px"/>
+                    </Link>
                 </div>
             );
         }
@@ -195,6 +202,11 @@ class Album extends Component {
         this.setState({open: false});
     };
 
+    handleClosePicture = () => {
+        let { params:{username, albumId} } = this.props;
+        this.props.changeRoute(`/account/${username}/${albumId}`);
+    };
+
     getTitle = picture => {
         if (picture.raw && picture.raw.file && picture.raw.file.name) {
             return picture.raw.file.name;
@@ -206,6 +218,15 @@ class Album extends Component {
         return 'Image';
     };
 
+    diplayPicture = () => {
+        let { params:{pictureId}} = this.props;
+        if(pictureId) {
+            return <DisplayPicture open={true}
+                                   id={pictureId}
+                                   handleClose={this.handleClosePicture}/>
+        }
+    }
+
     render() {
         let { params:{username}, album: { album: { title } }} = this.props;
         return (
@@ -216,6 +237,7 @@ class Album extends Component {
                     picture={this.state.picture}
                     handleClose={this.handleClose}
                 />
+                {this.diplayPicture()}
                 <div className="row center-xs">
                     <div className="col-xs-12">
                         <h1>{title}</h1>
@@ -260,6 +282,9 @@ export default connect(
         pictures: state.pictures
     }),
     dispatch => ({
+        changeRoute: (route) => {
+            dispatch(replacePath(route))
+        },
         loadAccount: (user) => {
             dispatch(loadAccount(user))
         },

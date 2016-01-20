@@ -27,6 +27,7 @@ export default  (store) => {
             { /* Catch all route */ }
             <Route onEnter={hasRole(Roles.ADMIN)} path="account/:username" component={Account}/>
             <Route onEnter={hasRole(Roles.ADMIN)} path="account/:username/:albumId" component={Album}/>
+            <Route onEnter={hasRole(Roles.ADMIN)} path="account/:username/:albumId/picture/:pictureId" component={Album}/>
             <Route path="login" component={Login}/>
             <Route path="unauthorized" component={Unauthorized}/>
             <Route path="forbidden" component={Forbidden}/>
