@@ -219,9 +219,11 @@ class Album extends Component {
     };
 
     diplayPicture = () => {
-        let { params:{pictureId}} = this.props;
+        let { params:{pictureId, username, albumId}} = this.props;
         if(pictureId) {
             return <DisplayPicture open={true}
+                                   username={username}
+                                   albumId={albumId}
                                    id={pictureId}
                                    handleClose={this.handleClosePicture}/>
         }
