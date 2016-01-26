@@ -2,6 +2,7 @@ import Database, {dbInstance}       from './database'
 import rx                           from 'rx'
 import Jimp                         from 'jimp'
 import fs                           from 'fs'
+import mkdirp                       from 'mkdirp'
 
 const db = dbInstance('picture');
 db.ensureIndex('album');
@@ -14,6 +15,12 @@ function buildAlbumPath(albumId) {
 }
 function buildPicturePath(id, albumId) {
     return `${buildAlbumPath(albumId)}/${id}`;
+}
+function buildThumbnailFolderPath(albumId) {
+    return `${buildAlbumPath(albumId)}/thumbnails`;
+}
+function buildThumbnailPath(id, albumId) {
+    return `${buildAlbumPath(albumId)}/thumbnails/${id}`;
 }
 
 const Schema = {
@@ -61,20 +68,48 @@ export default class Picture extends Database {
     static getPicture(id, albumId) {
         return rx.Observable.fromCallback(fs.readFile)(buildPicturePath(id, albumId), 'utf-8').map(files => files[1]);
     }
+    static getThumbnail(id, albumId) {
+        return rx.Observable.fromCallback(fs.readFile)(buildThumbnailPath(id, albumId), 'utf-8').map(files => files[1]);
+    }
 
     static compressAndSave(id, album, filename, type, file) {
         console.log(`Picture.compressAndSave id:${id}, album:${album}, filename:${filename}, type:${type}`);
+
+        return rx.Observable.zip(
+                Picture.createMainPicture(id, album, file, type),
+                Picture.createThumbnail(id, album, file, type),
+                (picture, thumbnail) => ({picture, thumbnail})
+            )
+            .flatMap(_ => new Picture({id, album, filename, type}).save())
+            .flatMap(picture => rx.Observable.zip(
+                    Picture.getPicture(id, album),
+                    Picture.getThumbnail(id, album),
+                    (file, thumbnail) => ({file, thumbnail})
+                ).map(files => {
+                    let {file, thumbnail} = files;
+                    return {file, thumbnail, ...picture};
+                })
+            );
+    }
+
+    static createMainPicture(id, album, file, type) {
+        let albumPath = buildAlbumPath(album);
+        let picturePath = buildPicturePath(id, album);
+        console.log('Creating main picture', picturePath);
         return rx.Observable
             .fromPromise(Jimp.read(file))
             .map(image => {
                 let scale = calcScale(image);
                 if(scale < 1) {
+                    console.log('Scaling image to ', scale);
                     return image.scale(scale);
                 } else {
+                    console.log('Not scaling image');
                     return image;
                 }
             })
             .flatMap(image => {
+                console.log('Converting image to buffer', type, id);
                 switch (type) {
                     case Jimp.MIME_JPEG: return toBuffer(image.quality(60), Jimp.MIME_JPEG);
                     case Jimp.MIME_PNG: return toBuffer(image, Jimp.MIME_PNG);
@@ -82,32 +117,34 @@ export default class Picture extends Database {
                     default : throw new Error(`Type ${type} is not handled`);
                 }
             })
-            .flatMap(buffer => Picture.createPicture(id, album, buffer))
-            .flatMap(_ => new Picture({id, album, filename, type}).save())
-            .flatMap(picture => Picture.getPicture(id, album).map(file => ({file, ...picture})));
+            .flatMap(buffer => Picture.createPicture(picturePath, albumPath, buffer));
     }
 
-    static createPicture(id, albumId, buffer) {
-        let albumPath = buildAlbumPath(albumId);
-        let picturePath = buildPicturePath(id, albumId);
+    static createThumbnail(id, album, file, type) {
+        let thumbnailPath = buildThumbnailPath(id, album);
+        let folder = buildThumbnailFolderPath(album);
+        console.log('Creating thumbnail', thumbnailPath);
+        return rx.Observable
+            .fromPromise(Jimp.read(file))
+            .map(image => image.scale(scaleThumbnail(image)))
+            .flatMap(image => {
+                console.log('Converting thumbnail to buffer', type, id);
+                switch (type) {
+                    case Jimp.MIME_JPEG: return toBuffer(image.quality(50), Jimp.MIME_JPEG);
+                    case Jimp.MIME_PNG: return toBuffer(image, Jimp.MIME_PNG);
+                    case Jimp.MIME_BMP: return toBuffer(image, Jimp.MIME_BMP);
+                    default : throw new Error(`Type ${type} is not handled`);
+                }
+            })
+            .flatMap(buffer => Picture.createPicture(thumbnailPath, folder, buffer))
+    }
+
+    static createPicture(picturePath, albumPath, buffer) {
         console.log('3', picturePath);
 
         let data = `data:${Jimp.MIME_JPEG};base64, ${buffer.toString('base64')}`;
-
-        console.log(`Creating picture ${picturePath}`);
-        return rx.Observable.fromCallback(fs.stat)(albumPath).flatMap(stats => {
-            if(stats.isDirectory()) {
-                console.log(`Directory ${albumPath} exists, creating file ${picturePath}`);
-                return rx.Observable.fromCallback(fs.writeFile)(picturePath, data, 'utf-8');
-            } else {
-                return rx.Observable.throw(`${albumPath} is not a directory`);
-            }
-        }).catch(_ => {
-            console.log(`Directory ${albumPath} doesn\'t exists, creating directory and file ${picturePath}`);
-            return rx.Observable
-                .fromCallback(fs.mkdir)(albumPath)
-                .flatMap(_ => rx.Observable.fromCallback(fs.writeFile)(picturePath, data, 'utf-8'));
-        });
+        return createFolder(albumPath)
+            .flatMap(_ => rx.Observable.fromCallback(fs.writeFile)(picturePath, data, 'utf-8'));
     }
 
     static listAll() {
@@ -120,7 +157,11 @@ export default class Picture extends Database {
         }
         return Database
             .streamQueryToRx(db.query({album}))
-            .flatMap(picture => Picture.getPicture(picture.id, album).map(file => ({file, ...picture})));
+            .flatMap(picture => rx.Observable.zip(
+                    Picture.getPicture(picture.id, album),
+                    Picture.getThumbnail(picture.id, album),
+                    (file, thumbnail) => ({file, thumbnail, ...picture})
+                ));
     }
 
     static deleteByAlbum(album) {
@@ -138,15 +179,37 @@ export default class Picture extends Database {
 
     static deletePicture(id, albumId) {
         let path = buildPicturePath(id, albumId);
+        let thumbnail = buildThumbnailPath(id, albumId);
         console.log(`Deleting picture ${path}`);
-        return rx.Observable.fromCallback(fs.unlink)(path);
+        return rx.Observable.zip(
+            rx.Observable.fromCallback(fs.unlink)(path),
+            rx.Observable.fromCallback(fs.unlink)(thumbnail),
+            (cb1, cb2) => ({})
+        );
     }
+}
+
+function createFolder(folder) {
+    console.log(`Creating ${folder} if not exists`);
+    return rx.Observable.fromCallback(fs.stat)(folder).flatMap(stats => {
+        if(stats.isDirectory()) {
+            return rx.Observable.just({folder});
+        } else {
+            return rx.Observable.throw(`${folder} is not a directory`);
+        }
+    }).catch(_ => {
+        console.log(`Directory ${folder} doesn\'t exists, creating directory`);
+        return rx.Observable
+            .fromCallback(mkdirp)(folder).map(_ => ({folder}));
+    });
 }
 
 function calcScale(image) {
     return 1024 / image.bitmap.width;
 }
-
+function scaleThumbnail(image) {
+    return 200 / image.bitmap.height;
+}
 function toBuffer(image, type) {
     return rx.Observable.create(observer => {
         image.getBuffer(type, (err, buffer) => {
