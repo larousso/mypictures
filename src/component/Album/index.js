@@ -1,4 +1,5 @@
 import React, { Component, PropTypes }  from 'react';
+import {findDOMNode}                    from 'react-dom';
 import { connect }                      from 'react-redux'
 import { Link }                         from 'react-router'
 import { replacePath }                 from 'redux-simple-router'
@@ -11,13 +12,11 @@ import IconButton                       from 'material-ui/lib/icon-button';
 import Colors                           from 'material-ui/lib/styles/colors'
 import FontIcon                         from 'material-ui/lib/font-icon';
 import UpdatePicture                    from './UpdatePicture'
-import Lightbox                         from '../LightBox/Lightbox';
 import {loadingAlbum, loadAlbumFail, loadAlbum}      from '../../reducer/album'
 import {loadingAccount, loadAccountFail, loadAccount}   from '../../reducer/account'
 import {addRawPicture, updateRawPicture, pictureCreated, pictureCreationError, loadingPictures, loadPictures, loadPicturesFail, deletePicture}   from '../../reducer/pictures'
 import uuid from 'node-uuid'
-
-
+import Viewer                           from 'viewerjs'
 
 
 class Album extends Component {
@@ -105,6 +104,13 @@ class Album extends Component {
         } else {
             //this.props.loadAccountFail({message: 'no user'});
         }
+        this.viewer = new Viewer(document.getElementById("pictures"));
+    }
+
+    componentWillUnmount() {
+        if(this.viewer) {
+            this.viewer.destroy();
+        }
     }
 
     onFilesChange = e => {
@@ -168,17 +174,9 @@ class Album extends Component {
                 );
             }
         } else if(picture.picture && picture.picture.file) {
-            //let { params:{username, albumId}} = this.props;
-            //return (
-            //    <div key={picture.id}>
-            //        <Link to={`/account/${username}/${albumId}/picture/${picture.id}`}>
-            //            <img src={picture.picture.file} height="200px"/>
-            //        </Link>
-            //    </div>
-            //);
             return (
                 <div key={picture.id}>
-                    <a href="#" onClick={(event) => this.openLightbox(index, event)} >
+                    <a href="#" >
                         <img src={picture.picture.file} height="200px"/>
                     </a>
                 </div>
@@ -223,53 +221,6 @@ class Album extends Component {
     };
 
 
-    openLightbox = (index, event) => {
-        event.preventDefault();
-        console.log('Opening lightbox');
-        this.setState({
-            currentImage: index,
-            lightboxIsOpen: true,
-        });
-    };
-    closeLightbox = () => {
-        this.setState({
-            currentImage: 0,
-            lightboxIsOpen: false,
-        });
-    };
-    gotoPrevious = () => {
-        this.setState({
-            currentImage: this.state.currentImage - 1,
-        });
-    };
-    gotoNext = () => {
-        this.setState({
-            currentImage: this.state.currentImage + 1,
-        });
-    };
-    getCaption = (p) => {
-        return (
-            <div>
-                <b>{this.getTitle(p)}</b><span style={{fontStyle: 'italic'}}>{p.picture.description}</span>
-            </div>
-        )
-    };
-    displayLightBox = () => {
-        const pictures = this.getPictures().filter(p => p.picture).map(p => ({src:p.picture.file, caption:this.getCaption(p)}));
-        if(this.state.lightboxIsOpen && pictures && pictures.length > 0) {
-            return (
-                <Lightbox
-                    currentImage={this.state.currentImage}
-                    images={pictures}
-                    isOpen={this.state.lightboxIsOpen}
-                    onClickPrev={this.gotoPrevious}
-                    onClickNext={this.gotoNext}
-                    onClose={this.closeLightbox}
-                />
-            );
-        }
-    };
-
     render() {
         let { params:{username}, album: { album: { title } }} = this.props;
         return (
@@ -280,7 +231,6 @@ class Album extends Component {
                     picture={this.state.picture}
                     handleClose={this.handleClose}
                 />
-                {this.displayLightBox()}
                 <div className="row center-xs">
                     <div className="col-xs-12">
                         <h1>{title}</h1>
@@ -293,7 +243,7 @@ class Album extends Component {
                 </div>
                 <div className="row center-xs">
                     <div className="col-xs-12">
-                        <GridList cellHeight={200} cols={4} >
+                        <GridList id="pictures" cellHeight={200} cols={4} >
                             {this.getPictures().map( (picture, index) =>
                                 <GridTile key={picture.id || index}
                                           title={this.getTitle(picture)}

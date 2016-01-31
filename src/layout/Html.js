@@ -11,6 +11,7 @@ export default (props) => {
                 <link href="/styles.css" rel="stylesheet" type="text/css"/>
                 <link href="/flexboxgrid.min.css" rel="stylesheet" type="text/css"/>
                 <link href="/icons.css" rel="stylesheet" type="text/css"/>
+                <link href="/viewer.min.css" rel="stylesheet" type="text/css"/>
             </head>
             <body>
                 <div id="app" dangerouslySetInnerHTML={{__html: content}}></div>
