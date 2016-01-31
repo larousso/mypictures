@@ -79,6 +79,8 @@ export default () => {
         (req, res) => {
             Album
                 .listByUsername(req.params.username)
+                .flatMap(album => Picture.listThumbnailsByAlbum(album.id).toArray().map(thumbnails => ({thumbnails, ...album})))
+                .toArray()
                 .subscribe(
                     albums => res.json(albums).end(),
                     err => {
@@ -140,6 +142,7 @@ export default () => {
         (req, res) => {
             Album
                 .get(req.params.id)
+                .flatMap(album => Picture.listThumbnailsByAlbum(album.id).take(1).map(thumbnail => ({thumbnail,...album})))
                 .subscribe(
                     album => res.json(album).end(),
                     err => {
@@ -153,6 +156,18 @@ export default () => {
         upload.array(),
         (req, res) => {
             Picture.listByAlbum(req.params.albumId).toArray().subscribe(
+                pictures => res.json(pictures).end(),
+                err => {
+                    HttpUtils.handleErrors(err, res);
+                }
+            );
+        });
+
+    app.get('/accounts/:username/albums/:albumId/thumbnails',
+        HttpUtils.hasRole(Roles.ADMIN),
+        upload.array(),
+        (req, res) => {
+            Picture.listThumbnailsByAlbum(req.params.albumId).toArray().subscribe(
                 pictures => res.json(pictures).end(),
                 err => {
                     HttpUtils.handleErrors(err, res);

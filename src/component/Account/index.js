@@ -38,8 +38,10 @@ class Account extends Component {
 
     static preRender = (store, renderProps) => {
         if(__SERVER__) {
-            import User from '../../repository/user'
-            import Album from '../../repository/album'
+            import User from '../../repository/user';
+            import Album from '../../repository/album';
+            import Picture from '../../repository/picture';
+
             let {params:{username}} = renderProps;
             return store.dispatch(dispatch => {
                 if (username) {
@@ -47,13 +49,19 @@ class Account extends Component {
                         .findByName(username).map(rep => rep.data).toPromise().then(
                             user => dispatch(loadAccount(user)),
                             err => dispatch(loadAccountFail(err)))
-                        .then(_ =>
-                            Album.listByUsername(username).toPromise())
+                        .then(_ => Album.listByUsername(username)
+                                        .flatMap(album => Picture.listThumbnailsByAlbum(album.id).toArray().map(thumbnails => ({thumbnails,...album})))
+                                        .toArray()
+                                        .toPromise())
                         .then(
                             albums => dispatch(loadAlbums(albums)),
-                            err => dispatch(loadAlbumsFail(err))
+                            err => {
+                                console.log('Error', error);
+                                return dispatch(loadAlbumsFail(err))
+                            }
                         );
-                } else {
+                }
+                else {
                     return Promise.resolve(loadAccountFail({message: 'no user'}));
                 }
             });
@@ -62,7 +70,7 @@ class Account extends Component {
 
     componentDidMount() {
         let {params:{username}, account: {loaded}} = this.props;
-
+        console.log('Username', username, loaded);
         if(username && !loaded) {
             this.props.loadingAccount();
             Http.get(`/api/accounts/${username}`)
@@ -78,9 +86,10 @@ class Account extends Component {
                     albums => this.props.loadAlbums(albums),
                     err => this.props.loadAlbumsFail(err)
                 );
-        } else {
-            this.props.loadAccountFail({message: 'no user'});
         }
+        //else {
+        //    this.props.loadAccountFail({message: 'no user'});
+        //}
     }
 
     handleClose = () => {
@@ -88,6 +97,12 @@ class Account extends Component {
     };
 
     getImage = (album) => {
+        if(album && album.thumbnails) {
+            let [first] = album.thumbnails;
+            if (first && first.thumbnail) {
+                return <img src={first.thumbnail} height="100%" style={{position: 'absolute', display: 'block',margin: '0 auto', marginRight: 'auto',marginLeft: 'auto'}}/>;
+            }
+        }
         return <img src="/image-not-found.png" height="100%" style={{position: 'absolute', display: 'block',margin: '0 auto', marginRight: 'auto',marginLeft: 'auto'}}/>;
     };
 

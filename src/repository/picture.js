@@ -164,6 +164,18 @@ export default class Picture extends Database {
                 ));
     }
 
+    static listThumbnailsByAlbum(album) {
+        if(!album) {
+            return rx.Observable.empty();
+        }
+        return Database
+            .streamQueryToRx(db.query({album}))
+            .flatMap(picture =>
+                Picture.getThumbnail(picture.id, album).map(thumbnail => ({thumbnail, ...picture}))
+            )
+            .filter(p => p.thumbnail);
+    }
+
     static deleteByAlbum(album) {
         console.log('Deleting pictures by album', album);
         return Picture.listByAlbum(album)
