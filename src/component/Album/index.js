@@ -104,7 +104,7 @@ class Album extends Component {
         } else {
             //this.props.loadAccountFail({message: 'no user'});
         }
-        this.viewer = new Viewer(document.getElementById("pictures"));
+        this.viewer = new Viewer(document.getElementById("pictures"), {rotatable: false, scalable:false, zoomable:false, tooltip:false});
     }
 
     componentWillUnmount() {
@@ -177,7 +177,7 @@ class Album extends Component {
             return (
                 <div key={picture.id}>
                     <a href="#" >
-                        <img src={picture.picture.file} height="200px"/>
+                        <img src={picture.picture.file} height="200px" alt={this.getTitle(picture)}/>
                     </a>
                 </div>
             );
