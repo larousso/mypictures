@@ -94,17 +94,16 @@ class Account extends Component {
         });
     }
 
+    componentWillUnmount() {
+        this.stopDisplayingAlbumResume();
+    }
+
     handleClose = () => {
         this.setState({open:false, album: null});
     };
 
-    repeatableArray() {
-
-    }
-
     displayAlbumResume = album => () => {
         let {params:{username}} = this.props;
-        let i = 0;
         let observable =
             rx.Observable.zip(
                 rx.Observable
@@ -117,7 +116,6 @@ class Account extends Component {
             .doWhile(_ => true)
             .subscribe(
                 thumbnail => {
-                    console.log('Next', i++);
                     this.setState({thumbnail})
                 },
                 err => {},
@@ -129,7 +127,8 @@ class Account extends Component {
         this.setState({observable, currentAlbumId: album.id, thumbnail:null});
     };
 
-    stopDisplayingAlbumResume = album => () => {
+    stopDisplayingAlbumResume = () => () => {
+        console.log('Stopping observable');
         if(this.state.observable) {
             this.state.observable.dispose();
             this.setState({thumbnail: null});
@@ -156,7 +155,7 @@ class Account extends Component {
             } else {
                 thumbnail = this.getThumbnail(album);
             }
-            return <img src={thumbnail} onMouseOver={this.displayAlbumResume(album)} onMouseOut={this.stopDisplayingAlbumResume(album)} height="100%" style={{position: 'absolute', display: 'block',margin: '0 auto', marginRight: 'auto',marginLeft: 'auto'}}/>;
+            return <img src={thumbnail} onClick={this.stopDisplayingAlbumResume(album)} onMouseOver={this.displayAlbumResume(album)} onMouseOut={this.stopDisplayingAlbumResume(album)} height="100%" style={{position: 'absolute', display: 'block',margin: '0 auto', marginRight: 'auto',marginLeft: 'auto'}}/>;
         }
         return <img src="/image-not-found.png" height="100%" style={{position: 'absolute', display: 'block',margin: '0 auto', marginRight: 'auto',marginLeft: 'auto'}}/>;
     };

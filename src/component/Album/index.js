@@ -110,7 +110,13 @@ class Album extends Component {
         Promise.all(promises).then(() => {
             console.log('Loaded');
         });
-        this.viewer = new Viewer(document.getElementById("pictures"), {rotatable: false, scalable:false, zoomable:false, tooltip:false});
+    }
+
+    componentDidUpdate() {
+        let pictures = document. querySelectorAll('.picture');
+        if(!this.viewer && pictures.length > 0){
+            this.viewer = new Viewer(document.getElementById("pictures"), {rotatable: false, scalable:false, zoomable:false, tooltip:false});
+        }
     }
 
     componentWillUnmount() {
@@ -182,8 +188,8 @@ class Album extends Component {
         } else if(picture.picture && picture.picture.file) {
             return (
                 <div key={picture.id}>
-                    <a href="#" >
-                        <img src={picture.picture.file} height="200px" alt={this.getTitle(picture)}/>
+                    <a>
+                        <img src={picture.picture.file} className="picture" height="200px" alt={this.getTitle(picture)}/>
                     </a>
                 </div>
             );
