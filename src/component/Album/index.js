@@ -81,29 +81,35 @@ class Album extends Component {
     };
 
     componentDidMount() {
-        let { params: { albumId, username }, account: { loaded } } = this.props;
-        if(username && !loaded) {
+        let { params: { albumId, username }, account, album, pictures} = this.props;
+        let promises = [];
+        if(username && !account.loaded) {
             this.props.loadingAccount();
-            Http.get(`/api/accounts/${username}`)
-                .then(
+            promises.push(
+                Http.get(`/api/accounts/${username}`).then(
                     user => this.props.loadAccount(user),
                     err => this.props.loadAccountFail(err))
-                .then(_ => {
-                    this.props.loadingAlbum();
-                    return Http.get(`/api/accounts/${username}/albums/${albumId}`)
-                })
-                .then(
+            );
+        }
+        if(username && albumId) {
+            this.props.loadingAlbum();
+            promises.push(
+                Http.get(`/api/accounts/${username}/albums/${albumId}`).then(
                     albums => this.props.loadAlbum(albums),
                     err => this.props.loadAlbumFail(err))
-                .then(_ => {
-                    this.props.loadingPictures();
-                    return Http.get(`/api/accounts/${username}/albums/${albumId}/pictures`)})
-                .then(
-                    pictures => this.props.loadPictures(pictures),
-                    err => this.props.loadPicturesFail(err));
-        } else {
-            //this.props.loadAccountFail({message: 'no user'});
+            );
         }
+        if(username && albumId) {
+            this.props.loadingPictures();
+            promises.push(
+                Http.get(`/api/accounts/${username}/albums/${albumId}/pictures`).then(
+                        pictures => this.props.loadPictures(pictures),
+                        err => this.props.loadPicturesFail(err))
+            );
+        }
+        Promise.all(promises).then(() => {
+            console.log('Loaded');
+        });
         this.viewer = new Viewer(document.getElementById("pictures"), {rotatable: false, scalable:false, zoomable:false, tooltip:false});
     }
 

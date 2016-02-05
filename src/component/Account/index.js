@@ -8,6 +8,7 @@ import FontIcon                         from 'material-ui/lib/font-icon';
 import IconButton                       from 'material-ui/lib/icon-button';
 import Colors                           from 'material-ui/lib/styles/colors'
 import CreateAlbum                      from './createAlbum';
+import rx                               from 'rx';
 import Http                             from '../http'
 import Habilitations                    from '../Habiliations'
 import Roles                            from '../../authentication/roles';
@@ -69,39 +70,93 @@ class Account extends Component {
     };
 
     componentDidMount() {
-        let {params:{username}, account: {loaded}} = this.props;
-        console.log('Username', username, loaded);
-        if(username && !loaded) {
+        let {params:{username}, account, albums} = this.props;
+        let promises = [];
+        if(username && !account.loaded) {
             this.props.loadingAccount();
-            Http.get(`/api/accounts/${username}`)
+            promises.push(Http.get(`/api/accounts/${username}`)
                 .then(
                     user => this.props.loadAccount(user),
                     err => this.props.loadAccountFail(err)
-                )
-                .then(_ => {
-                    this.props.loadingAlbums();
-                    return Http.get(`/api/accounts/${username}/albums`)
-                })
-                .then(
+                ));
+        }
+        if(username && (!albums || !albums.loaded)) {
+            this.props.loadingAlbums();
+            promises.push(
+                Http.get(`/api/accounts/${username}/albums`).then(
                     albums => this.props.loadAlbums(albums),
                     err => this.props.loadAlbumsFail(err)
-                );
+                )
+            );
         }
-        //else {
-        //    this.props.loadAccountFail({message: 'no user'});
-        //}
+        Promise.all(promises).then(() => {
+           console.log('Loaded');
+        });
     }
 
     handleClose = () => {
         this.setState({open:false, album: null});
     };
 
-    getImage = (album) => {
-        if(album && album.thumbnails) {
+    repeatableArray() {
+
+    }
+
+    displayAlbumResume = album => () => {
+        let {params:{username}} = this.props;
+        let i = 0;
+        let observable =
+            rx.Observable.zip(
+                rx.Observable
+                    .fromPromise(Http.get(`/api/accounts/${username}/albums/${album.id}/thumbnails`))
+                    .flatMap(resp => rx.Observable.fromArray(resp))
+                    .map(p => p.thumbnail),
+                rx.Observable.timer(0, 700),
+                (t, i) => t
+            )
+            .doWhile(_ => true)
+            .subscribe(
+                thumbnail => {
+                    console.log('Next', i++);
+                    this.setState({thumbnail})
+                },
+                err => {},
+                () => {
+                    this.setState({thumbnail: null});
+                }
+            );
+
+        this.setState({observable, currentAlbumId: album.id, thumbnail:null});
+    };
+
+    stopDisplayingAlbumResume = album => () => {
+        if(this.state.observable) {
+            this.state.observable.dispose();
+            this.setState({thumbnail: null});
+        }
+    };
+
+    getThumbnail = album => {
+        if (album) {
             let [first] = album.thumbnails;
             if (first && first.thumbnail) {
-                return <img src={first.thumbnail} height="100%" style={{position: 'absolute', display: 'block',margin: '0 auto', marginRight: 'auto',marginLeft: 'auto'}}/>;
+                return first.thumbnail;
+            } else {
+                return '/image-not-found.png';
             }
+        }
+        return '/image-not-found.png';
+    };
+
+    getImage = (album) => {
+        if(album && album.thumbnails) {
+            let thumbnail;
+            if(this.state.currentAlbumId && album.id == this.state.currentAlbumId) {
+                thumbnail = this.state.thumbnail || this.getThumbnail(album);
+            } else {
+                thumbnail = this.getThumbnail(album);
+            }
+            return <img src={thumbnail} onMouseOver={this.displayAlbumResume(album)} onMouseOut={this.stopDisplayingAlbumResume(album)} height="100%" style={{position: 'absolute', display: 'block',margin: '0 auto', marginRight: 'auto',marginLeft: 'auto'}}/>;
         }
         return <img src="/image-not-found.png" height="100%" style={{position: 'absolute', display: 'block',margin: '0 auto', marginRight: 'auto',marginLeft: 'auto'}}/>;
     };
