@@ -114,7 +114,10 @@ class Album extends Component {
 
     componentDidUpdate() {
         let pictures = document. querySelectorAll('.picture');
-        if(!this.viewer && pictures.length > 0){
+        if(pictures.length > 0){
+            if(this.viewer) {
+                this.viewer.destroy();
+            }
             this.viewer = new Viewer(document.getElementById("pictures"), {rotatable: false, scalable:false, zoomable:false, tooltip:false});
         }
     }
