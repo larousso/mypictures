@@ -90,7 +90,6 @@ class Account extends Component {
             );
         }
         Promise.all(promises).then(() => {
-           console.log('Loaded');
         });
     }
 
@@ -128,7 +127,6 @@ class Account extends Component {
     };
 
     stopDisplayingAlbumResume = () => () => {
-        console.log('Stopping observable');
         if(this.state.observable) {
             this.state.observable.dispose();
             this.setState({thumbnail: null});
@@ -196,7 +194,7 @@ class Account extends Component {
                 <div className="row">
                     <div className="col-xs-3"></div>
                     <div className="col-xs-6">
-                        <Habilitations account={user} auth={this.props.user} role={Roles.ADMIN}>
+                        <Habilitations account={user} role={Roles.ADMIN}>
                             <FlatButton label="Créer un album" onClick={this.createAlbum} />
                         </Habilitations>
                     </div>
@@ -209,14 +207,14 @@ class Account extends Component {
                             {albums.map(album => (
                                 <GridTile key={album.id}
                                           title={album.title}
-                                          actionIcon={<div>
+                                          actionIcon={<Habilitations account={user} role={Roles.ADMIN}>
                                             <IconButton tooltip="Edit" onClick={this.editAlbum(album.id)}>
                                                 <FontIcon className="icon icon-pencil" color={Colors.white} />
                                             </IconButton>
                                             <IconButton tooltip="Delete" onClick={this.deleteAlbum(album.id)}>
                                                 <FontIcon className="icon icon-bin" color={Colors.white} />
                                             </IconButton>
-                                          </div>}
+                                          </Habilitations>}
                                 >
                                     <Link to={`/account/${username}/${album.id}`}>{this.getImage(album)}</Link>
                                 </GridTile>

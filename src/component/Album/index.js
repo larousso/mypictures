@@ -12,6 +12,8 @@ import IconButton                       from 'material-ui/lib/icon-button';
 import Colors                           from 'material-ui/lib/styles/colors'
 import FontIcon                         from 'material-ui/lib/font-icon';
 import UpdatePicture                    from './UpdatePicture'
+import Habilitations                    from '../Habiliations'
+import Roles                            from '../../authentication/roles';
 import {loadingAlbum, loadAlbumFail, loadAlbum}      from '../../reducer/album'
 import {loadingAccount, loadAccountFail, loadAccount}   from '../../reducer/account'
 import {addRawPicture, updateRawPicture, pictureCreated, pictureCreationError, loadingPictures, loadPictures, loadPicturesFail, deletePicture}   from '../../reducer/pictures'
@@ -108,7 +110,6 @@ class Album extends Component {
             );
         }
         Promise.all(promises).then(() => {
-            console.log('Loaded');
         });
     }
 
@@ -118,7 +119,7 @@ class Album extends Component {
             if(this.viewer) {
                 this.viewer.destroy();
             }
-            this.viewer = new Viewer(document.getElementById("pictures"), {rotatable: false, scalable:false, zoomable:false, tooltip:false});
+            this.viewer = new Viewer(document.getElementById("pictures"), {rotatable: false, scalable:false, zoomable:false, tooltip:false, transition:false});
         }
     }
 
@@ -154,7 +155,6 @@ class Album extends Component {
                     var data = new FormData();
                     data.append('file', blob);
                     data.append('type', file.type);
-                    console.log('Type', file.type);
                     data.append('filename', file.name);
                     return rx.Observable.fromPromise(Http.postData(`/api/accounts/${username}/albums/${albumId}/pictures/${id}`, data));
                 })
@@ -192,7 +192,7 @@ class Album extends Component {
             return (
                 <div key={picture.id}>
                     <a>
-                        <img src={picture.picture.file} className="picture" height="200px" alt={this.getTitle(picture)}/>
+                        <img style={{cursor:'pointer'}} src={picture.picture.file} className="picture" height="200px" alt={this.getTitle(picture)}/>
                     </a>
                 </div>
             );
@@ -213,7 +213,6 @@ class Album extends Component {
     };
 
     editPicture = id => () => {
-        console.log('Edit picture', id);
         if (id && this.props.pictures.pictures && this.props.pictures.pictures[id]) {
             let picture = this.props.pictures.pictures[id].picture;
             this.setState({picture, open: true});
@@ -237,7 +236,7 @@ class Album extends Component {
 
 
     render() {
-        let { params:{username}, album: { album: { title } }} = this.props;
+        let { params:{username}, album: { album: { title } }, account:{user} } = this.props;
         return (
             <div>
                 <UpdatePicture
@@ -252,9 +251,11 @@ class Album extends Component {
                     </div>
                 </div>
                 <div className="row center-xs">
-                    <div className="col-xs-12">
-                        <input type="file" multiple="true" onChange={this.onFilesChange} />
-                    </div>
+                    <Habilitations account={user} role={Roles.ADMIN}>
+                        <div className="col-xs-12">
+                            <input type="file" multiple="true" onChange={this.onFilesChange} />
+                        </div>
+                    </Habilitations>
                 </div>
                 <div className="row center-xs">
                     <div className="col-xs-12">
@@ -262,14 +263,14 @@ class Album extends Component {
                             {this.getPictures().map( (picture, index) =>
                                 <GridTile key={picture.id || index}
                                           title={this.getTitle(picture)}
-                                          actionIcon={<div>
+                                          actionIcon={<Habilitations account={user} role={Roles.ADMIN}>
                                             <IconButton tooltip="Edit" onClick={this.editPicture(picture.id)}>
                                                 <FontIcon className="icon icon-pencil" color={Colors.white} />
                                             </IconButton>
                                             <IconButton tooltip="Delete" onClick={this.deletePicture(picture.id)}>
                                                 <FontIcon className="icon icon-bin" color={Colors.white} />
                                             </IconButton>
-                                          </div>}
+                                          </Habilitations>}
                                 >
                                     {this.getImage(picture, index)}
                                 </GridTile>
@@ -284,6 +285,7 @@ class Album extends Component {
 
 export default connect(
     state => ({
+        user: state.auth.user,
         routing: state.routing,
         account: state.account,
         album: state.album,

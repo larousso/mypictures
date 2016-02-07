@@ -7,44 +7,9 @@ import multer                                   from 'multer'
 import lwip                                     from 'lwip'
 import Jimp                                     from 'jimp'
 import fs                                       from 'fs'
-import rx                                   from 'rx'
-
+import rx                                       from 'rx'
+import HttpUtils                                from './HttpUtils'
 const upload = multer({ dest: 'uploads/' });
-
-const HttpUtils = {
-    hasRole: (role) => (req, res, next) => {
-        if(req.isAuthenticated()) {
-            if(req.user.role === role) {
-                next();
-            } else {
-                console.log('Unauthorized');
-                res.send('Unauthorized').status(401).end();
-            }
-        } else {
-            console.log('Forbidden');
-            res.send('Forbidden').status(403).end();
-        }
-    },
-    isAuthenticated: (req, res, next) => {
-        if(req.isAuthenticated()) {
-            next();
-        } else {
-            console.log('Forbidden', req.session);
-            res.json({message:'Forbidden'}).status(403).end();
-        }
-    },
-
-    handleErrors: (err, res) => {
-        console.log('Errors', err.errors);
-        if(err.type === 'business') {
-            res.status(400).json(err.errors).end();
-        } else {
-            res.status(500).json(err.errors).end();
-        }
-
-    }
-};
-
 
 export default () => {
     const app = express();
@@ -62,7 +27,7 @@ export default () => {
         });
 
     app.get('/albums',
-        HttpUtils.hasRole(Roles.ADMIN),
+        HttpUtils.isAuthenticated,
         (req, res) => {
             Album.listAll()
                 .toArray()
@@ -75,7 +40,7 @@ export default () => {
         });
 
     app.get('/accounts/:username/albums',
-        HttpUtils.hasRole(Roles.ADMIN),
+        HttpUtils.isAuthenticated,
         (req, res) => {
             Album
                 .listByUsername(req.params.username)
@@ -138,7 +103,7 @@ export default () => {
 
 
     app.get('/accounts/:username/albums/:id',
-        HttpUtils.hasRole(Roles.ADMIN),
+        HttpUtils.isAuthenticated,
         (req, res) => {
             Album
                 .get(req.params.id)
@@ -152,7 +117,7 @@ export default () => {
         });
 
     app.get('/accounts/:username/albums/:albumId/pictures',
-        HttpUtils.hasRole(Roles.ADMIN),
+        HttpUtils.isAuthenticated,
         upload.array(),
         (req, res) => {
             Picture.listByAlbum(req.params.albumId).toArray().subscribe(
@@ -164,7 +129,7 @@ export default () => {
         });
 
     app.get('/accounts/:username/albums/:albumId/thumbnails',
-        HttpUtils.hasRole(Roles.ADMIN),
+        HttpUtils.isAuthenticated,
         upload.array(),
         (req, res) => {
             Picture.listThumbnailsByAlbum(req.params.albumId).toArray().subscribe(
@@ -231,7 +196,7 @@ export default () => {
     }
 
     app.get('/accounts/:username/albums/:albumId/pictures/:id',
-        HttpUtils.hasRole(Roles.ADMIN),
+        HttpUtils.isAuthenticated,
         (req, res) => {
             Picture.get(req.params.id)
                 .subscribe(
