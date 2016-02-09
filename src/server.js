@@ -11,6 +11,7 @@ import handleRequest                            from './handleRequest'
 import Roles                                    from './authentication/roles'
 import api                                      from './routes/api'
 import cookieSession                            from 'cookie-session'
+import httpConfig                               from './httpConfig'
 
 const app = express();
 
@@ -70,7 +71,7 @@ app.use('/api', api());
 app.use(handleRequest);
 
 
-var server = app.listen(9000, function () {
+var server = app.listen(httpConfig.port, function () {
     var host = server.address().address;
     var port = server.address().port;
 

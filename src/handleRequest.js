@@ -12,7 +12,7 @@ export default (req, res) => {
     const store = configureStore({});
     //console.log(req.cookies);
     const user = req.user;
-    console.log("session", req.sessionID, req.session);
+    //console.log("session", req.sessionID, req.session);
 
     if(req.isAuthenticated()) {
         store.dispatch(loadUser(user));
@@ -24,7 +24,6 @@ export default (req, res) => {
 
 const handleRequest = (req, res, store) => {
     const routes = getRoutes(store);
-    console.log("Url", req.originalUrl);
     match(
         { routes, location: req.originalUrl },
         (error, redirectLocation, renderProps) => {
@@ -47,7 +46,6 @@ const handleRequest = (req, res, store) => {
                             <RoutingContext {...renderProps} />
                         </Provider>
                     );
-                    console.log('Generating html', renderProps.location);
                     const html = renderToString(<Html component={component} store={store}/>);
                     const response = `<!doctype html>\n${html}`;
                     res

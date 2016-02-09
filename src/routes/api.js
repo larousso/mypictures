@@ -4,7 +4,6 @@ import Album                                    from '../repository/album'
 import Picture                                  from '../repository/picture'
 import Roles                                    from '../authentication/roles'
 import multer                                   from 'multer'
-import lwip                                     from 'lwip'
 import Jimp                                     from 'jimp'
 import fs                                       from 'fs'
 import rx                                       from 'rx'
@@ -139,21 +138,6 @@ export default () => {
                 }
             );
         });
-
-
-    app.post('/accounts/:username/albums/:albumId/pictures',
-        HttpUtils.hasRole(Roles.ADMIN),
-        upload.array(),
-        (req, res) => {
-            req.files.map(file => {
-                Jimp.read()
-                lwip
-                    .open(file)
-                    .scale()
-            });
-
-        });
-
 
     app.post('/accounts/:username/albums/:albumId/pictures/:id',
         HttpUtils.hasRole(Roles.ADMIN),

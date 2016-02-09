@@ -11,8 +11,13 @@ import Unauthorized         from '../component/Unauthorized'
 import Forbidden            from '../component/Forbidden'
 
 export default  (store) => {
+    const isAuthenticated = () => (nextState, replaceState) => {
+        const { auth: { user }} = store.getState();
+        return user;
+    };
     const hasRole = role => (nextState, replaceState) => {
         const { auth: { user }} = store.getState();
+        console.log(role);
         if (!user) {
             replaceState(null, '/unauthorized');
         } else if (user.role !== role) {
@@ -25,8 +30,8 @@ export default  (store) => {
             { /* Home (main) route */ }
             <IndexRoute component={Home}/>
             { /* Catch all route */ }
-            <Route onEnter={hasRole(Roles.GUEST)} path="account/:username" component={Account}/>
-            <Route onEnter={hasRole(Roles.GUEST)} path="account/:username/:albumId" component={Album}/>
+            <Route onEnter={isAuthenticated()} path="account/:username" component={Account}/>
+            <Route onEnter={isAuthenticated()} path="account/:username/:albumId" component={Album}/>
             <Route path="login" component={Login}/>
             <Route path="unauthorized" component={Unauthorized}/>
             <Route path="forbidden" component={Forbidden}/>

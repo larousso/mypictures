@@ -6,7 +6,6 @@ import Divider                              from 'material-ui/lib/divider';
 import TextField                            from 'material-ui/lib/text-field';
 import FlatButton                           from 'material-ui/lib/flat-button';
 import {loadUser}                           from '../../reducer/auth'
-import ReactGridLayout                      from 'react-grid-layout';
 
 class Login extends Component {
     static propTypes = {
