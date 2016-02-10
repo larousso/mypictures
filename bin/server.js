@@ -2,6 +2,7 @@
 require('../server.babel'); // babel registration (runtime transpilation for node)
 var path = require('path');
 var rootDir = path.resolve(__dirname, '..');
+
 /**
  * Define isomorphic constants.
  */
@@ -10,6 +11,8 @@ global.__SERVER__ = true;
 global.__DISABLE_SSR__ = false;  // <----- DISABLES SERVER SIDE RENDERING FOR ERROR DEBUGGING
 global.__DEVELOPMENT__ = process.env.NODE_ENV !== 'production';
 global.__DBLOCATION__ = process.env.DBLOCATION || 'tmp';
+global.__LOGPATH__ = process.env.LOGPATH || 'logs';
+global.__IMAGESPATH__ = process.env.IMAGESPATH || '/Users/adelegue/tmpPictures';
 
 console.log("Database location", global.__DBLOCATION__);
 

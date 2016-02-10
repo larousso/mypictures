@@ -8,7 +8,7 @@ const db = dbInstance('picture');
 db.ensureIndex('album');
 
 function basePath() {
-    return '/Users/adelegue/tmpPictures';
+    return __IMAGESPATH__;
 }
 function buildAlbumPath(albumId) {
     return `${basePath()}/${albumId}`;

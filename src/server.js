@@ -12,8 +12,20 @@ import Roles                                    from './authentication/roles'
 import api                                      from './routes/api'
 import cookieSession                            from 'cookie-session'
 import httpConfig                               from './httpConfig'
+import expressWinston                           from 'express-winston'
+import {winston, transportsAccessLog}                    from './logger'
 
 const app = express();
+
+app.use(expressWinston.logger({
+    transports: [
+        new (winston.transports.File)({ filename: `${__LOGPATH__}/access.log` })
+    ],
+    meta: true, // optional: control whether you want to log the meta data about the request (default to true)
+    msg: "HTTP {{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}}", // optional: customize the default logging message. E.g. "{{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}}"
+    expressFormat: true, // Use the default Express/morgan request formatting, with the same colors. Enabling this will override any msg and colorStatus if true. Will only output colors on transports with colorize set to true
+    colorStatus: true, // Color the status code, using the Express/morgan color palette (default green, 3XX cyan, 4XX yellow, 5XX red). Will not be recognized if expressFormat is true
+}));
 
 app.use(cookieSession({
     name: 'session',

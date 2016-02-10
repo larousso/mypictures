@@ -6,7 +6,7 @@
   "version": "0.1.0",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/larousso/mypictures"
   },
   "homepage": "",
   "keywords": [
@@ -38,6 +38,7 @@
         "NODE_PATH": "./src",
         "NODE_ENV": "production",
         "DBLOCATION": "/data",
+        "IMAGESPATH": "/pictures",
         "PORT": 8080
       }
     },
@@ -65,6 +66,7 @@
     "debug": "^2.2.0",
     "express": "^4.13.3",
     "express-session": "^1.12.1",
+    "express-winston": "^1.2.0",
     "history": "^1.13.1",
     "isomorphic-fetch": "^2.2.0",
     "jimp": "^0.2.21",
@@ -103,7 +105,8 @@
     "serve-favicon": "^2.3.0",
     "viewerjs": "^0.3.0",
     "webpack-isomorphic-tools": "^2.2.18",
-    "whatwg-fetch": "^0.10.1"
+    "whatwg-fetch": "^0.10.1",
+    "winston": "^2.1.1"
   },
   "devDependencies": {
     "autoprefixer-loader": "^3.1.0",
