@@ -13,13 +13,34 @@ import api                                      from './routes/api'
 import cookieSession                            from 'cookie-session'
 import httpConfig                               from './httpConfig'
 import expressWinston                           from 'express-winston'
-import {winston, transportsAccessLog}                    from './logger'
+import {winston, transportsAccessLog}           from './logger'
+import rx                                       from 'rx'
+import config                                   from './config'
+import User                                     from './repository/user'
+import DailyRotateFile                          from 'winston-daily-rotate-file'
+
+winston.info('__DEVELOPMENT__', __DEVELOPMENT__);
+winston.info('__DBLOCATION__', __DBLOCATION__);
+winston.info('__LOGPATH__', __LOGPATH__);
+winston.info('__IMAGESPATH__', __IMAGESPATH__);
+
+
+if(config.users) {
+    rx.Observable
+        .from(config.users)
+        .flatMap(u => new User(u).save())
+        .toArray()
+        .subscribe(
+            ok => winston.info("Loading users to database done", ok),
+            ko => winston.info("Error while loading users to database", ko)
+        );
+}
 
 const app = express();
 
 app.use(expressWinston.logger({
     transports: [
-        new (winston.transports.File)({ filename: `${__LOGPATH__}/access.log` })
+        new (DailyRotateFile)({ filename: `${__LOGPATH__}/access.log` })
     ],
     meta: true, // optional: control whether you want to log the meta data about the request (default to true)
     msg: "HTTP {{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}}", // optional: customize the default logging message. E.g. "{{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}}"

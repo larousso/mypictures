@@ -57,8 +57,3 @@ export default class User extends Database {
 
     }
 }
-
-rx.Observable.zip(
-    new User({id:'adelegue', username: 'adelegue', name: 'Delègue', surname:'Alexandre', password: 'alex', role: Roles.ADMIN}).save(),
-    new User({id:'invite', username: 'invite', name: 'invite', surname:'invite', password: 'invite', role: Roles.GUEST}).save()
-).subscribe(ok => console.log("ok", ok), ko => console.log("ko", ko));

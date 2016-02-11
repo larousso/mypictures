@@ -1,12 +1,14 @@
 import winston from 'winston';
+import DailyRotateFile from 'winston-daily-rotate-file'
 
 const logger = new (winston.Logger);
+
 let transports;
 if(__SERVER__) {
     if(__DEVELOPMENT__) {
         transports = [
             new (winston.transports.Console)(),
-            new (winston.transports.File)({ filename: `${__LOGPATH__}/application.log` })
+            new (DailyRotateFile)({ filename: `${__LOGPATH__}/application.log` })
         ];
         logger.configure({
             level: 'debug',
@@ -14,7 +16,7 @@ if(__SERVER__) {
         });
     } else {
         transports = [
-            new (winston.transports.File)({ filename: `${__LOGPATH__}/application.log` })
+            new (DailyRotateFile)({ filename: `${__LOGPATH__}/application.log` })
         ];
         logger.configure({
             level: 'info',

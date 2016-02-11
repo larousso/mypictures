@@ -106,7 +106,8 @@
     "viewerjs": "^0.3.0",
     "webpack-isomorphic-tools": "^2.2.18",
     "whatwg-fetch": "^0.10.1",
-    "winston": "^2.1.1"
+    "winston": "^2.1.1",
+    "winston-daily-rotate-file": "^1.0.1"
   },
   "devDependencies": {
     "autoprefixer-loader": "^3.1.0",
