@@ -13,16 +13,16 @@ import api                                      from './routes/api'
 import cookieSession                            from 'cookie-session'
 import httpConfig                               from './httpConfig'
 import expressWinston                           from 'express-winston'
-import {winston, transportsAccessLog}           from './logger'
+import logger                                   from './logger'
 import rx                                       from 'rx'
 import config                                   from './config'
 import User                                     from './repository/user'
 import DailyRotateFile                          from 'winston-daily-rotate-file'
 
-winston.info('__DEVELOPMENT__', __DEVELOPMENT__);
-winston.info('__DBLOCATION__', __DBLOCATION__);
-winston.info('__LOGPATH__', __LOGPATH__);
-winston.info('__IMAGESPATH__', __IMAGESPATH__);
+logger.info('__DEVELOPMENT__', __DEVELOPMENT__);
+logger.info('__DBLOCATION__', __DBLOCATION__);
+logger.info('__LOGPATH__', __LOGPATH__);
+logger.info('__IMAGESPATH__', __IMAGESPATH__);
 
 
 if(config.users) {
@@ -31,8 +31,8 @@ if(config.users) {
         .flatMap(u => new User(u).save())
         .toArray()
         .subscribe(
-            ok => winston.info("Loading users to database done", ok),
-            ko => winston.info("Error while loading users to database", ko)
+            ok => logger.info("Loading users to database done", ok),
+            ko => logger.info("Error while loading users to database", ko)
         );
 }
 

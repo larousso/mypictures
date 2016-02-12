@@ -3,37 +3,23 @@ import DailyRotateFile from 'winston-daily-rotate-file'
 
 const logger = new (winston.Logger);
 
-let transports;
 if(__SERVER__) {
+    logger.add(DailyRotateFile, { filename: `${__LOGPATH__}/application.log` });
     if(__DEVELOPMENT__) {
-        transports = [
-            new (winston.transports.Console)(),
-            new (DailyRotateFile)({ filename: `${__LOGPATH__}/application.log` })
-        ];
-        logger.configure({
-            level: 'debug',
-            transports: transports
-        });
+        winston.level = 'debug';
+        logger.add(winston.transports.Console);
     } else {
-        transports = [
-            new (DailyRotateFile)({ filename: `${__LOGPATH__}/application.log` })
-        ];
-        logger.configure({
-            level: 'info',
-            transports: transports
-        });
+        winston.level = 'info';
     }
 } else {
-    transports = [
-        new (winston.transports.Console)()
-    ];
-    logger.configure({
-        level: 'info',
-        transports: transports
-    });
+    logger.add(winston.transports.Console);
+    if(__DEVELOPMENT__) {
+        winston.level = 'debug';
+    } else {
+        winston.level = 'info';
+    }
 }
 export {
-    transports,
     winston
 }
 export default logger;
