@@ -1,2 +1,2 @@
-0 0 * * * root sh /etc/bin/logcleaning.sh
+0 1 * * * root sh /etc/bin/logcleaning.sh
 

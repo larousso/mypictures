@@ -2,49 +2,24 @@ import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux'
 
 
-function makeASandwich(forPerson, secretSauce) {
-    return {
-        type: 'MAKE_SANDWICH',
-        forPerson,
-        secretSauce
-    };
-}
-
-class Home extends Component {
-    static propTypes = {
-    };
-
-    static preRender = (store) => {
-
-        return store.dispatch(dispatch => {
-            return Promise.resolve()
-            .then(
-                any => dispatch(makeASandwich('ME', 'ketchup')),
-                err => dispatch(makeASandwich('OUPS', 'mayo'))
-            ).then(any => {
-                return any;
-            });
-        });
-    };
-
-    greeting = () => {
-        if(this.props.user) return `Hello ${this.props.user.name}`
-    };
-
-    render() {
-        return (
-            <div>
-                Home
-                <br/>
-                {this.greeting()}
+export default (props) => {
+    return (
+        <div>
+            <div className="row center-xs">
+                <div className="col-xs-12">
+                    <h1>Welcome</h1>
+                </div>
             </div>
-        )
-    }
-}
+            <div className="row center-xs">
+                <div className="col-xs-2">
+                </div>
+                <div className="col-xs-8">
+                    <img src="/loutre.jpg" width="100%"/>
+                </div>
+                <div className="col-xs-2">
+                </div>
+            </div>
 
-export default connect(
-    state => ({
-        //sandwiches: state.sandwiches,
-        user: state.auth.user
-    })
-)(Home);
+        </div>
+    )
+}
