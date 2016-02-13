@@ -17,7 +17,6 @@ export default  (store) => {
     };
     const hasRole = role => (nextState, replaceState) => {
         const { auth: { user }} = store.getState();
-        console.log(role);
         if (!user) {
             replaceState(null, '/unauthorized');
         } else if (user.role !== role) {

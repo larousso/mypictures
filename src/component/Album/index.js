@@ -53,7 +53,6 @@ class Album extends Component {
             import Picture  from '../../repository/picture';
 
             let { params: { username, albumId } } = renderProps;
-            console.log("Loading album", username, albumId);
             if (username) {
                 return store.dispatch(dispatch =>
                     User.findByName(username).map(rep => rep.data).toPromise()
@@ -73,10 +72,9 @@ class Album extends Component {
                             pictures => dispatch(loadPictures(pictures)),
                             err => dispatch(loadPicturesFail(err)))
                         .then(_ => {
-                            console.log("Loading album finished");
+
                         }));
             } else {
-                console.log("No user !!!");
                 return Promise.resolve(loadAccountFail({message: 'no user'}));
             }
         }
@@ -209,7 +207,7 @@ class Album extends Component {
         Http.delete(`/api/accounts/${username}/albums/${albumId}/pictures/${id}`)
             .then(
                 _ => this.props.deletePicture(id),
-                err => console.log("Err", err));
+                err => {});
     };
 
     editPicture = id => () => {
@@ -264,10 +262,10 @@ class Album extends Component {
                                 <GridTile key={picture.id || index}
                                           title={this.getTitle(picture)}
                                           actionIcon={<Habilitations account={user} role={Roles.ADMIN}>
-                                            <IconButton tooltip="Edit" onClick={this.editPicture(picture.id)}>
+                                            <IconButton tooltip="Edit" onClick={this.editPicture(picture.id)} onTouchStart={this.editPicture(picture.id)}>
                                                 <FontIcon className="icon icon-pencil" color={Colors.white} />
                                             </IconButton>
-                                            <IconButton tooltip="Delete" onClick={this.deletePicture(picture.id)}>
+                                            <IconButton tooltip="Delete" onClick={this.deletePicture(picture.id)} onTouchStart={this.deletePicture(picture.id)}>
                                                 <FontIcon className="icon icon-bin" color={Colors.white} />
                                             </IconButton>
                                           </Habilitations>}

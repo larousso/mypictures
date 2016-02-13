@@ -26,14 +26,12 @@ const validate = (obj, schema) => {
         let validation = validator.validate(obj, schema, {propertyName: 'obj'});
 
         if(!validation.valid) {
-            console.log('has errors', validation);
             let messages = validation.errors.reduce((acc, elt) => {
                 let {property, message} = elt;
                 if(!acc[property]) acc[property] = [];
                 acc[property].push({property, message}, ...acc[property]);
                 return acc;
             }, {});
-            console.log('has errors', messages);
             return messages;
         }
     }

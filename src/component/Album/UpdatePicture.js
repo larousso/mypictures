@@ -42,23 +42,19 @@ class UpdatePicture extends Component {
         let { picture: { id, album} } = this.props;
         let url = `/api/accounts/${this.props.username}/albums/${album}/pictures/${id}`;
         let oldPicture = Object.assign({}, this.props.picture);
-        console.log('Old', oldPicture, this.props.picture);
         delete oldPicture['file'];
         let newPicture = Object.assign({}, oldPicture, {title, description});
-        console.log('Updating picture', newPicture);
         Http.put(url, newPicture)
             .then(
                 rep => {
-                    console.log("Json", rep);
                     this.props.addPicture(rep);
                     this.props.handleClose();
                 },
-                err => console.log("Err", err)
+                err => {}
             );
     };
 
     render() {
-        console.log('Open', this.props.open);
         return (
             <div>
                 <Dialog
@@ -83,8 +79,8 @@ class UpdatePicture extends Component {
                                onChange={this.setDescription}
                     />
                     <br/>
-                    <FlatButton label="Enregistrer" primary={true} onClick={this.savePicture} />
-                    <FlatButton label="Annuler" onClick={this.props.handleClose} />
+                    <FlatButton label="Enregistrer" primary={true} onClick={this.savePicture} onTouchStart={this.savePicture}/>
+                    <FlatButton label="Annuler" onClick={this.props.handleClose} onTouchStart={this.props.handleClose}/>
                 </Dialog>
 
             </div>

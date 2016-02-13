@@ -78,7 +78,6 @@ app.use(function(req, res, next) {
 });
 
 app.get('/auth/facebook', (req, res, next) => {
-    console.log("Facebook", req.query);
     req.session.redirect = req.query.redirect;
     next();
 }, passport.authenticate('facebook'));
@@ -86,7 +85,6 @@ app.get('/auth/facebook', (req, res, next) => {
 app.get('/auth/facebook/callback',
     passport.authenticate('facebook', { failureRedirect: '/unauthorized' }),
     function(req, res) {
-        console.log("Facebook redirect", req.query);
         res.redirect(req.session.redirect || "/");
         delete req.session.redirect;
     }
@@ -108,6 +106,6 @@ var server = app.listen(httpConfig.port, function () {
     var host = server.address().address;
     var port = server.address().port;
 
-    console.log('Example app listening at http://%s:%s', host, port);
+    console.log('App app listening at http://%s:%s', host, port);
 });
 

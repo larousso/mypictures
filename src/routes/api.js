@@ -8,6 +8,8 @@ import Jimp                                     from 'jimp'
 import fs                                       from 'fs'
 import rx                                       from 'rx'
 import HttpUtils                                from './HttpUtils'
+import logger                                   from '../logger'
+
 const upload = multer({ dest: 'uploads/' });
 
 export default () => {
@@ -16,7 +18,6 @@ export default () => {
     app.get('/accounts/:username',
         HttpUtils.isAuthenticated,
         (req, res) => {
-            console.log("Loading account for username", req.params.username)
             User.findByName(req.params.username)
                 .map(user => user.data)
                 .subscribe(
@@ -143,7 +144,6 @@ export default () => {
         HttpUtils.hasRole(Roles.ADMIN),
         upload.single('file'),
         (req, res) => {
-            console.log('Saving picture', req.file.path, req.body.filename);
             rx.Observable.fromNodeCallback(fs.readFile)(req.file.path)
                 .map(file => new Buffer(file, 'base64'))
                 .flatMap(buffer => Picture.compressAndSave(req.params.id, req.params.albumId, req.body.filename, req.body.type, buffer))
@@ -175,7 +175,7 @@ export default () => {
     function deleteFile(file) {
         fs.unlink(file, (err) => {
             if(err)
-                console.log(`Error removing ${req.file.path}`, err);
+                logger.log('error', `Error removing ${req.file.path}`, err);
         });
     }
 

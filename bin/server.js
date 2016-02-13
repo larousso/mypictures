@@ -14,8 +14,6 @@ global.__DBLOCATION__ = process.env.DBLOCATION || 'tmp';
 global.__LOGPATH__ = process.env.LOGPATH || 'logs';
 global.__IMAGESPATH__ = process.env.IMAGESPATH || '/Users/adelegue/tmpPictures';
 
-console.log("Database location", global.__DBLOCATION__);
-
 if (__DEVELOPMENT__) {
   if (!require('piping')({
       hook: true,

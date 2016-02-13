@@ -195,7 +195,7 @@ class Account extends Component {
                     <div className="col-xs-3"></div>
                     <div className="col-xs-6">
                         <Habilitations account={user} role={Roles.ADMIN}>
-                            <FlatButton label="Créer un album" onClick={this.createAlbum} />
+                            <FlatButton label="Créer un album" onClick={this.createAlbum} onTouchStart={this.createAlbum}/>
                         </Habilitations>
                     </div>
                     <div className="col-xs-3"></div>
@@ -208,10 +208,10 @@ class Account extends Component {
                                 <GridTile key={album.id}
                                           title={album.title}
                                           actionIcon={<Habilitations account={user} role={Roles.ADMIN}>
-                                            <IconButton tooltip="Edit" onClick={this.editAlbum(album.id)}>
+                                            <IconButton tooltip="Edit" onClick={this.editAlbum(album.id)} onTouchStart={this.editAlbum(album.id)}>
                                                 <FontIcon className="icon icon-pencil" color={Colors.white} />
                                             </IconButton>
-                                            <IconButton tooltip="Delete" onClick={this.deleteAlbum(album.id)}>
+                                            <IconButton tooltip="Delete" onClick={this.deleteAlbum(album.id)} onTouchStart={this.deleteAlbum(album.id)}>
                                                 <FontIcon className="icon icon-bin" color={Colors.white} />
                                             </IconButton>
                                           </Habilitations>}

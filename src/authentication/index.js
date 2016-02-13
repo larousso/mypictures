@@ -16,7 +16,6 @@ export default () => {
     });
 
     passport.use(new LocalStrategy((username, password, done) => {
-            console.log("Login", username, password);
             User.findByName(username).subscribe(
                 user => {
                     if (!user) {
@@ -25,7 +24,6 @@ export default () => {
                     if (!user.validPassword(password)) {
                         return done(null, false, { message: 'Incorrect password.' });
                     }
-                    console.log("Login user", user.data);
                     return done(null, user.data);
                 },
                 err => {

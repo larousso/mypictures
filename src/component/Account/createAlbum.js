@@ -56,11 +56,10 @@ class CreateAlbum extends Component {
             response
                 .then(
                     rep => {
-                        console.log("Json", rep);
                         this.props.addAlbum(rep);
                         this.props.handleClose();
                     },
-                    err => console.log("Err", err)
+                    err => {}
                 );
         }
     };
@@ -90,8 +89,8 @@ class CreateAlbum extends Component {
                                onChange={this.setDescription}
                     />
                     <br/>
-                    <FlatButton label="Enregistrer" primary={true} onClick={this.saveAlbum} />
-                    <FlatButton label="Annuler" onClick={this.props.handleClose} />
+                    <FlatButton label="Enregistrer" primary={true} onClick={this.saveAlbum} onTouchStart={this.saveAlbum}/>
+                    <FlatButton label="Annuler" onClick={this.props.handleClose} onTouchStart={this.props.handleClose}/>
                 </Dialog>
 
             </div>

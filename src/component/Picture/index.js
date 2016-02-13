@@ -29,7 +29,6 @@ class PictureIterable {
     currentPicture() {
         if(this.index < this.length) {
             const key = this.keys[this.index];
-            console.log('Key', key, this.object[key]);
             return this.object[key];
         }
     }
@@ -69,7 +68,6 @@ function initialState(props) {
         const iterable = new PictureIterable(props.pictures, props.params.pictureId);
         const currentPicture = iterable.currentPicture() || {};
         const picture = currentPicture.picture || {};
-        console.log('Current picture', picture);
         return {iterable, picture};
     }
 }
@@ -82,7 +80,6 @@ class Picture extends Component {
 
     constructor(args) {
         super(args);
-        console.log(args);
         this.state = initialState(args);
     }
 
@@ -93,7 +90,6 @@ class Picture extends Component {
             import Picture  from '../../repository/picture';
 
             let { params: { username, albumId } } = renderProps;
-            console.log("Loading album", username, albumId);
             if (username) {
                 return store.dispatch(dispatch =>
                     User.findByName(username).map(rep => rep.data).toPromise()
@@ -113,10 +109,8 @@ class Picture extends Component {
                             pictures => dispatch(loadPictures(pictures)),
                             err => dispatch(loadPicturesFail(err)))
                         .then(_ => {
-                            console.log("Loading album finished");
                         }));
             } else {
-                console.log("No user !!!");
                 return Promise.resolve(loadAccountFail({message: 'no user'}));
             }
         }
@@ -124,7 +118,6 @@ class Picture extends Component {
 
 
     componentWillReceiveProps(nextProps) {
-        console.log(nextProps);
         const state = initialState(nextProps);
         if(state) {
             this.setState(state);
@@ -135,13 +128,11 @@ class Picture extends Component {
         if (!this.state.picture) {
             const currentPicture = this.state.iterable.currentPicture() || {};
             const picture = currentPicture.picture || {};
-            console.log('Current picture', picture);
             this.setState({picture})
         }
     }
 
     render() {
-        console.log('Open', this.props.open);
         let { params:{pictureId, username, albumId}} = this.props;
 
         //{/* autoDetectWindowHeight={true} autoScrollBodyContent={false} , contentStyle={{width: "100%", maxWidth: "none"}}*/}
@@ -172,7 +163,7 @@ class Picture extends Component {
         return (
                 <div className="row center-xs" style={{background: Colors.darkBlack, maxWidth:"100%", maxHeight:"100%"}}>
                     <div className="col-xs-12">
-                        <IconButton tooltip="Fermer" style={{position: 'absolute', top: '0px',right: '0px'}} onClick={this.props.handleClose} >
+                        <IconButton tooltip="Fermer" style={{position: 'absolute', top: '0px',right: '0px'}} onClick={this.props.handleClose} onTouchStart={this.props.handleClose}>
                             <FontIcon className="icon icon-cancel-circle" color={Colors.grey50} />
                         </IconButton>
                         <div className="row center-xs">

@@ -3,6 +3,7 @@ import rx                           from 'rx'
 import Jimp                         from 'jimp'
 import fs                           from 'fs'
 import mkdirp                       from 'mkdirp'
+import logger                       from '../logger'
 
 const db = dbInstance('picture');
 db.ensureIndex('album');
@@ -73,7 +74,7 @@ export default class Picture extends Database {
     }
 
     static compressAndSave(id, album, filename, type, file) {
-        console.log(`Picture.compressAndSave id:${id}, album:${album}, filename:${filename}, type:${type}`);
+        logger.log('info', `Picture.compressAndSave id:${id}, album:${album}, filename:${filename}, type:${type}`);
 
         return rx.Observable.zip(
                 Picture.createMainPicture(id, album, file, type),
@@ -95,21 +96,17 @@ export default class Picture extends Database {
     static createMainPicture(id, album, file, type) {
         let albumPath = buildAlbumPath(album);
         let picturePath = buildPicturePath(id, album);
-        console.log('Creating main picture', picturePath);
         return rx.Observable
             .fromPromise(Jimp.read(file))
             .map(image => {
                 let scale = calcScale(image);
                 if(scale < 1) {
-                    console.log('Scaling image to ', scale);
                     return image.scale(scale);
                 } else {
-                    console.log('Not scaling image');
                     return image;
                 }
             })
             .flatMap(image => {
-                console.log('Converting image to buffer', type, id);
                 switch (type) {
                     case Jimp.MIME_JPEG: return toBuffer(image.quality(60), Jimp.MIME_JPEG);
                     case Jimp.MIME_PNG: return toBuffer(image, Jimp.MIME_PNG);
@@ -123,12 +120,10 @@ export default class Picture extends Database {
     static createThumbnail(id, album, file, type) {
         let thumbnailPath = buildThumbnailPath(id, album);
         let folder = buildThumbnailFolderPath(album);
-        console.log('Creating thumbnail', thumbnailPath);
         return rx.Observable
             .fromPromise(Jimp.read(file))
             .map(image => image.scale(scaleThumbnail(image)))
             .flatMap(image => {
-                console.log('Converting thumbnail to buffer', type, id);
                 switch (type) {
                     case Jimp.MIME_JPEG: return toBuffer(image.quality(50), Jimp.MIME_JPEG);
                     case Jimp.MIME_PNG: return toBuffer(image, Jimp.MIME_PNG);
@@ -140,8 +135,6 @@ export default class Picture extends Database {
     }
 
     static createPicture(picturePath, albumPath, buffer) {
-        console.log('3', picturePath);
-
         let data = `data:${Jimp.MIME_JPEG};base64, ${buffer.toString('base64')}`;
         return createFolder(albumPath)
             .flatMap(_ => rx.Observable.fromCallback(fs.writeFile)(picturePath, data, 'utf-8'));
@@ -177,7 +170,6 @@ export default class Picture extends Database {
     }
 
     static deleteByAlbum(album) {
-        console.log('Deleting pictures by album', album);
         return Picture.listByAlbum(album)
             .flatMap(p => Picture.delete(p.id))
             .flatMap(p => rx.Observable.fromCallback(fs.rmdir)(buildAlbumPath(album)));
@@ -192,7 +184,6 @@ export default class Picture extends Database {
     static deletePicture(id, albumId) {
         let path = buildPicturePath(id, albumId);
         let thumbnail = buildThumbnailPath(id, albumId);
-        console.log(`Deleting picture ${path}`);
         return rx.Observable.zip(
             rx.Observable.fromCallback(fs.unlink)(path),
             rx.Observable.fromCallback(fs.unlink)(thumbnail),
@@ -202,7 +193,6 @@ export default class Picture extends Database {
 }
 
 function createFolder(folder) {
-    console.log(`Creating ${folder} if not exists`);
     return rx.Observable.fromCallback(fs.stat)(folder).flatMap(stats => {
         if(stats.isDirectory()) {
             return rx.Observable.just({folder});
@@ -210,7 +200,6 @@ function createFolder(folder) {
             return rx.Observable.throw(`${folder} is not a directory`);
         }
     }).catch(_ => {
-        console.log(`Directory ${folder} doesn\'t exists, creating directory`);
         return rx.Observable
             .fromCallback(mkdirp)(folder).map(_ => ({folder}));
     });
