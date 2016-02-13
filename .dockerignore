@@ -1,1 +1,7 @@
 node_modules
+.idea
+tmp
+uploads
+logs
+data
+pictures

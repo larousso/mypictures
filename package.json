@@ -25,6 +25,7 @@
   "main": "bin/server.js",
   "scripts": {
     "start": "concurrent --kill-others \"npm run build\" \"npm run start-prod\"",
+    "start-test": "better-npm-run start-test",
     "start-prod": "better-npm-run start-prod",
     "build": "webpack --verbose --colors --display-error-details --config webpack.config.prod.js",
     "postinstall": "webpack --display-error-details --config webpack.config.prod.js",
@@ -37,8 +38,19 @@
       "env": {
         "NODE_PATH": "./src",
         "NODE_ENV": "production",
-        "DBLOCATION": "/data",
-        "IMAGESPATH": "/pictures",
+        "DBLOCATION": "data",
+        "IMAGESPATH": "pictures",
+        "LOGPATH": "logs",
+        "PORT": 8080
+      }
+    },
+    "start-test": {
+      "command": "node ./bin/server.js",
+      "env": {
+        "NODE_PATH": "./src",
+        "NODE_ENV": "production",
+        "DBLOCATION": "/Users/adelegue/Documents/idea/mypictures/tmp",
+        "IMAGESPATH": "/Users/adelegue/Documents/idea/mypictures/tmp",
         "PORT": 8080
       }
     },

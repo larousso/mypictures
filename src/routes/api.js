@@ -175,7 +175,7 @@ export default () => {
     function deleteFile(file) {
         fs.unlink(file, (err) => {
             if(err)
-                logger.log('error', `Error removing ${req.file.path}`, err);
+                logger.error(`Error removing ${req.file.path}`, err);
         });
     }
 

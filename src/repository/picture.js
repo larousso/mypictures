@@ -74,7 +74,7 @@ export default class Picture extends Database {
     }
 
     static compressAndSave(id, album, filename, type, file) {
-        logger.log('info', `Picture.compressAndSave id:${id}, album:${album}, filename:${filename}, type:${type}`);
+        logger.info(`Picture.compressAndSave id:${id}, album:${album}, filename:${filename}, type:${type}`);
 
         return rx.Observable.zip(
                 Picture.createMainPicture(id, album, file, type),

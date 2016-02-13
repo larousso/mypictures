@@ -13,7 +13,7 @@ import api                                      from './routes/api'
 import cookieSession                            from 'cookie-session'
 import httpConfig                               from './httpConfig'
 import expressWinston                           from 'express-winston'
-import logger                                   from './logger'
+import logger, {winston}                        from './logger'
 import rx                                       from 'rx'
 import config                                   from './config'
 import User                                     from './repository/user'
@@ -24,6 +24,19 @@ logger.info('__DBLOCATION__', __DBLOCATION__);
 logger.info('__LOGPATH__', __LOGPATH__);
 logger.info('__IMAGESPATH__', __IMAGESPATH__);
 
+const app = express();
+
+app.use(expressWinston.logger({
+    transports: [
+        //new (winston.transports.Console)()
+        new (DailyRotateFile)({ filename: `${__LOGPATH__}/access.log` })
+        //new (winston.transports.File)({ filename: `${__LOGPATH__}/access.log` })
+    ],
+    meta: true, // optional: control whether you want to log the meta data about the request (default to true)
+    msg: "HTTP {{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}}", // optional: customize the default logging message. E.g. "{{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}}"
+    expressFormat: true, // Use the default Express/morgan request formatting, with the same colors. Enabling this will override any msg and colorStatus if true. Will only output colors on transports with colorize set to true
+    colorStatus: true // Color the status code, using the Express/morgan color palette (default green, 3XX cyan, 4XX yellow, 5XX red). Will not be recognized if expressFormat is true
+}));
 
 if(config.users) {
     rx.Observable
@@ -36,26 +49,11 @@ if(config.users) {
         );
 }
 
-const app = express();
-
-app.use(expressWinston.logger({
-    transports: [
-        new (DailyRotateFile)({ filename: `${__LOGPATH__}/access.log` })
-    ],
-    meta: true, // optional: control whether you want to log the meta data about the request (default to true)
-    msg: "HTTP {{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}}", // optional: customize the default logging message. E.g. "{{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}}"
-    expressFormat: true, // Use the default Express/morgan request formatting, with the same colors. Enabling this will override any msg and colorStatus if true. Will only output colors on transports with colorize set to true
-    colorStatus: true, // Color the status code, using the Express/morgan color palette (default green, 3XX cyan, 4XX yellow, 5XX red). Will not be recognized if expressFormat is true
-}));
-
 app.use(cookieSession({
     name: 'session',
     keys: ['key1', 'key2']
 }));
-
-//app.use(morgan('combined'));
 app.use(bodyParser.json({limit: '50mb'}));
-//app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
 app.use(methodOverride());
 app.use(session({
     secret: 'mypicturessecret',

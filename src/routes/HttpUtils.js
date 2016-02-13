@@ -21,7 +21,7 @@ export default {
     },
 
     handleErrors: (err, res) => {
-        logger.log('error', 'Errors', err.errors);
+        logger.error('Errors', err.errors);
         if(err.type === 'business') {
             res.status(400).json(err.errors).end();
         } else {

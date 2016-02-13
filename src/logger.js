@@ -5,11 +5,13 @@ const logger = new (winston.Logger);
 
 if(__SERVER__) {
     logger.add(DailyRotateFile, { filename: `${__LOGPATH__}/application.log` });
+    //logger.add(winston.transports.File, { filename: `${__LOGPATH__}/application.log` });
     if(__DEVELOPMENT__) {
         winston.level = 'debug';
         logger.add(winston.transports.Console);
     } else {
         winston.level = 'info';
+        //logger.add(winston.transports.Console);
     }
 } else {
     logger.add(winston.transports.Console);
