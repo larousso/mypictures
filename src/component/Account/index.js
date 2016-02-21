@@ -1,13 +1,13 @@
 import React, { Component, PropTypes }  from 'react';
 import { connect }                      from 'react-redux';
 import {Link }                          from 'react-router';
+import { replacePath }                 from 'redux-simple-router'
 import FlatButton                       from 'material-ui/lib/flat-button';
 import GridList                         from 'material-ui/lib/grid-list/grid-list';
 import GridTile                         from 'material-ui/lib/grid-list/grid-tile';
 import FontIcon                         from 'material-ui/lib/font-icon';
 import IconButton                       from 'material-ui/lib/icon-button';
 import Colors                           from 'material-ui/lib/styles/colors'
-import CreateAlbum                      from './createAlbum';
 import rx                               from 'rx';
 import Http                             from '../http'
 import Habilitations                    from '../Habiliations'
@@ -72,6 +72,7 @@ class Account extends Component {
     componentDidMount() {
         let {params:{username}, account, albums} = this.props;
         let promises = [];
+        console.log('Component did mount');
         if(username && !account.loaded) {
             this.props.loadingAccount();
             promises.push(Http.get(`/api/accounts/${username}`)
@@ -83,10 +84,14 @@ class Account extends Component {
         if(username && (!albums || !albums.loaded)) {
             this.props.loadingAlbums();
             promises.push(
-                Http.get(`/api/accounts/${username}/albums`).then(
-                    albums => this.props.loadAlbums(albums),
-                    err => this.props.loadAlbumsFail(err)
-                )
+                Http.get(`/api/accounts/${username}/albums`)
+                    //.then(albums =>
+                    //    Promise.all(albums.map(album => Http.get(`/api/accounts/${username}/albums/${album.id}`).then(thumbnails => ({thumbnails,...album}))))
+                    //)
+                    .then(
+                        albums => this.props.loadAlbums(albums),
+                        err => this.props.loadAlbumsFail(err)
+                    )
             );
         }
         Promise.all(promises).then(() => {
@@ -167,7 +172,7 @@ class Account extends Component {
     };
 
     createAlbum = () => {
-        this.setState({open: true});
+        this.props.changeRoute(`/account/${this.props.params.username}/createAlbum`);
     };
 
     editAlbum = (id) => () => {
@@ -180,12 +185,6 @@ class Account extends Component {
         let {params:{username}, albums:{albums}, account:{user}} = this.props;
         return (
             <div>
-                <CreateAlbum
-                    username={username}
-                    open={this.state.open}
-                    album={this.state.album}
-                    handleClose={this.handleClose}
-                />
                 <div className="row center-xs">
                     <div className="col-xs-12">
                         <h1>Mes albums</h1>
@@ -208,10 +207,10 @@ class Account extends Component {
                                 <GridTile key={album.id}
                                           title={album.title}
                                           actionIcon={<Habilitations account={user} role={Roles.ADMIN}>
-                                            <IconButton tooltip="Edit" onClick={this.editAlbum(album.id)} onTouchStart={this.editAlbum(album.id)}>
+                                            <Link to={`/account/${username}/EditAlbum/${album.id}`}>
                                                 <FontIcon className="icon icon-pencil" color={Colors.white} />
-                                            </IconButton>
-                                            <IconButton tooltip="Delete" onClick={this.deleteAlbum(album.id)} onTouchStart={this.deleteAlbum(album.id)}>
+                                            </Link>
+                                            <IconButton tooltip="Delete" onTouchStart={this.deleteAlbum(album.id)}>
                                                 <FontIcon className="icon icon-bin" color={Colors.white} />
                                             </IconButton>
                                           </Habilitations>}
@@ -236,6 +235,9 @@ export default connect(
         albums: state.albums,
     }),
     dispatch => ({
+        changeRoute: (route) => {
+            dispatch(replacePath(route))
+        },
         loadAccount: (user) => {
             dispatch(loadAccount(user))
         },

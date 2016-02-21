@@ -4,6 +4,7 @@ import Roles                from '../authentication/roles'
 import App                  from '../component/App'
 import Home                 from '../component/Home'
 import Account              from '../component/Account'
+import EditAlbum            from '../component/Account/EditAlbum'
 import Album                from '../component/Album'
 import Login                from '../component/Login'
 import NotFound             from '../component/NotFound'
@@ -30,6 +31,8 @@ export default  (store) => {
             <IndexRoute component={Home}/>
             { /* Catch all route */ }
             <Route onEnter={isAuthenticated()} path="account/:username" component={Account}/>
+            <Route onEnter={isAuthenticated()} path="account/:username/createAlbum" component={EditAlbum}/>
+            <Route onEnter={isAuthenticated()} path="account/:username/editAlbum/:albumId" component={EditAlbum}/>
             <Route onEnter={isAuthenticated()} path="account/:username/:albumId" component={Album}/>
             <Route path="login" component={Login}/>
             <Route path="unauthorized" component={Unauthorized}/>

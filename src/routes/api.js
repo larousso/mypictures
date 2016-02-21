@@ -80,6 +80,7 @@ export default () => {
         (req, res) => {
             new Album(req.body)
                 .save(req.params.id)
+                .flatMap(album => Picture.listThumbnailsByAlbum(album.id).toArray().map(thumbnails => ({thumbnails,...album})))
                 .subscribe(
                     album => res.json(album).end(),
                     err => {

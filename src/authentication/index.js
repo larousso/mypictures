@@ -4,6 +4,7 @@ import {Strategy as FacebookStrategy}           from 'passport-facebook'
 import {User}                                   from '../repository'
 import config                                   from '../config'
 import Roles                                    from './roles'
+import logger                                   from '../logger'
 
 export default () => {
 
@@ -16,6 +17,7 @@ export default () => {
     });
 
     passport.use(new LocalStrategy((username, password, done) => {
+            logger.info('Logging', username, password)
             User.findByName(username).subscribe(
                 user => {
                     if (!user) {
