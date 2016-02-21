@@ -129,11 +129,11 @@ class EditAlbum extends Component {
     render() {
         return (
 
-            <div className="row center-xs">
+            <div className="row">
                 <div className="col-xs-12">
                     <div className="box">
 
-                        <div className="row center-xs">
+                        <div className="row">
                             <div className="col-xs">
                                 <div className="box">
                                     <AppBar
@@ -144,20 +144,21 @@ class EditAlbum extends Component {
                                 </div>
                             </div>
                         </div>
-                        <div className="row center-xs">
-                            <div className="col-xs-12 col-lg-6">
+                        <div className="row">
+                            <div className="col-xs-12  col-lg-6 col-lg-offset-3">
                                 <div className="box">
                                     <TextField hintText="Titre"
                                                value={this.state.title}
                                                floatingLabelText="Titre"
-                                               fullWidth={true} onChange={this.setTitle}
+                                               fullWidth={true}
+                                               onChange={this.setTitle}
                                                errorText={this.state.titreError}
                                     />
                                 </div>
                             </div>
                         </div>
-                        <div className="row center-xs">
-                            <div className="col-xs-12 col-lg-6">
+                        <div className="row">
+                            <div className="col-xs-12 col-lg-6 col-lg-offset-3">
                                 <div className="box">
                                     <br/>
                                     <TextField hintText="Description"
