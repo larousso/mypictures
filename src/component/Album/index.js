@@ -410,7 +410,7 @@ class Album extends Component {
                         </div>
                         <div className="row top-xs" id="pictures">
                             {this.getPictures().map((picture, index) =>
-                                (<div key={picture.id} className="col-xs-12 col-md-6 col-lg-4">
+                                (<div key={picture.id} className="col-xs-6 col-md-6 col-lg-4">
                                     <div className="box">
                                         {this.getImage(picture, index)}
                                     </div>

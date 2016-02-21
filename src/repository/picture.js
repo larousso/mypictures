@@ -170,9 +170,15 @@ export default class Picture extends Database {
     }
 
     static deleteByAlbum(album) {
-        return Picture.listByAlbum(album)
-            .flatMap(p => Picture.delete(p.id))
-            .flatMap(p => rx.Observable.fromCallback(fs.rmdir)(buildAlbumPath(album)));
+        return Picture.listByAlbum(album).count().flatMap(count => {
+            if(count > 0) {
+                return Picture.listByAlbum(album)
+                    .flatMap(p => Picture.delete(p.id))
+                    .flatMap(p => rx.Observable.fromCallback(fs.rmdir)(buildAlbumPath(album)));
+            } else {
+                return rx.Observable.just({});
+            }
+        });
     }
 
     static delete(id) {
