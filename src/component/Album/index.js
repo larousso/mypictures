@@ -11,15 +11,18 @@ import CircularProgress                 from 'material-ui/lib/circular-progress'
 import IconButton                       from 'material-ui/lib/icon-button';
 import Colors                           from 'material-ui/lib/styles/colors'
 import FontIcon                         from 'material-ui/lib/font-icon';
-import UpdatePicture                    from './UpdatePicture'
+import ArrowBack                        from 'material-ui/lib/svg-icons/navigation/chevron-left';
+import AppBar                           from 'material-ui/lib/app-bar';
+import Paper                            from 'material-ui/lib/paper';
+import TextField                        from 'material-ui/lib/text-field';
+import FlatButton                       from 'material-ui/lib/flat-button';
 import Habilitations                    from '../Habiliations'
 import Roles                            from '../../authentication/roles';
 import {loadingAlbum, loadAlbumFail, loadAlbum}      from '../../reducer/album'
 import {loadingAccount, loadAccountFail, loadAccount}   from '../../reducer/account'
-import {addRawPicture, updateRawPicture, pictureCreated, pictureCreationError, loadingPictures, loadPictures, loadPicturesFail, deletePicture}   from '../../reducer/pictures'
+import {addRawPicture, addPicture, updateRawPicture, pictureCreated, pictureCreationError, loadingPictures, loadPictures, loadPicturesFail, deletePicture}   from '../../reducer/pictures'
 import uuid from 'node-uuid'
 import Viewer                           from 'viewerjs'
-
 
 class Album extends Component {
 
@@ -42,12 +45,13 @@ class Album extends Component {
             open: false,
             openPicture: false,
             lightboxIsOpen: false,
-            currentImage: 0
+            currentImage: 0,
+            edit: {}
         }
     }
 
     static preRender = (store, renderProps) => {
-        if(__SERVER__) {
+        if (__SERVER__) {
             import User     from '../../repository/user';
             import Album    from '../../repository/album';
             import Picture  from '../../repository/picture';
@@ -83,7 +87,7 @@ class Album extends Component {
     componentDidMount() {
         let { params: { albumId, username }, account, album, pictures} = this.props;
         let promises = [];
-        if(username && !account.loaded) {
+        if (username && !account.loaded) {
             this.props.loadingAccount();
             promises.push(
                 Http.get(`/api/accounts/${username}`).then(
@@ -91,7 +95,7 @@ class Album extends Component {
                     err => this.props.loadAccountFail(err))
             );
         }
-        if(username && albumId) {
+        if (username && albumId) {
             this.props.loadingAlbum();
             promises.push(
                 Http.get(`/api/accounts/${username}/albums/${albumId}`).then(
@@ -99,12 +103,12 @@ class Album extends Component {
                     err => this.props.loadAlbumFail(err))
             );
         }
-        if(username && albumId) {
+        if (username && albumId) {
             this.props.loadingPictures();
             promises.push(
                 Http.get(`/api/accounts/${username}/albums/${albumId}/pictures`).then(
-                        pictures => this.props.loadPictures(pictures),
-                        err => this.props.loadPicturesFail(err))
+                    pictures => this.props.loadPictures(pictures),
+                    err => this.props.loadPicturesFail(err))
             );
         }
         Promise.all(promises).then(() => {
@@ -112,17 +116,23 @@ class Album extends Component {
     }
 
     componentDidUpdate() {
-        let pictures = document. querySelectorAll('.picture');
-        if(pictures.length > 0){
-            if(this.viewer) {
+        let pictures = document.querySelectorAll('.picture');
+        if (pictures.length > 0) {
+            if (this.viewer) {
                 this.viewer.destroy();
             }
-            this.viewer = new Viewer(document.getElementById("pictures"), {rotatable: false, scalable:false, zoomable:false, tooltip:false, transition:false});
+            this.viewer = new Viewer(document.getElementById("pictures"), {
+                rotatable: false,
+                scalable: false,
+                zoomable: false,
+                tooltip: false,
+                transition: false
+            });
         }
     }
 
     componentWillUnmount() {
-        if(this.viewer) {
+        if (this.viewer) {
             this.viewer.destroy();
         }
     }
@@ -136,14 +146,14 @@ class Album extends Component {
         } else if (e.target) {
             files = e.target.files;
         }
-        if(files) {
+        if (files) {
             let { params: { albumId, username }} = this.props;
             filesToObservable(files)
-                .map(file => ({id:uuid.v1(), file}))
+                .map(file => ({id: uuid.v1(), file}))
                 .do(pair => {
                     this.props.addRawPicture(pair);
                 })
-                .flatMap(pair => resize(pair.file).map(url => ({...pair, src:url})))
+                .flatMap(pair => resize(pair.file).map(url => ({...pair, src: url})))
                 //.do(triplet => {
                 //    this.props.updateRawPicture(triplet);
                 //})
@@ -158,7 +168,7 @@ class Album extends Component {
                 })
                 .subscribe(
                     picture => {
-                        if(picture && picture.id) {
+                        if (picture && picture.id) {
                             this.props.pictureCreated(picture)
                         }
                     },
@@ -170,28 +180,159 @@ class Album extends Component {
         }
     };
 
+    closeEditMode = id => () => {
+        this.setState({edit:null,title:null,description:null});
+    };
+
+    editMode = id => event => {
+        this.setState({edit:id});
+    };
+    savePicture = picture => () => {
+        let { title, description } = this.state;
+        let { params: { albumId, username} } = this.props;
+        let url = `/api/accounts/${username}/albums/${albumId}/pictures/${picture.id}`;
+        let oldPicture = Object.assign({}, picture.picture);
+        delete oldPicture['file'];
+        let newPicture = Object.assign({}, oldPicture, {title, description});
+        Http.put(url, newPicture)
+            .then(
+                rep => {
+                    this.props.addPicture(rep);
+                    this.closeEditMode(picture.id)();
+                },
+                err => {}
+            );
+    };
+    setTitle = (value) => {
+        this.setState({
+            title: value.target.value
+        })
+    };
+    setDescription = (value) => {
+        this.setState({
+            description: value.target.value
+        })
+    };
+
+
     getImage = (picture, index) => {
-        if(picture.creating && !picture.created) {
-            if(picture.raw.src) {
+        let { account:{user} } = this.props;
+        if (picture.creating && !picture.created) {
+            if (picture.raw.src) {
                 return (
                     <div key={picture.id}>
                         <img src={picture.raw.src} height="200px"/>
-                        <CircularProgress mode="indeterminate" />
+                        <CircularProgress mode="indeterminate"/>
                     </div>
                 );
             } else {
-                return(
+                return (
                     <div>
-                        <CircularProgress mode="indeterminate" />
+                        <CircularProgress mode="indeterminate"/>
                     </div>
                 );
             }
-        } else if(picture.picture && picture.picture.file) {
+        } else if (this.state.edit == picture.id) {
             return (
-                <div key={picture.id}>
-                    <a>
-                        <img style={{cursor:'pointer'}} src={picture.picture.file} className="picture" height="200px" alt={this.getTitle(picture)}/>
-                    </a>
+                <div className="row center-xs" key={picture.id}>
+                    <div className="col-xs">
+                        <div className="box">
+                            <Paper>
+                                <div className="row">
+                                    <div className="col-xs">
+                                        <div className="box">
+                                            <a>
+                                                <img style={{cursor:'pointer'}} src={picture.picture.file}
+                                                     className="picture" width="100%" alt={this.getTitle(picture)}/>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="row middle-xs">
+                                    <div className="col-xs">
+                                        <div className="box" style={{textAlign: 'left'}}>
+                                            <TextField hintText="Titre"
+                                                       defaultValue={picture.picture.title}
+                                                       floatingLabelText="Titre"
+                                                       fullWidth={true} onChange={this.setTitle}
+                                                       errorText={this.state.titreError}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="row">
+                                    <div className="col-xs">
+                                        <div className="box" style={{textAlign: 'left'}}>
+                                            <TextField hintText="Description"
+                                                       floatingLabelText="Description"
+                                                       defaultValue={picture.picture.description}
+                                                       fullWidth={true}
+                                                       multiLine={true}
+                                                       rows={2}
+                                                       onChange={this.setDescription}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="row">
+                                    <div className="col-xs">
+                                        <div className="box" style={{textAlign: 'left'}}>
+                                            <FlatButton label="Enregistrer" primary={true} onClick={this.savePicture(picture)} />
+                                            <FlatButton label="Annuler" onClick={this.closeEditMode(picture.id)} />
+                                        </div>
+                                    </div>
+                                </div>
+                            </Paper>
+                        </div>
+                    </div>
+                </div>
+            );
+        } else if (picture.picture && picture.picture.file) {
+            return (
+                <div className="row center-xs" key={picture.id}>
+                    <div className="col-xs">
+                        <div className="box">
+                            <Paper>
+                                <div className="row">
+                                    <div className="col-xs">
+                                        <div className="box">
+                                            <a>
+                                                <img style={{cursor:'pointer'}} src={picture.picture.file}
+                                                     className="picture" width="100%" alt={this.getTitle(picture)}/>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="row middle-xs">
+                                    <div className="col-xs">
+                                        <div className="box" style={{textAlign: 'left'}}>
+                                            <b>{this.truncate(this.getTitle(picture))}</b>
+                                        </div>
+                                    </div>
+                                    <div className="col-xs">
+                                        <div className="box">
+                                            <Habilitations account={user} role={Roles.ADMIN}>
+                                                <IconButton tooltip="Edit" onClick={this.editMode(picture.id)}>
+                                                    <FontIcon className="icon icon-pencil" color={Colors.black}/>
+                                                </IconButton>
+                                                <IconButton tooltip="Delete" onClick={this.deletePicture(picture.id)}>
+                                                    <FontIcon className="icon icon-bin" color={Colors.black}/>
+                                                </IconButton>
+                                            </Habilitations>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <div className="row">
+                                    <div className="col-xs">
+                                        <div className="box" style={{textAlign: 'left'}}>
+                                            <p>{picture.picture.description}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Paper>
+                        </div>
+                    </div>
                 </div>
             );
         }
@@ -207,7 +348,8 @@ class Album extends Component {
         Http.delete(`/api/accounts/${username}/albums/${albumId}/pictures/${id}`)
             .then(
                 _ => this.props.deletePicture(id),
-                err => {});
+                err => {
+                });
     };
 
     editPicture = id => () => {
@@ -232,48 +374,49 @@ class Album extends Component {
         return 'Image';
     };
 
+    truncate = (text) => {
+        if (text.length > 20) {
+            return `${text.substring(0, 20)} ...`
+        } else {
+            return text;
+        }
+    };
 
     render() {
         let { params:{username}, album: { album: { title } }, account:{user} } = this.props;
         return (
-            <div>
-                <UpdatePicture
-                    username={username}
-                    open={this.state.open}
-                    picture={this.state.picture}
-                    handleClose={this.handleClose}
-                />
-                <div className="row center-xs">
-                    <div className="col-xs-12">
-                        <h1>{title}</h1>
-                    </div>
-                </div>
-                <div className="row center-xs">
-                    <Habilitations account={user} role={Roles.ADMIN}>
-                        <div className="col-xs-12">
-                            <input type="file" multiple="true" onChange={this.onFilesChange} />
+            <div className="row">
+                <div className="col-xs">
+                    <div className="box">
+                        <div className="row center-xs">
+                            <div className="col-xs-12">
+                                <div className="box">
+                                    <AppBar
+                                        title={<span>{title}</span>}
+                                        iconElementLeft={<IconButton onClick={() => this.props.changeRoute(`/account/${this.props.params.username}`)}><ArrowBack /></IconButton>}
+                                        iconElementRight={<IconButton></IconButton>}
+                                    />
+                                </div>
+                            </div>
                         </div>
-                    </Habilitations>
-                </div>
-                <div className="row center-xs">
-                    <div className="col-xs-12">
-                        <GridList id="pictures" cellHeight={200} cols={4} >
-                            {this.getPictures().map( (picture, index) =>
-                                <GridTile key={picture.id || index}
-                                          title={this.getTitle(picture)}
-                                          actionIcon={<Habilitations account={user} role={Roles.ADMIN}>
-                                            <IconButton tooltip="Edit" onClick={this.editPicture(picture.id)} onTouchStart={this.editPicture(picture.id)}>
-                                                <FontIcon className="icon icon-pencil" color={Colors.white} />
-                                            </IconButton>
-                                            <IconButton tooltip="Delete" onClick={this.deletePicture(picture.id)} onTouchStart={this.deletePicture(picture.id)}>
-                                                <FontIcon className="icon icon-bin" color={Colors.white} />
-                                            </IconButton>
-                                          </Habilitations>}
-                                >
-                                    {this.getImage(picture, index)}
-                                </GridTile>
+                        <div className="row center-xs">
+                            <Habilitations account={user} role={Roles.ADMIN}>
+                                <div className="box">
+                                    <div className="col-xs-12">
+                                        <input type="file" multiple="true" onChange={this.onFilesChange}/>
+                                    </div>
+                                </div>
+                            </Habilitations>
+                        </div>
+                        <div className="row top-xs" id="pictures">
+                            {this.getPictures().map((picture, index) =>
+                                (<div key={picture.id} className="col-xs-12 col-md-6 col-lg-4">
+                                    <div className="box">
+                                        {this.getImage(picture, index)}
+                                    </div>
+                                </div>)
                             )}
-                        </GridList>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -313,6 +456,9 @@ export default connect(
         },
         addRawPicture: (picture) => {
             dispatch(addRawPicture(picture))
+        },
+        addPicture: (picture) => {
+            dispatch(addPicture(picture))
         },
         updateRawPicture: (picture) => {
             dispatch(updateRawPicture(picture))
@@ -361,7 +507,7 @@ function dataURLToBlob(dataURL) {
     }
 }
 
-function resize(current_file, maxWidth=1024, maxHeight=1024) {
+function resize(current_file, maxWidth = 1024, maxHeight = 1024) {
     return rx.Observable.create(observer => {
         var reader = new FileReader();
         if (current_file.type.indexOf('image') == 0) {
@@ -369,7 +515,7 @@ function resize(current_file, maxWidth=1024, maxHeight=1024) {
                 var image = new Image();
                 image.src = event.target.result;
 
-                image.onload = function() {
+                image.onload = function () {
                     var imageWidth = image.width,
                         imageHeight = image.height;
 

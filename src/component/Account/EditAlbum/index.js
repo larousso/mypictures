@@ -10,10 +10,10 @@ import IconButton                       from 'material-ui/lib/icon-button';
 import Dialog                           from 'material-ui/lib/dialog';
 import TextField                        from 'material-ui/lib/text-field';
 import NavigationClose                  from 'material-ui/lib/svg-icons/navigation/close';
-import ArrowBack                  from 'material-ui/lib/svg-icons/navigation/chevron-left';
+import ArrowBack                        from 'material-ui/lib/svg-icons/navigation/chevron-left';
 import AppBar                           from 'material-ui/lib/app-bar';
 import Http                             from '../../http'
-import Paper from 'material-ui/lib/paper';
+
 
 
 class EditAlbum extends Component {
@@ -130,7 +130,7 @@ class EditAlbum extends Component {
         return (
 
             <div className="row center-xs">
-                <div className="col-lg-6 col-xs-12">
+                <div className="col-xs-12">
                     <div className="box">
 
                         <div className="row center-xs">
@@ -138,14 +138,14 @@ class EditAlbum extends Component {
                                 <div className="box">
                                     <AppBar
                                         title={<span>Edition</span>}
-                                        iconElementLeft={<IconButton onTouchTap={() => this.props.changeRoute(`/account/${this.props.params.username}`)}><ArrowBack /></IconButton>}
+                                        iconElementLeft={<IconButton onClick={() => this.props.changeRoute(`/account/${this.props.params.username}`)}><ArrowBack /></IconButton>}
                                         iconElementRight={<IconButton></IconButton>}
                                     />
                                 </div>
                             </div>
                         </div>
                         <div className="row center-xs">
-                            <div className="col-xs">
+                            <div className="col-xs-12 col-lg-6">
                                 <div className="box">
                                     <TextField hintText="Titre"
                                                value={this.state.title}
@@ -157,7 +157,7 @@ class EditAlbum extends Component {
                             </div>
                         </div>
                         <div className="row center-xs">
-                            <div className="col-xs">
+                            <div className="col-xs-12 col-lg-6">
                                 <div className="box">
                                     <br/>
                                     <TextField hintText="Description"
@@ -174,10 +174,9 @@ class EditAlbum extends Component {
                         <div className="row center-xs">
                             <div className="col-xs">
                                 <div className="box">
-                                    <FlatButton label="Enregistrer" primary={true} onClick={this.saveAlbum}
-                                                onTouchStart={this.saveAlbum}/>
-                                    <FlatButton label="Annuler" onClick={this.props.handleClose}
-                                                onTouchStart={this.props.handleClose}/>
+                                    <FlatButton label="Enregistrer" primary={true} onClick={this.saveAlbum} />
+                                    <FlatButton label="Annuler" onClick={() => this.props.changeRoute(`/account/${this.props.params.username}`)}
+                                                onTouchStart={() => this.props.changeRoute(`/account/${this.props.params.username}`)}/>
                                 </div>
                             </div>
                         </div>

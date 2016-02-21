@@ -197,8 +197,7 @@ class Account extends Component {
 
                     <div className="col-xs-12 col-lg-6">
                         <Habilitations account={user} role={Roles.ADMIN}>
-                            <FlatButton label="Créer un album" onClick={this.createAlbum}
-                                        onTouchStart={this.createAlbum}/>
+                            <FlatButton label="Créer un album" onClick={this.createAlbum} />
                         </Habilitations>
                     </div>
 
@@ -214,7 +213,7 @@ class Account extends Component {
                                             <Link to={`/account/${username}/EditAlbum/${album.id}`}>
                                                 <FontIcon className="icon icon-pencil" color={Colors.white} />
                                             </Link>
-                                            <IconButton tooltip="Delete" onTouchStart={this.deleteAlbum(album.id)}>
+                                            <IconButton tooltip="Delete" onClick={this.deleteAlbum(album.id)}>
                                                 <FontIcon className="icon icon-bin" color={Colors.white} />
                                             </IconButton>
                                           </Habilitations>}

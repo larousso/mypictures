@@ -65,7 +65,7 @@ class Login extends Component {
                 </div>
                 <div className="row center-xs">
                     <div className="col-xs-12">
-                        <FlatButton label="Se connecter" primary={true} onClick={this.login} onTouchStart={this.login}/>
+                        <FlatButton label="Se connecter" primary={true} onClick={this.login} />
                     </div>
                 </div>
             </div>
