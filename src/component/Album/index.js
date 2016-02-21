@@ -409,7 +409,7 @@ class Album extends Component {
                             </Habilitations>
                         </div>
                         <div className="row top-xs" id="pictures">
-                            {this.getPictures().map((picture, index) =>
+                            {this.getPictures().sort((p1, p2) => p1.id < p2.id).map((picture, index) =>
                                 (<div key={picture.id} className="col-xs-6 col-md-6 col-lg-4">
                                     <div className="box">
                                         {this.getImage(picture, index)}
