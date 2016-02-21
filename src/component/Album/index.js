@@ -289,7 +289,7 @@ class Album extends Component {
             );
         } else if (picture.picture && picture.picture.file) {
             return (
-                <div className="row center-xs" key={picture.id}>
+                <div className="row center-xs" key={picture.id} style={{marginTop:'10px'}}>
                     <div className="col-xs">
                         <div className="box">
                             <Paper>
@@ -306,11 +306,11 @@ class Album extends Component {
                                 <div className="row middle-xs">
                                     <div className="col-xs">
                                         <div className="box" style={{textAlign: 'left'}}>
-                                            <b>{this.truncate(this.getTitle(picture))}</b>
+                                            <span className="strong">{this.truncate(this.getTitle(picture))}</span>
                                         </div>
                                     </div>
                                     <div className="col-xs">
-                                        <div className="box">
+                                        <div className="box" style={{textAlign:'right'}}>
                                             <Habilitations account={user} role={Roles.ADMIN}>
                                                 <IconButton tooltip="Edit" onClick={this.editMode(picture.id)}>
                                                     <FontIcon className="icon icon-pencil" color={Colors.black}/>
@@ -323,10 +323,10 @@ class Album extends Component {
                                     </div>
 
                                 </div>
-                                <div className="row">
+                                <div className="row top-xs">
                                     <div className="col-xs">
                                         <div className="box" style={{textAlign: 'left'}}>
-                                            <p>{picture.picture.description}</p>
+                                            <span style={{fontSize:'100%'}} className="thin">{picture.picture.description}</span>
                                         </div>
                                     </div>
                                 </div>
