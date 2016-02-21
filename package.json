@@ -38,9 +38,9 @@
       "env": {
         "NODE_PATH": "./src",
         "NODE_ENV": "production",
-        "DBLOCATION": "data",
-        "IMAGESPATH": "pictures",
-        "LOGPATH": "logs",
+        "DBLOCATION": "/data/db",
+        "IMAGESPATH": "/data/pictures",
+        "LOGPATH": "/logs",
         "PORT": 8080
       }
     },
