@@ -3,11 +3,13 @@ import { connect }                      from 'react-redux';
 import {Link }                          from 'react-router';
 import { replacePath }                 from 'redux-simple-router'
 import FlatButton                       from 'material-ui/lib/flat-button';
+import RaisedButton                       from 'material-ui/lib/raised-button';
 import GridList                         from 'material-ui/lib/grid-list/grid-list';
 import GridTile                         from 'material-ui/lib/grid-list/grid-tile';
 import FontIcon                         from 'material-ui/lib/font-icon';
 import IconButton                       from 'material-ui/lib/icon-button';
 import Colors                           from 'material-ui/lib/styles/colors'
+import AddIcon                          from 'material-ui/lib/svg-icons/content/add'
 import rx                               from 'rx';
 import Http                             from '../http'
 import Habilitations                    from '../Habiliations'
@@ -71,28 +73,23 @@ class Account extends Component {
 
     componentDidMount() {
         let {params:{username}, account, albums} = this.props;
-        let promises = [];
-        console.log('Component did mount');
         if (username && !account.loaded) {
             this.props.loadingAccount();
-            promises.push(Http.get(`/api/accounts/${username}`)
+            Http.get(`/api/accounts/${username}`)
                 .then(
                     user => this.props.loadAccount(user),
                     err => this.props.loadAccountFail(err)
-                ));
+                );
         }
         if (username && (!albums || !albums.loaded)) {
+            console.log('Component did mount');
             this.props.loadingAlbums();
-            promises.push(
-                Http.get(`/api/accounts/${username}/albums`)
-                    .then(
-                        albums => this.props.loadAlbums(albums),
-                        err => this.props.loadAlbumsFail(err)
-                    )
-            );
+            Http.get(`/api/accounts/${username}/albums`)
+                .then(
+                    albums => this.props.loadAlbums(albums),
+                    err => this.props.loadAlbumsFail(err)
+                );
         }
-        Promise.all(promises).then(() => {
-        });
     }
 
     componentWillUnmount() {
@@ -119,8 +116,7 @@ class Account extends Component {
                     thumbnail => {
                         this.setState({thumbnail})
                     },
-                    err => {
-                    },
+                    err => {},
                     () => {
                         this.setState({thumbnail: null});
                     }
@@ -157,9 +153,9 @@ class Account extends Component {
                 thumbnail = this.getThumbnail(album);
             }
             return (
-                    <img src={thumbnail} onClick={this.stopDisplayingAlbumResume(album)}
-                            onMouseOver={this.displayAlbumResume(album)} onMouseOut={this.stopDisplayingAlbumResume(album)}
-                            height="100%" />
+                <img src={thumbnail} onClick={this.stopDisplayingAlbumResume(album)}
+                     onMouseOver={this.displayAlbumResume(album)} onMouseOut={this.stopDisplayingAlbumResume(album)}
+                     height="100%"/>
             );
         }
         return <img src="/image-not-found.png" height="100%"
@@ -178,52 +174,54 @@ class Account extends Component {
         this.props.changeRoute(`/account/${this.props.params.username}/createAlbum`);
     };
 
-    editAlbum = (id) => () => {
-        if (id) {
-            this.setState({album: this.props.albums.albums.find(album => album.id === id), open: true});
-        }
-    };
-
     render() {
         let {params:{username}, albums:{albums}, account:{user}} = this.props;
         return (
-            <div>
-                <div className="row center-xs">
-                    <div className="col-xs-12">
-                        <h1>Mes albums</h1>
-                    </div>
-                </div>
-                <div className="row center-xs">
-
-                    <div className="col-xs-12 col-lg-6">
+            <div className="row center-xs" style={{background:Colors.grey50}}>
+                <div className="col-xs-12 col-lg-8">
+                    <div className="box">
+                        <div className="row">
+                            <div className="col-xs">
+                                <div className="box">
+                                    <h1>Mes albums</h1>
+                                </div>
+                            </div>
+                        </div>
                         <Habilitations account={user} role={Roles.ADMIN}>
-                            <FlatButton label="Créer un album" onClick={this.createAlbum} />
+                            <div className="row">
+                                <div className="col-xs">
+                                    <div className="box">
+                                        <RaisedButton label="Créer un album" onClick={this.createAlbum}
+                                                      icon={<AddIcon />}/>
+                                    </div>
+                                </div>
+                            </div>
                         </Habilitations>
+                        <div className="row" style={{marginTop:'10px'}}>
+                            <div className="col-xs">
+                                <div className="box">
+                                    <GridList cellHeight={200} cols={4}>
+                                        {albums.map(album => (
+                                            <GridTile key={album.id}
+                                                      title={album.title}
+                                                      actionIcon={<Habilitations account={user} role={Roles.ADMIN}>
+                                                <Link to={`/account/${username}/EditAlbum/${album.id}`}>
+                                                    <FontIcon className="icon icon-pencil" color={Colors.white} />
+                                                </Link>
+                                                <IconButton tooltip="Delete" onClick={this.deleteAlbum(album.id)}>
+                                                    <FontIcon className="icon icon-bin" color={Colors.white} />
+                                                </IconButton>
+                                              </Habilitations>}
+                                            >
+                                                <Link
+                                                    to={`/account/${username}/${album.id}`}>{this.getImage(album)}</Link>
+                                            </GridTile>
+                                        ))}
+                                    </GridList>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-
-                </div>
-                <div className="row center-xs">
-
-                    <div className="col-xs-12 col-lg-8">
-                        <GridList cellHeight={200} cols={4}>
-                            {albums.map(album => (
-                                <GridTile key={album.id}
-                                          title={album.title}
-                                          actionIcon={<Habilitations account={user} role={Roles.ADMIN}>
-                                            <Link to={`/account/${username}/EditAlbum/${album.id}`}>
-                                                <FontIcon className="icon icon-pencil" color={Colors.white} />
-                                            </Link>
-                                            <IconButton tooltip="Delete" onClick={this.deleteAlbum(album.id)}>
-                                                <FontIcon className="icon icon-bin" color={Colors.white} />
-                                            </IconButton>
-                                          </Habilitations>}
-                                >
-                                    <Link to={`/account/${username}/${album.id}`}>{this.getImage(album)}</Link>
-                                </GridTile>
-                            ))}
-                        </GridList>
-                    </div>
-
                 </div>
             </div>
         )

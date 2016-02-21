@@ -161,12 +161,18 @@ export default class Picture extends Database {
         if(!album) {
             return rx.Observable.empty();
         }
-        return Database
-            .streamQueryToRx(db.query({album}))
-            .flatMap(picture =>
-                Picture.getThumbnail(picture.id, album).map(thumbnail => ({thumbnail, ...picture}))
-            )
-            .filter(p => p.thumbnail);
+        return Picture.listByAlbum(album).count().flatMap(count => {
+            if(count > 0) {
+                return Database
+                    .streamQueryToRx(db.query({album}))
+                    .flatMap(picture =>
+                        Picture.getThumbnail(picture.id, album).map(thumbnail => ({thumbnail, ...picture}))
+                    )
+                    .filter(p => p.thumbnail);
+            } else {
+                return rx.Observable.just({});
+            }
+        });
     }
 
     static deleteByAlbum(album) {

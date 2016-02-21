@@ -108,7 +108,7 @@ export default () => {
         (req, res) => {
             Album
                 .get(req.params.id)
-                .flatMap(album => Picture.listThumbnailsByAlbum(album.id).take(1).map(thumbnail => ({thumbnail,...album})))
+                .flatMap(album => Picture.listThumbnailsByAlbum(album.id).toArray().map(thumbnails => ({thumbnails,...album})))
                 .subscribe(
                     album => res.json(album).end(),
                     err => {

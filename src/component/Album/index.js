@@ -18,6 +18,7 @@ import TextField                        from 'material-ui/lib/text-field';
 import FlatButton                       from 'material-ui/lib/flat-button';
 import Habilitations                    from '../Habiliations'
 import Roles                            from '../../authentication/roles';
+import {addAlbum}                       from '../../reducer/albums'
 import {loadingAlbum, loadAlbumFail, loadAlbum}      from '../../reducer/album'
 import {loadingAccount, loadAccountFail, loadAccount}   from '../../reducer/account'
 import {addRawPicture, addPicture, updateRawPicture, pictureCreated, pictureCreationError, loadingPictures, loadPictures, loadPicturesFail, deletePicture}   from '../../reducer/pictures'
@@ -89,30 +90,24 @@ class Album extends Component {
         let promises = [];
         if (username && !account.loaded) {
             this.props.loadingAccount();
-            promises.push(
-                Http.get(`/api/accounts/${username}`).then(
-                    user => this.props.loadAccount(user),
-                    err => this.props.loadAccountFail(err))
-            );
+            Http.get(`/api/accounts/${username}`).then(
+                user => this.props.loadAccount(user),
+                err => this.props.loadAccountFail(err))
+
         }
         if (username && albumId) {
             this.props.loadingAlbum();
-            promises.push(
-                Http.get(`/api/accounts/${username}/albums/${albumId}`).then(
-                    albums => this.props.loadAlbum(albums),
-                    err => this.props.loadAlbumFail(err))
-            );
+            Http.get(`/api/accounts/${username}/albums/${albumId}`).then(
+                albums => this.props.loadAlbum(albums),
+                err => this.props.loadAlbumFail(err))
         }
         if (username && albumId) {
             this.props.loadingPictures();
-            promises.push(
-                Http.get(`/api/accounts/${username}/albums/${albumId}/pictures`).then(
-                    pictures => this.props.loadPictures(pictures),
-                    err => this.props.loadPicturesFail(err))
-            );
+            Http.get(`/api/accounts/${username}/albums/${albumId}/pictures`).then(
+                pictures => this.props.loadPictures(pictures),
+                err => this.props.loadPicturesFail(err))
+
         }
-        Promise.all(promises).then(() => {
-        });
     }
 
     componentDidUpdate() {
@@ -154,9 +149,6 @@ class Album extends Component {
                     this.props.addRawPicture(pair);
                 })
                 .flatMap(pair => resize(pair.file).map(url => ({...pair, src: url})))
-                //.do(triplet => {
-                //    this.props.updateRawPicture(triplet);
-                //})
                 .map(triplet => ({...triplet, blob: dataURLToBlob(triplet.src)}))
                 .flatMap(args => {
                     let {blob, file, id} = args;
@@ -175,7 +167,10 @@ class Album extends Component {
                     err => {
                         this.props.pictureCreationError(err);
                         console.log('Error', err)
-                    }
+                    },
+                    () => Http.get(`/api/accounts/${username}/albums/${albumId}`)
+                            .then(album => this.props.addAlbum(album))
+
                 );
         }
     };
@@ -234,10 +229,10 @@ class Album extends Component {
             }
         } else if (this.state.edit == picture.id) {
             return (
-                <div className="row center-xs" key={picture.id}>
+                <div className="row center-xs" key={picture.id} style={{marginTop:'10px'}}>
                     <div className="col-xs">
                         <div className="box">
-                            <Paper>
+                            <Paper style={{padding:'5px'}}>
                                 <div className="row">
                                     <div className="col-xs">
                                         <div className="box">
@@ -292,7 +287,7 @@ class Album extends Component {
                 <div className="row center-xs" key={picture.id} style={{marginTop:'10px'}}>
                     <div className="col-xs">
                         <div className="box">
-                            <Paper>
+                            <Paper style={{padding:'5px'}}>
                                 <div className="row">
                                     <div className="col-xs">
                                         <div className="box">
@@ -385,7 +380,7 @@ class Album extends Component {
     render() {
         let { params:{username}, album: { album: { title } }, account:{user} } = this.props;
         return (
-            <div className="row">
+            <div className="row" style={{background:Colors.grey50}}>
                 <div className="col-xs">
                     <div className="box">
                         <div className="row center-xs">
@@ -444,6 +439,9 @@ export default connect(
         },
         loadAccountFail: (err) => {
             dispatch(loadAccountFail(err))
+        },
+        addAlbum: (album) => {
+            dispatch(addAlbum(album))
         },
         loadAlbum: (user) => {
             dispatch(loadAlbum(user))
