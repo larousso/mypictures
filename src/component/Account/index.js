@@ -38,7 +38,7 @@ class Account extends Component {
     }
 
     static preRender = (store, renderProps) => {
-        if(__SERVER__) {
+        if (__SERVER__) {
             import User from '../../repository/user';
             import Album from '../../repository/album';
             import Picture from '../../repository/picture';
@@ -51,9 +51,9 @@ class Account extends Component {
                             user => dispatch(loadAccount(user)),
                             err => dispatch(loadAccountFail(err)))
                         .then(_ => Album.listByUsername(username)
-                                        .flatMap(album => Picture.listThumbnailsByAlbum(album.id).toArray().map(thumbnails => ({thumbnails,...album})))
-                                        .toArray()
-                                        .toPromise())
+                            .flatMap(album => Picture.listThumbnailsByAlbum(album.id).toArray().map(thumbnails => ({thumbnails, ...album})))
+                            .toArray()
+                            .toPromise())
                         .then(
                             albums => dispatch(loadAlbums(albums)),
                             err => {
@@ -73,7 +73,7 @@ class Account extends Component {
         let {params:{username}, account, albums} = this.props;
         let promises = [];
         console.log('Component did mount');
-        if(username && !account.loaded) {
+        if (username && !account.loaded) {
             this.props.loadingAccount();
             promises.push(Http.get(`/api/accounts/${username}`)
                 .then(
@@ -81,13 +81,10 @@ class Account extends Component {
                     err => this.props.loadAccountFail(err)
                 ));
         }
-        if(username && (!albums || !albums.loaded)) {
+        if (username && (!albums || !albums.loaded)) {
             this.props.loadingAlbums();
             promises.push(
                 Http.get(`/api/accounts/${username}/albums`)
-                    //.then(albums =>
-                    //    Promise.all(albums.map(album => Http.get(`/api/accounts/${username}/albums/${album.id}`).then(thumbnails => ({thumbnails,...album}))))
-                    //)
                     .then(
                         albums => this.props.loadAlbums(albums),
                         err => this.props.loadAlbumsFail(err)
@@ -103,7 +100,7 @@ class Account extends Component {
     }
 
     handleClose = () => {
-        this.setState({open:false, album: null});
+        this.setState({open: false, album: null});
     };
 
     displayAlbumResume = album => () => {
@@ -116,23 +113,24 @@ class Account extends Component {
                     .map(p => p.thumbnail),
                 rx.Observable.timer(0, 700),
                 (t, i) => t
-            )
-            .doWhile(_ => true)
-            .subscribe(
-                thumbnail => {
-                    this.setState({thumbnail})
-                },
-                err => {},
-                () => {
-                    this.setState({thumbnail: null});
-                }
-            );
+                )
+                .doWhile(_ => true)
+                .subscribe(
+                    thumbnail => {
+                        this.setState({thumbnail})
+                    },
+                    err => {
+                    },
+                    () => {
+                        this.setState({thumbnail: null});
+                    }
+                );
 
-        this.setState({observable, currentAlbumId: album.id, thumbnail:null});
+        this.setState({observable, currentAlbumId: album.id, thumbnail: null});
     };
 
     stopDisplayingAlbumResume = () => () => {
-        if(this.state.observable) {
+        if (this.state.observable) {
             this.state.observable.dispose();
             this.setState({thumbnail: null});
         }
@@ -151,16 +149,21 @@ class Account extends Component {
     };
 
     getImage = (album) => {
-        if(album && album.thumbnails) {
+        if (album && album.thumbnails) {
             let thumbnail;
-            if(this.state.currentAlbumId && album.id == this.state.currentAlbumId) {
+            if (this.state.currentAlbumId && album.id == this.state.currentAlbumId) {
                 thumbnail = this.state.thumbnail || this.getThumbnail(album);
             } else {
                 thumbnail = this.getThumbnail(album);
             }
-            return <img src={thumbnail} onClick={this.stopDisplayingAlbumResume(album)} onMouseOver={this.displayAlbumResume(album)} onMouseOut={this.stopDisplayingAlbumResume(album)} height="100%" style={{position: 'absolute', display: 'block',margin: '0 auto', marginRight: 'auto',marginLeft: 'auto'}}/>;
+            return (
+                    <img src={thumbnail} onClick={this.stopDisplayingAlbumResume(album)}
+                            onMouseOver={this.displayAlbumResume(album)} onMouseOut={this.stopDisplayingAlbumResume(album)}
+                            height="100%" />
+            );
         }
-        return <img src="/image-not-found.png" height="100%" style={{position: 'absolute', display: 'block',margin: '0 auto', marginRight: 'auto',marginLeft: 'auto'}}/>;
+        return <img src="/image-not-found.png" height="100%"
+                    style={{position: 'absolute', display: 'block',margin: '0 auto', marginRight: 'auto',marginLeft: 'auto'}}/>;
     };
 
     deleteAlbum = id => () => {
@@ -190,19 +193,20 @@ class Account extends Component {
                         <h1>Mes albums</h1>
                     </div>
                 </div>
-                <div className="row">
-                    <div className="col-xs-3"></div>
-                    <div className="col-xs-6">
+                <div className="row center-xs">
+
+                    <div className="col-xs-12 col-lg-6">
                         <Habilitations account={user} role={Roles.ADMIN}>
-                            <FlatButton label="Créer un album" onClick={this.createAlbum} onTouchStart={this.createAlbum}/>
+                            <FlatButton label="Créer un album" onClick={this.createAlbum}
+                                        onTouchStart={this.createAlbum}/>
                         </Habilitations>
                     </div>
-                    <div className="col-xs-3"></div>
+
                 </div>
                 <div className="row center-xs">
-                    <div className="col-xs-2"></div>
-                    <div className="col-xs-8">
-                        <GridList cellHeight={200} cols={4} >
+
+                    <div className="col-xs-12 col-lg-8">
+                        <GridList cellHeight={200} cols={4}>
                             {albums.map(album => (
                                 <GridTile key={album.id}
                                           title={album.title}
@@ -220,7 +224,7 @@ class Account extends Component {
                             ))}
                         </GridList>
                     </div>
-                    <div className="col-xs-2"></div>
+
                 </div>
             </div>
         )
