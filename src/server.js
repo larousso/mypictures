@@ -146,16 +146,17 @@ app.get('/album/preview/:albumId/thumbnails/:id',
     (req, res) => {
         Picture
             .getThumbnail(req.params.id, req.params.albumId)
-            .map(str => ({base64: str.substring(str.indexOf(',')), type:str.substring(4, str.indexOf(','))}))
+            .map(str => ({base64: str.substring(str.indexOf(',')), type:str.substring(5, str.indexOf(';base64'))}))
             .subscribe(
                 rep => {
                     let {base64, type} = rep;
                     var img = new Buffer(base64, 'base64');
+                    logger.info('Type', type);
                     res.writeHead(200, {
                         'Content-Type': type,
                         'Content-Length': img.length
                     });
-                    res.end(img);
+                    res.end(img, 'binary');
                 },
                 err => {
                     logger.error(err);
