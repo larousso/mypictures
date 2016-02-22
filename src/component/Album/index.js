@@ -14,7 +14,7 @@ import FontIcon                         from 'material-ui/lib/font-icon';
 import ArrowBack                        from 'material-ui/lib/svg-icons/navigation/chevron-left';
 import Check                            from 'material-ui/lib/svg-icons/navigation/check';
 import Cancel                           from 'material-ui/lib/svg-icons/navigation/close';
-import RotateIcon                       from 'material-ui/lib/svg-icons/image/rotate-left';
+import RotateIcon                       from 'material-ui/lib/svg-icons/image/rotate-right';
 import EditIcon                         from 'material-ui/lib/svg-icons/image/edit';
 import DeleteIcon                       from 'material-ui/lib/svg-icons/action/delete';
 import AppBar                           from 'material-ui/lib/app-bar';
@@ -28,6 +28,8 @@ import {loadingAlbum, loadAlbumFail, loadAlbum}      from '../../reducer/album'
 import {loadingAccount, loadAccountFail, loadAccount}   from '../../reducer/account'
 import {addRawPicture, addPicture, updateRawPicture, pictureCreated, pictureCreationError, loadingPictures, loadPictures, loadPicturesFail, deletePicture}   from '../../reducer/pictures'
 import uuid from 'node-uuid'
+import Theme                            from '../theme';
+import ThemeManager                     from 'material-ui/lib/styles/theme-manager';
 import Viewer                           from 'viewerjs'
 
 class Album extends Component {
@@ -44,6 +46,11 @@ class Album extends Component {
         loadAlbumFail: PropTypes.func
     };
 
+    getChildContext = () => {
+        return {
+            muiTheme: ThemeManager.getMuiTheme(Theme)
+        };
+    };
 
     constructor(args) {
         super(args);
@@ -442,6 +449,11 @@ class Album extends Component {
         )
     }
 }
+
+Album.childContextTypes = {
+    muiTheme: React.PropTypes.object
+};
+
 
 export default connect(
     state => ({

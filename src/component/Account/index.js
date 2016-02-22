@@ -10,6 +10,8 @@ import FontIcon                         from 'material-ui/lib/font-icon';
 import IconButton                       from 'material-ui/lib/icon-button';
 import Colors                           from 'material-ui/lib/styles/colors'
 import AddIcon                          from 'material-ui/lib/svg-icons/content/add'
+import EditIcon                         from 'material-ui/lib/svg-icons/image/edit';
+import DeleteIcon                       from 'material-ui/lib/svg-icons/action/delete';
 import rx                               from 'rx';
 import Http                             from '../http'
 import Habilitations                    from '../Habiliations'
@@ -206,10 +208,10 @@ class Account extends Component {
                                                       title={album.title}
                                                       actionIcon={<Habilitations account={user} role={Roles.ADMIN}>
                                                 <Link to={`/account/${username}/EditAlbum/${album.id}`}>
-                                                    <FontIcon className="icon icon-pencil" color={Colors.white} />
+                                                    <EditIcon color={Colors.white}/>
                                                 </Link>
                                                 <IconButton tooltip="Delete" onClick={this.deleteAlbum(album.id)}>
-                                                    <FontIcon className="icon icon-bin" color={Colors.white} />
+                                                    <DeleteIcon color={Colors.white}/>
                                                 </IconButton>
                                               </Habilitations>}
                                             >

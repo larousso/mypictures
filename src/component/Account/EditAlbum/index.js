@@ -11,9 +11,12 @@ import Dialog                           from 'material-ui/lib/dialog';
 import TextField                        from 'material-ui/lib/text-field';
 import NavigationClose                  from 'material-ui/lib/svg-icons/navigation/close';
 import ArrowBack                        from 'material-ui/lib/svg-icons/navigation/chevron-left';
+import Check                            from 'material-ui/lib/svg-icons/navigation/check';
+import Cancel                           from 'material-ui/lib/svg-icons/navigation/close';
 import AppBar                           from 'material-ui/lib/app-bar';
-import Http                             from '../../http'
-
+import Http                             from '../../http';
+import Theme                            from '../../theme';
+import ThemeManager                     from 'material-ui/lib/styles/theme-manager';
 
 
 class EditAlbum extends Component {
@@ -22,7 +25,11 @@ class EditAlbum extends Component {
         addAlbum: PropTypes.func,
         album: PropTypes.object
     };
-
+    getChildContext = () => {
+        return {
+            muiTheme: ThemeManager.getMuiTheme(Theme)
+        };
+    };
     static preRender = (store, renderProps) => {
         if (__SERVER__) {
             import User     from '../../../repository/user';
@@ -175,8 +182,8 @@ class EditAlbum extends Component {
                         <div className="row center-xs">
                             <div className="col-xs">
                                 <div className="box">
-                                    <FlatButton label="Enregistrer" primary={true} onClick={this.saveAlbum} />
-                                    <FlatButton label="Annuler" onClick={() => this.props.changeRoute(`/account/${this.props.params.username}`)}
+                                    <FlatButton icon={<Check />} label="Enregistrer" primary={true} onClick={this.saveAlbum} />
+                                    <FlatButton icon={<Cancel />} label="Annuler" onClick={() => this.props.changeRoute(`/account/${this.props.params.username}`)}
                                                 onTouchStart={() => this.props.changeRoute(`/account/${this.props.params.username}`)}/>
                                 </div>
                             </div>
@@ -189,6 +196,11 @@ class EditAlbum extends Component {
         )
     }
 }
+
+EditAlbum.childContextTypes = {
+    muiTheme: React.PropTypes.object
+};
+
 
 export default connect(
     state => ({
