@@ -93,6 +93,43 @@ export default class Picture extends Database {
             );
     }
 
+    static rotatePicture(album, id) {
+        let thumbnailPath = buildThumbnailPath(id, album);
+        let folder = buildThumbnailFolderPath(album);
+
+        let albumPath = buildAlbumPath(album);
+        let picturePath = buildPicturePath(id, album);
+        logger.info(`Picture rotation : album=${album}, picture=${id}`, thumbnailPath, picturePath);
+        return Picture.get(id)
+            .flatMap(image =>
+                rx.Observable.zip(
+                    Picture.rotateFile(picturePath, albumPath, image.type),
+                    Picture.rotateFile(thumbnailPath, folder, image.type),
+                    (file, thumbnail) => ({file, thumbnail})
+                )
+                .flatMap(_ => rx.Observable.zip(
+                    Picture.getPicture(id, album),
+                    Picture.getThumbnail(id, album),
+                    (file, thumbnail) => ({file, thumbnail})
+                    ).map(files => {
+                        let {file, thumbnail} = files;
+                        return {file, thumbnail, ...image};
+                    })
+                )
+            );
+    }
+
+    static rotateFile(path, folderPath, type) {
+        logger.info('File rotation', path);
+        return rx.Observable
+            .fromCallback(fs.readFile)(path, 'utf-8').map(files => files[1])
+            .map(str => str.substring(str.indexOf(',')))
+            .flatMap(file => rx.Observable.fromPromise(Jimp.read(new Buffer(file, 'base64')).then(ok => ok, err => logger.error('Error while rezdin', err))))
+            .map(image => image.rotate(90))
+            .flatMap(image => toBuffer(image.quality(60), type))
+            .flatMap(buffer => Picture.createPicture(path, folderPath, buffer));
+    }
+
     static createMainPicture(id, album, file, type) {
         let albumPath = buildAlbumPath(album);
         let picturePath = buildPicturePath(id, album);

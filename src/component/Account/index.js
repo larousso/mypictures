@@ -201,7 +201,7 @@ class Account extends Component {
                             <div className="col-xs">
                                 <div className="box">
                                     <GridList cellHeight={200} cols={4}>
-                                        {albums.map(album => (
+                                        {albums.sort( (a1, a2) => a1.id > a2.id ).map(album => (
                                             <GridTile key={album.id}
                                                       title={album.title}
                                                       actionIcon={<Habilitations account={user} role={Roles.ADMIN}>

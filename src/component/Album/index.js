@@ -12,6 +12,11 @@ import IconButton                       from 'material-ui/lib/icon-button';
 import Colors                           from 'material-ui/lib/styles/colors'
 import FontIcon                         from 'material-ui/lib/font-icon';
 import ArrowBack                        from 'material-ui/lib/svg-icons/navigation/chevron-left';
+import Check                            from 'material-ui/lib/svg-icons/navigation/check';
+import Cancel                           from 'material-ui/lib/svg-icons/navigation/close';
+import RotateIcon                       from 'material-ui/lib/svg-icons/image/rotate-left';
+import EditIcon                         from 'material-ui/lib/svg-icons/image/edit';
+import DeleteIcon                       from 'material-ui/lib/svg-icons/action/delete';
 import AppBar                           from 'material-ui/lib/app-bar';
 import Paper                            from 'material-ui/lib/paper';
 import TextField                        from 'material-ui/lib/text-field';
@@ -86,8 +91,7 @@ class Album extends Component {
     };
 
     componentDidMount() {
-        let { params: { albumId, username }, account, album, pictures} = this.props;
-        let promises = [];
+        let { params: { albumId, username }, account, pictures} = this.props;
         if (username && !account.loaded) {
             this.props.loadingAccount();
             Http.get(`/api/accounts/${username}`).then(
@@ -182,6 +186,7 @@ class Album extends Component {
     editMode = id => event => {
         this.setState({edit:id});
     };
+
     savePicture = picture => () => {
         let { title, description } = this.state;
         let { params: { albumId, username} } = this.props;
@@ -198,17 +203,33 @@ class Album extends Component {
                 err => {}
             );
     };
+
     setTitle = (value) => {
         this.setState({
             title: value.target.value
         })
     };
+
     setDescription = (value) => {
         this.setState({
             description: value.target.value
         })
     };
 
+    rotatePicture = id => () => {
+        let { params: { albumId, username} } = this.props;
+        let url = `/api/accounts/${username}/albums/${albumId}/pictures/${id}/_actions`;
+        Http
+            .post(url, {type: 'rotate'})
+            .then(
+                picture => {
+                    this.props.addPicture(picture);
+                },
+                err => {
+                    console.log(err);
+                }
+            );
+    };
 
     getImage = (picture, index) => {
         let { account:{user} } = this.props;
@@ -272,8 +293,8 @@ class Album extends Component {
                                 <div className="row">
                                     <div className="col-xs">
                                         <div className="box" style={{textAlign: 'left'}}>
-                                            <FlatButton label="Enregistrer" primary={true} onClick={this.savePicture(picture)} />
-                                            <FlatButton label="Annuler" onClick={this.closeEditMode(picture.id)} />
+                                            <FlatButton icon={<Check />} label="Enregistrer" primary={true} onClick={this.savePicture(picture)} />
+                                            <FlatButton icon={<Cancel />} label="Annuler" onClick={this.closeEditMode(picture.id)} />
                                         </div>
                                     </div>
                                 </div>
@@ -307,11 +328,14 @@ class Album extends Component {
                                     <div className="col-xs">
                                         <div className="box" style={{textAlign:'right'}}>
                                             <Habilitations account={user} role={Roles.ADMIN}>
+                                                <IconButton tooltip="Rotate" onClick={this.rotatePicture(picture.id)}>
+                                                    <RotateIcon />
+                                                </IconButton>
                                                 <IconButton tooltip="Edit" onClick={this.editMode(picture.id)}>
-                                                    <FontIcon className="icon icon-pencil" color={Colors.black}/>
+                                                    <EditIcon />
                                                 </IconButton>
                                                 <IconButton tooltip="Delete" onClick={this.deletePicture(picture.id)}>
-                                                    <FontIcon className="icon icon-bin" color={Colors.black}/>
+                                                    <DeleteIcon />
                                                 </IconButton>
                                             </Habilitations>
                                         </div>

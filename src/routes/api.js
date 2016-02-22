@@ -160,6 +160,27 @@ export default () => {
                 );
         });
 
+    app.post('/accounts/:username/albums/:albumId/pictures/:id/_actions',
+        HttpUtils.hasRole(Roles.ADMIN),
+        upload.single('file'),
+        (req, res) => {
+            const actions = req.body;
+            switch (actions.type) {
+                case 'rotate' :
+                    Picture
+                        .rotatePicture(req.params.albumId, req.params.id)
+                        .subscribe(
+                            picture => res.json(picture).end(),
+                            err => {
+                                HttpUtils.handleErrors(err, res);
+                            }
+                        );
+                    break;
+                default :
+                    break;
+            }
+        });
+
     app.put('/accounts/:username/albums/:albumId/pictures/:id',
         HttpUtils.hasRole(Roles.ADMIN),
         (req, res) => {
