@@ -108,7 +108,7 @@ app.get('/album/preview/:albumId',
             .subscribe(
                 album => {
                     const userAgent = req.headers['user-agent'];
-                    if (true || userAgent == 'Facebot' || userAgent == 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)' || userAgent == 'facebookexternalhit/1.1') {
+                    if (userAgent == 'Facebot' || userAgent == 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)' || userAgent == 'facebookexternalhit/1.1') {
 
                         let thumbnail = album
                             .thumbnails
@@ -116,11 +116,13 @@ app.get('/album/preview/:albumId',
                             .find(_ => true) || '';
 
                         let content = `
-                            <meta property="og:url"                content="${__BASEURL__}/auth/facebook?redirect=/account/${album.username}/${album.id}" />
+                        <html>
+                            <meta property="og:url"                content="${__BASEURL__}/album/preview/${album.id}" />
                             <meta property="og:type"               content="album" />
                             <meta property="og:title"              content="${album.title}" />
                             <meta property="og:description"        content="${album.description}" />
-
+                            ${thumbnail}
+                        </html>
                         `;
 
                         logger.info('Facebook robot', content);
@@ -143,7 +145,7 @@ app.get('/album/preview/:albumId',
 app.get('/album/preview/:albumId/thumbnails/:id',
     (req, res) => {
         Picture
-            .getThumbnail(req.params.id, req.params.albumId)
+            .getPicture(req.params.id, req.params.albumId)
             .map(str => ({base64: str.substring(str.indexOf(',')), type:str.substring(5, str.indexOf(';base64'))}))
             .subscribe(
                 rep => {
