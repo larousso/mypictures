@@ -108,9 +108,7 @@ app.get('/album/preview/:albumId',
             .subscribe(
                 album => {
                     const userAgent = req.headers['user-agent'];
-                    logger.info('User-Agent: ' + userAgent);
-                    if (userAgent == 'Facebot' || userAgent == 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)' || userAgent == 'facebookexternalhit/1.1') {
-
+                    if (true || userAgent == 'Facebot' || userAgent == 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)' || userAgent == 'facebookexternalhit/1.1') {
 
                         let thumbnail = album
                             .thumbnails
@@ -151,7 +149,6 @@ app.get('/album/preview/:albumId/thumbnails/:id',
                 rep => {
                     let {base64, type} = rep;
                     var img = new Buffer(base64, 'base64');
-                    logger.info('Type', type);
                     res.writeHead(200, {
                         'Content-Type': type,
                         'Content-Length': img.length
