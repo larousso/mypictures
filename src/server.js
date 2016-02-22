@@ -120,7 +120,7 @@ app.get('/album/preview/:albumId',
                             <meta property="og:type"               content="album" />
                             <meta property="og:title"              content="${album.title}" />
                             <meta property="og:description"        content="${album.description}" />
-                            ${thumbnail}
+
                         `;
 
                         logger.info('Facebook robot', content);
