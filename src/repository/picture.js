@@ -214,10 +214,13 @@ export default class Picture extends Database {
     }
 
     static deleteByAlbum(album) {
+        logger.info('Delete by album', album)
         return Picture.listByAlbum(album).count().flatMap(count => {
             if(count > 0) {
+                logger.info(`${count} pictures to delete for album ${album}`);
                 return Picture.listByAlbum(album)
                     .flatMap(p => Picture.delete(p.id))
+                    .toArray()
                     .flatMap(p => rx.Observable.fromCallback(fs.rmdir)(buildAlbumPath(album)));
             } else {
                 return rx.Observable.just({});

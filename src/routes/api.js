@@ -95,9 +95,16 @@ export default () => {
             Album
                 .delete(req.params.id)
                 .subscribe(
-                    album => res.json({}).end(),
+                    album => {
+                        res.json({})
+                    },
                     err => {
+                        logger.error('Error deleting album', err);
                         HttpUtils.handleErrors(err, res);
+                    },
+                    () => {
+                        logger.info('Deleting album succed', req.params.id);
+                        res.end()
                     }
                 );
         });
