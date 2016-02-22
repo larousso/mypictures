@@ -98,7 +98,6 @@ app.post('/api/login',
 app.get('/album/preview/:albumId',
     (req, res) => {
         logger.info('Album', req.params.albumId);
-
         Album
             .get(req.params.albumId)
             .flatMap(album => Picture
@@ -110,27 +109,22 @@ app.get('/album/preview/:albumId',
                 album => {
                     const userAgent = req.headers['user-agent'];
                     logger.info('User-Agent: ' + userAgent);
-                    if (
-                        userAgent == 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)' ||
-                        userAgent == 'facebookexternalhit/1.1'
-                    ) {
-                        logger.info('User-Agent facebook');
-                    }
-
-                    let [thumbnail] = album.thumbnails;
-                    if (thumbnail) {
+                    if (userAgent == 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)' || userAgent == 'facebookexternalhit/1.1') {
+                        let thumbnails = album
+                            .thumbnails
+                            .map(t => `<meta property="og:image" content="${__BASEURL__}/album/preview/${album.id}/thumbnails/${t.id}" />`)
+                            .join(' ');
                         let content = `
-                            <meta property="og:url"                content="${__BASEURL__}/auth/facebook?redirect=/account/${album.username}/${album.id}" />
-                            <meta property="og:type"               content="album" />
-                            <meta property="og:title"              content="${album.title}" />
-                            <meta property="og:description"        content="${album.description}" />
-                            <meta property="og:image"              content="${thumbnail.thumbnail}" />`;
-
+                        <meta property="og:url"                content="${__BASEURL__}/auth/facebook?redirect=/account/${album.username}/${album.id}" />
+                        <meta property="og:type"               content="album" />
+                        <meta property="og:title"              content="${album.title}" />
+                        <meta property="og:description"        content="${album.description}" />
+                        ${thumbnails}
+                        `;
                         res.send(content);
                         res.end();
                     } else {
-                        res.send('');
-                        res.end();
+                        res.redirect(`${__BASEURL__}/auth/facebook?redirect=/account/${album.username}/${album.id}`)
                     }
                 },
                 err => {
@@ -141,7 +135,26 @@ app.get('/album/preview/:albumId',
 
 });
 
-
+app.get('/album/preview/:albumId/thumbnails/:id',
+    (req, res) => {
+        Picture
+            .getThumbnail(req.params.id, req.params.albumId)
+            .map(str => ({base64: str.substring(str.indexOf(',')), type:str.substring(4, str.indexOf(','))}))
+            .subscribe(
+                rep => {
+                    let {base64, type} = rep;
+                    var img = new Buffer(base64, 'base64');
+                    res.writeHead(200, {
+                        'Content-Type': type,
+                        'Content-Length': img.length
+                    });
+                    res.end(img);
+                },
+                err => {
+                    logger.error(err);
+                    res.status(500).send('').end();
+                }
+        )});
 
 
 app.use('/api', api());
