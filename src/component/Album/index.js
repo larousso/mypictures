@@ -132,8 +132,11 @@ class Album extends Component {
                 scalable: false,
                 zoomable: false,
                 tooltip: false,
-                transition: false
+                transition: false,
+                navbar: 3,
+                toolbar: 2
             });
+            Viewer.noConflict();
         }
     }
 
