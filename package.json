@@ -37,7 +37,7 @@
       "command": "node ./bin/server.js",
       "env": {
         "NODE_PATH": "./src",
-        "NODE_ENV": "production",
+        "NODE_ENV": "prod",
         "DBLOCATION": "/data/db",
         "IMAGESPATH": "/data/pictures",
         "LOGPATH": "/logs",
@@ -49,9 +49,9 @@
       "command": "node ./bin/server.js",
       "env": {
         "NODE_PATH": "./src",
-        "NODE_ENV": "production",
+        "NODE_ENV": "prod",
         "DBLOCATION": "/Users/adelegue/Documents/idea/mypictures/tmp",
-        "IMAGESPATH": "/Users/adelegue/Documents/idea/mypictures/tmp",
+        "IMAGESPATH": "/Users/adelegue/tmpPictures",
         "PORT": 8080
       }
     },
@@ -60,6 +60,8 @@
       "env": {
         "NODE_PATH": "./src",
         "NODE_ENV": "development",
+        "DBLOCATION": "/Users/adelegue/Documents/idea/mypictures/tmp",
+        "IMAGESPATH": "/Users/adelegue/tmpPictures",
         "PORT": 3000
       }
     },
