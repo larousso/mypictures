@@ -53,15 +53,13 @@ class Login extends Component {
                     </div>
                 </div>
                 <div className="row">
-                    <div className="col-xs-3"></div>
-                    <div className="col-xs-6">
+                    <div className="col-xs-12 col-lg-6 col-lg-offset-3">
                         <div className="box">
                             <TextField hintText="Login" floatingLabelText="Login" ref="username" fullWidth={true} onChange={this.setUsername}/>
                             <br />
                             <TextField hintText="Mot de passe" floatingLabelText="Mot de passe" ref="password" type="password" fullWidth={true} onChange={this.setPassword}/>
                         </div>
                     </div>
-                    <div className="col-xs-3"></div>
                 </div>
                 <div className="row center-xs">
                     <div className="col-xs-12">
