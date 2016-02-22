@@ -41,7 +41,8 @@
         "DBLOCATION": "/data/db",
         "IMAGESPATH": "/data/pictures",
         "LOGPATH": "/logs",
-        "PORT": 80
+        "PORT": 80,
+        "BASE_URL": "http://vps244493.ovh.net"
       }
     },
     "start-test": {

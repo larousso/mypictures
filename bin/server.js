@@ -13,6 +13,7 @@ global.__DEVELOPMENT__ = process.env.NODE_ENV !== 'production';
 global.__DBLOCATION__ = process.env.DBLOCATION || 'tmp';
 global.__LOGPATH__ = process.env.LOGPATH || 'logs';
 global.__IMAGESPATH__ = process.env.IMAGESPATH || '/Users/adelegue/tmpPictures';
+global.__BASEURL__ = process.env.BASE_URL || '';
 
 if (__DEVELOPMENT__) {
   if (!require('piping')({

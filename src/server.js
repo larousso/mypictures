@@ -18,11 +18,14 @@ import rx                                       from 'rx'
 import config                                   from './config'
 import User                                     from './repository/user'
 import DailyRotateFile                          from 'winston-daily-rotate-file'
+import Album                                    from './repository/album'
+import Picture                                  from './repository/picture'
 
 logger.info('__DEVELOPMENT__', __DEVELOPMENT__);
 logger.info('__DBLOCATION__', __DBLOCATION__);
 logger.info('__LOGPATH__', __LOGPATH__);
 logger.info('__IMAGESPATH__', __IMAGESPATH__);
+logger.info('__BASEURL__', __BASEURL__);
 
 const app = express();
 
@@ -91,6 +94,55 @@ app.post('/api/login',
         res.json(req.user);
         res.end();
 });
+
+app.get('/album/preview/:albumId',
+    (req, res) => {
+        logger.info('Album', req.params.albumId);
+
+        Album
+            .get(req.params.albumId)
+            .flatMap(album => Picture
+                .listThumbnailsByAlbum(req.params.albumId)
+                .toArray()
+                .map(thumbnails => ({thumbnails,...album}))
+            )
+            .subscribe(
+                album => {
+                    const userAgent = req.headers['user-agent'];
+                    logger.info('User-Agent: ' + userAgent);
+                    if (
+                        userAgent == 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)' ||
+                        userAgent == 'facebookexternalhit/1.1'
+                    ) {
+                        logger.info('User-Agent facebook');
+                    }
+
+                    let [thumbnail] = album.thumbnails;
+                    if (thumbnail) {
+                        let content = `
+                            <meta property="og:url"                content="${__BASEURL__}/auth/facebook?redirect=/account/${album.username}/${album.id}" />
+                            <meta property="og:type"               content="album" />
+                            <meta property="og:title"              content="${album.title}" />
+                            <meta property="og:description"        content="${album.description}" />
+                            <meta property="og:image"              content="${thumbnail.thumbnail}" />`;
+
+                        res.send(content);
+                        res.end();
+                    } else {
+                        res.send('');
+                        res.end();
+                    }
+                },
+                err => {
+                    logger.error(err);
+                    res.status(500).send(err).end();
+                }
+            );
+
+});
+
+
+
 
 app.use('/api', api());
 

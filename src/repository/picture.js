@@ -200,6 +200,7 @@ export default class Picture extends Database {
         }
         return Picture.listByAlbum(album).count().flatMap(count => {
             if(count > 0) {
+                logger.debug('Count ', album, count);
                 return Database
                     .streamQueryToRx(db.query({album}))
                     .flatMap(picture =>
