@@ -109,7 +109,7 @@ app.get('/album/preview/:albumId',
                 album => {
                     const userAgent = req.headers['user-agent'];
                     logger.info('User-Agent: ' + userAgent);
-                    if (true || userAgent == 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)' || userAgent == 'facebookexternalhit/1.1') {
+                    if (true || userAgent == 'Facebot' || userAgent == 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)' || userAgent == 'facebookexternalhit/1.1') {
                         let thumbnail = album
                             .thumbnails
                             .map(t => `<meta property="og:image" content="${__BASEURL__}/album/preview/${album.id}/thumbnails/${t.id}" />`)
@@ -125,6 +125,7 @@ app.get('/album/preview/:albumId',
                         res.send(content);
                         res.end();
                     } else {
+                        logger.info('Sending redirect to album',userAgent);
                         res.redirect(`${__BASEURL__}/auth/facebook?redirect=/account/${album.username}/${album.id}`)
                     }
                 },
