@@ -1,12 +1,10 @@
 import React, { Component, PropTypes }  from 'react';
 import { connect }                      from 'react-redux';
 import {Link }                          from 'react-router';
-import { replacePath }                 from 'redux-simple-router'
-import FlatButton                       from 'material-ui/lib/flat-button';
-import RaisedButton                       from 'material-ui/lib/raised-button';
+import { replacePath }                  from 'redux-simple-router'
+import RaisedButton                     from 'material-ui/lib/raised-button';
 import GridList                         from 'material-ui/lib/grid-list/grid-list';
 import GridTile                         from 'material-ui/lib/grid-list/grid-tile';
-import FontIcon                         from 'material-ui/lib/font-icon';
 import IconButton                       from 'material-ui/lib/icon-button';
 import Colors                           from 'material-ui/lib/styles/colors'
 import AddIcon                          from 'material-ui/lib/svg-icons/content/add'

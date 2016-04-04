@@ -14,16 +14,18 @@ import Forbidden            from '../component/Forbidden'
 export default  (store) => {
     const isAuthenticated = () => (nextState, replaceState) => {
         const { auth: { user }} = store.getState();
-        return user;
-    };
-    const hasRole = role => (nextState, replaceState) => {
-        const { auth: { user }} = store.getState();
-        if (!user) {
-            replaceState(null, '/unauthorized');
-        } else if (user.role !== role) {
+        if(!user) {
             replaceState(null, '/forbidden');
         }
     };
+    // const hasRole = role => (nextState, replaceState) => {
+    //     const { auth: { user }} = store.getState();
+    //     if (!user) {
+    //         replaceState(null, '/unauthorized');
+    //     } else if (user.role !== role) {
+    //         replaceState(null, '/forbidden');
+    //     }
+    // };
 
     return (
         <Route path="/" component={App}>

@@ -24,3 +24,5 @@ echo 'remote loading'
 ssh root@vps244493.ovh.net 'docker load < /docker/mypictures.tar'
 echo 'remote running'
 ssh root@vps244493.ovh.net 'docker run -d -p 80:8080 -v /app/data:/usr/src/app/data -v /app/logs:/usr/src/app/logs -v /app/pictures:/usr/src/app/pictures mypictures'
+
+docker run -d -p 80:8080 -v /app/src:/usr/src/app mypictures

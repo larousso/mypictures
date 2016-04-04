@@ -15,8 +15,7 @@ global.__LOGPATH__ = process.env.LOGPATH || 'logs';
 global.__IMAGESPATH__ = process.env.IMAGESPATH || 'tmpPictures';
 global.__BASEURL__ = process.env.BASE_URL || '';
 
-if (__DEVELOPMENT__) {
-    console.log('ICI')
+if (__DEVELOPMENT__) {  
   if (!require('piping')({
       hook: true,
       ignore: /(\/\.|~$|\.json|\.scss$)/i

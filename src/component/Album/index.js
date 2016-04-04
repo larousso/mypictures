@@ -1,16 +1,12 @@
 import React, { Component, PropTypes }  from 'react';
 import {findDOMNode}                    from 'react-dom';
 import { connect }                      from 'react-redux'
-import { Link }                         from 'react-router'
 import { replacePath }                 from 'redux-simple-router'
 import rx                               from 'rx'
 import Http                             from '../http'
-import GridList                         from 'material-ui/lib/grid-list/grid-list';
-import GridTile                         from 'material-ui/lib/grid-list/grid-tile';
 import CircularProgress                 from 'material-ui/lib/circular-progress';
 import IconButton                       from 'material-ui/lib/icon-button';
 import Colors                           from 'material-ui/lib/styles/colors'
-import FontIcon                         from 'material-ui/lib/font-icon';
 import ArrowBack                        from 'material-ui/lib/svg-icons/navigation/chevron-left';
 import Check                            from 'material-ui/lib/svg-icons/navigation/check';
 import Cancel                           from 'material-ui/lib/svg-icons/navigation/close';
@@ -31,6 +27,7 @@ import uuid from 'node-uuid'
 import Theme                            from '../theme';
 import ThemeManager                     from 'material-ui/lib/styles/theme-manager';
 import Viewer                           from 'viewerjs'
+
 
 class Album extends Component {
 
@@ -119,6 +116,13 @@ class Album extends Component {
                 err => this.props.loadPicturesFail(err))
 
         }
+        if(!__SERVER__) {
+            import Clipboard from 'clipboard'
+            this.clipboard = new Clipboard('.copyLink', {text: (trigger) => {
+                const link = this.previewLink();
+                return link;
+            }});
+        }
     }
 
     componentDidUpdate() {
@@ -143,6 +147,9 @@ class Album extends Component {
     componentWillUnmount() {
         if (this.viewer) {
             this.viewer.destroy();
+        }
+        if(this.clipboard) {
+            this.clipboard.destroy();
         }
     }
 
@@ -411,8 +418,16 @@ class Album extends Component {
         }
     };
 
+    previewLink = () => {
+        if(!__SERVER__) {
+            let { album: { album: { albumId } }} = this.props;
+            const port = window.location.port ? `:${window.location.port}` : '';
+            return `${window.location.hostname}${port}/album/preview/${albumId}`;
+        }
+    };
+
     render() {
-        let { params:{username}, album: { album: { title } }, account:{user} } = this.props;
+        let { params:{username}, album: { album: { title, albumId } }, account:{user} } = this.props;
         return (
             <div className="row" style={{background:Colors.grey50}}>
                 <div className="col-xs">
@@ -428,11 +443,20 @@ class Album extends Component {
                                 </div>
                             </div>
                         </div>
-                        <div className="row center-xs">
+                        <div className="row xs-center">
                             <Habilitations account={user} role={Roles.ADMIN}>
                                 <div className="box">
                                     <div className="col-xs-12">
                                         <input type="file" multiple="true" onChange={this.onFilesChange}/>
+                                    </div>
+                                </div>
+                            </Habilitations>
+                        </div>
+                        <div className="row xs-center">
+                            <Habilitations account={user} role={Roles.ADMIN}>
+                                <div className="box">
+                                    <div className="col-xs-12">
+                                         <FlatButton className="copyLink" >Copier le lien Facebook</FlatButton>
                                     </div>
                                 </div>
                             </Habilitations>
