@@ -119,8 +119,7 @@ class Album extends Component {
         if(!__SERVER__) {
             import Clipboard from 'clipboard'
             this.clipboard = new Clipboard('.copyLink', {text: (trigger) => {
-                const link = this.previewLink();
-                return link;
+                return this.previewLink();
             }});
         }
     }
@@ -420,7 +419,7 @@ class Album extends Component {
 
     previewLink = () => {
         if(!__SERVER__) {
-            let { album: { album: { albumId } }} = this.props;
+            let { params: { albumId }} = this.props;
             if(albumId) {
                 const port = window.location.port ? `:${window.location.port}` : '';
                 return `http://${window.location.hostname}${port}/album/preview/${albumId}`;
@@ -429,7 +428,7 @@ class Album extends Component {
     };
 
     render() {
-        let { params:{username}, album: { album: { title, albumId } }, account:{user} } = this.props;
+        let { params:{username}, album: { album: { title } }, account:{user} } = this.props;
         return (
             <div className="row" style={{background:Colors.grey50}}>
                 <div className="col-xs">
