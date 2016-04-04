@@ -421,8 +421,10 @@ class Album extends Component {
     previewLink = () => {
         if(!__SERVER__) {
             let { album: { album: { albumId } }} = this.props;
-            const port = window.location.port ? `:${window.location.port}` : '';
-            return `${window.location.hostname}${port}/album/preview/${albumId}`;
+            if(albumId) {
+                const port = window.location.port ? `:${window.location.port}` : '';
+                return `http://${window.location.hostname}${port}/album/preview/${albumId}`;
+            }
         }
     };
 
