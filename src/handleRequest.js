@@ -9,10 +9,8 @@ import {loadUser}                               from './reducer/auth'
 import configureStore                           from './store/configureStore'
 
 export default (req, res) => {
-    const store = configureStore({});
-    //console.log(req.cookies);
+    const store = configureStore({currentLocation: {location: req.get('host')}});
     const user = req.user;
-    //console.log("session", req.sessionID, req.session);
 
     if(req.isAuthenticated()) {
         store.dispatch(loadUser(user));

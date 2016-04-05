@@ -1,10 +1,8 @@
 import React, { Component, PropTypes }      from 'react';
 import { connect }                          from 'react-redux'
 import { pushPath }                         from 'redux-simple-router'
-import Paper                                from 'material-ui/lib/paper';
-import Divider                              from 'material-ui/lib/divider';
-import TextField                            from 'material-ui/lib/text-field';
-import FlatButton                           from 'material-ui/lib/flat-button';
+import TextField                            from 'material-ui/lib/text-field'
+import FlatButton                           from 'material-ui/lib/flat-button'
 import {loadUser}                           from '../../reducer/auth'
 import Http                                 from '../http'
 

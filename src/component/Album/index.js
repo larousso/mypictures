@@ -95,7 +95,7 @@ class Album extends Component {
     };
 
     componentDidMount() {
-        let { params: { albumId, username }, account, pictures} = this.props;
+        let { params: { albumId, username }, account, pictures, album} = this.props;
         if (username && !account.loaded) {
             this.props.loadingAccount();
             Http.get(`/api/accounts/${username}`).then(
@@ -103,24 +103,18 @@ class Album extends Component {
                 err => this.props.loadAccountFail(err))
 
         }
-        if (username && albumId) {
+        if (username && albumId && (!album.album || album.album.albumId != albumId)) {
             this.props.loadingAlbum();
             Http.get(`/api/accounts/${username}/albums/${albumId}`).then(
                 albums => this.props.loadAlbum(albums),
                 err => this.props.loadAlbumFail(err))
         }
-        if (username && albumId) {
+        if (username && albumId && (!pictures.pictures || album.album.albumId != albumId)) {
             this.props.loadingPictures();
             Http.get(`/api/accounts/${username}/albums/${albumId}/pictures`).then(
                 pictures => this.props.loadPictures(pictures),
                 err => this.props.loadPicturesFail(err))
 
-        }
-        if(!__SERVER__) {
-            import Clipboard from 'clipboard'
-            this.clipboard = new Clipboard('.copyLink', {text: (trigger) => {
-                return this.previewLink();
-            }});
         }
     }
 
@@ -419,13 +413,31 @@ class Album extends Component {
 
     previewLink = () => {
         if(!__SERVER__) {
-            let { params: { albumId }} = this.props;
+            let { params: { albumId}} = this.props;
             if(albumId) {
-                const port = window.location.port ? `:${window.location.port}` : '';
-                return `http://${window.location.hostname}${port}/album/preview/${albumId}`;
+                return `http://${window.location.host}/album/preview/${albumId}`;
+            }
+        } else {
+            let { params: { albumId }, currentLocation: {location}} = this.props;
+            if(albumId) {
+                return `http://${location}/album/preview/${albumId}`;
             }
         }
     };
+
+    mdpLink = () => {
+        if(!__SERVER__) {
+            let { params: { albumId, username}} = this.props;
+            if(albumId) {
+                return `http://${window.location.host}/login?redirect=/account/${username}/${albumId}`;
+            }
+        } else {
+            let { params: { albumId, username }, currentLocation: {location}} = this.props;
+            if(albumId) {
+                return `http://${location}/login?redirect=/account/${username}/${albumId}`;
+            }
+        }
+    }
 
     render() {
         let { params:{username}, album: { album: { title } }, account:{user} } = this.props;
@@ -456,8 +468,17 @@ class Album extends Component {
                         <div className="row xs-center">
                             <Habilitations account={user} role={Roles.ADMIN}>
                                 <div className="box">
-                                    <div className="col-xs-12">
-                                         <FlatButton className="copyLink" >Copier le lien Facebook</FlatButton>
+                                    <div className="col-lg-12">
+                                        <span>Lien facebook : </span><TextField inputStyle={{width:'600'}} value={this.previewLink()} />
+                                    </div>
+                                </div>
+                            </Habilitations>
+                        </div>
+                        <div className="row xs-center">
+                            <Habilitations account={user} role={Roles.ADMIN}>
+                                <div className="box">
+                                    <div className="col-lg-12">
+                                        <span>Lien autre : </span><TextField inputStyle={{width:'800'}} value={this.mdpLink()} />
                                     </div>
                                 </div>
                             </Habilitations>
@@ -489,7 +510,8 @@ export default connect(
         routing: state.routing,
         account: state.account,
         album: state.album,
-        pictures: state.pictures
+        pictures: state.pictures,
+        currentLocation: state.currentLocation
     }),
     dispatch => ({
         changeRoute: (route) => {
