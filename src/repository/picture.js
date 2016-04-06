@@ -36,6 +36,10 @@ const Schema = {
             type: 'string',
             required: true
         },
+        preview: {
+            type: 'boolean',
+            required: false
+        },
         type: {
             type: 'string',
             required: true
@@ -93,7 +97,7 @@ export default class Picture extends Database {
             );
     }
 
-    static rotatePicture(album, id) {
+    static rotatePicture(album, id, rotation) {
         let thumbnailPath = buildThumbnailPath(id, album);
         let folder = buildThumbnailFolderPath(album);
 
@@ -103,8 +107,8 @@ export default class Picture extends Database {
         return Picture.get(id)
             .flatMap(image =>
                 rx.Observable.zip(
-                    Picture.rotateFile(picturePath, albumPath, image.type),
-                    Picture.rotateFile(thumbnailPath, folder, image.type),
+                    Picture.rotateFile(picturePath, albumPath, image.type, rotation),
+                    Picture.rotateFile(thumbnailPath, folder, image.type, rotation),
                     (file, thumbnail) => ({file, thumbnail})
                 )
                 .flatMap(_ => rx.Observable.zip(
@@ -119,14 +123,15 @@ export default class Picture extends Database {
             );
     }
 
-    static rotateFile(path, folderPath, type) {
+    static rotateFile(path, folderPath, type, rotation) {
+        const angle = rotation == 'right' ? 90 : 270;
         logger.info('File rotation', path);
         return rx.Observable
             .fromCallback(fs.readFile)(path, 'utf-8').map(files => files[1])
             .map(str => str.substring(str.indexOf(',')))
             .flatMap(file => rx.Observable.fromPromise(Jimp.read(new Buffer(file, 'base64')).then(ok => ok, err => logger.error('Error while rezdin', err))))
-            .map(image => image.rotate(90))
-            .flatMap(image => toBuffer(image.quality(60), type))
+            .map(image => image.rotate(angle))
+            .flatMap(image => toBuffer(image, type))
             .flatMap(buffer => Picture.createPicture(path, folderPath, buffer));
     }
 

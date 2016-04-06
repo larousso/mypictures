@@ -16,7 +16,7 @@ import Cancel                           from 'material-ui/lib/svg-icons/navigati
 import AppBar                           from 'material-ui/lib/app-bar';
 import Http                             from '../../http';
 import Theme                            from '../../theme';
-import ThemeManager                     from 'material-ui/lib/styles/theme-manager';
+import getMuiTheme                      from 'material-ui/lib/styles/getMuiTheme';
 
 
 class EditAlbum extends Component {
@@ -27,7 +27,7 @@ class EditAlbum extends Component {
     };
     getChildContext = () => {
         return {
-            muiTheme: ThemeManager.getMuiTheme(Theme)
+            muiTheme: getMuiTheme(Theme)
         };
     };
     static preRender = (store, renderProps) => {

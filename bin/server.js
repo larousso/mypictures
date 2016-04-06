@@ -9,7 +9,7 @@ var rootDir = path.resolve(__dirname, '..');
 global.__CLIENT__ = false;
 global.__SERVER__ = true;
 global.__DISABLE_SSR__ = false;  // <----- DISABLES SERVER SIDE RENDERING FOR ERROR DEBUGGING
-global.__DEVELOPMENT__ = process.env.NODE_ENV !== 'prod';
+global.__DEVELOPMENT__ = process.env.NODE_ENV !== 'production';
 global.__DBLOCATION__ = process.env.DBLOCATION || 'tmp';
 global.__LOGPATH__ = process.env.LOGPATH || 'logs';
 global.__IMAGESPATH__ = process.env.IMAGESPATH || 'tmpPictures';

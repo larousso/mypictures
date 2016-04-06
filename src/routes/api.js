@@ -175,7 +175,7 @@ export default () => {
             switch (actions.type) {
                 case 'rotate' :
                     Picture
-                        .rotatePicture(req.params.albumId, req.params.id)
+                        .rotatePicture(req.params.albumId, req.params.id, actions.value)
                         .subscribe(
                             picture => res.json(picture).end(),
                             err => {

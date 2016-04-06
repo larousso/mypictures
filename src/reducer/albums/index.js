@@ -3,6 +3,7 @@ const ADD_ALBUM = 'albums/ADD_ALBUM';
 const DELETE_ALBUM = 'albums/DELETE_ALBUM';
 const LOAD_SUCCESS = 'albums/LOAD_SUCCESS';
 const LOAD_FAIL = 'albums/LOAD_FAIL';
+const DISCARD_ALBUMS = 'albums/DISCARD_ALBUMS';
 
 const initialState = {
     loaded: false,
@@ -57,6 +58,14 @@ export default function reducer(state = initialState, action = {}) {
                 loaded: false,
                 albums: []
             };
+        case DISCARD_ALBUMS:
+            return {
+                ...state,
+                loading: false,
+                loaded: false,
+                albums: []
+            };
+
         default:
             return state;
     }
@@ -94,5 +103,11 @@ export function deleteAlbum(id) {
     return {
         type: DELETE_ALBUM,
         result: id
+    };
+}
+
+export function discardAlbums() {
+    return {
+        type: DISCARD_ALBUMS
     };
 }

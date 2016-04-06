@@ -6,26 +6,29 @@ import rx                               from 'rx'
 import Http                             from '../http'
 import CircularProgress                 from 'material-ui/lib/circular-progress';
 import IconButton                       from 'material-ui/lib/icon-button';
-import Colors                           from 'material-ui/lib/styles/colors'
+import {grey50}                           from 'material-ui/lib/styles/colors'
 import ArrowBack                        from 'material-ui/lib/svg-icons/navigation/chevron-left';
 import Check                            from 'material-ui/lib/svg-icons/navigation/check';
 import Cancel                           from 'material-ui/lib/svg-icons/navigation/close';
-import RotateIcon                       from 'material-ui/lib/svg-icons/image/rotate-right';
+import RotateRight                      from 'material-ui/lib/svg-icons/image/rotate-right';
+import RotateLeft                       from 'material-ui/lib/svg-icons/image/rotate-left';
 import EditIcon                         from 'material-ui/lib/svg-icons/image/edit';
 import DeleteIcon                       from 'material-ui/lib/svg-icons/action/delete';
 import AppBar                           from 'material-ui/lib/app-bar';
 import Paper                            from 'material-ui/lib/paper';
 import TextField                        from 'material-ui/lib/text-field';
 import FlatButton                       from 'material-ui/lib/flat-button';
+import Checkbox                         from 'material-ui/lib/checkbox';
 import Habilitations                    from '../Habiliations'
 import Roles                            from '../../authentication/roles';
 import {addAlbum}                       from '../../reducer/albums'
 import {loadingAlbum, loadAlbumFail, loadAlbum}      from '../../reducer/album'
+import {discardAlbums}      from '../../reducer/albums'
 import {loadingAccount, loadAccountFail, loadAccount}   from '../../reducer/account'
 import {addRawPicture, addPicture, updateRawPicture, pictureCreated, pictureCreationError, loadingPictures, loadPictures, loadPicturesFail, deletePicture}   from '../../reducer/pictures'
 import uuid from 'node-uuid'
 import Theme                            from '../theme';
-import ThemeManager                     from 'material-ui/lib/styles/theme-manager';
+import getMuiTheme                      from 'material-ui/lib/styles/getMuiTheme';
 import Viewer                           from 'viewerjs'
 
 
@@ -45,7 +48,7 @@ class Album extends Component {
 
     getChildContext = () => {
         return {
-            muiTheme: ThemeManager.getMuiTheme(Theme)
+            muiTheme: getMuiTheme(Theme)
         };
     };
 
@@ -199,16 +202,27 @@ class Album extends Component {
 
     savePicture = picture => () => {
         let { title, description } = this.state;
+        let newPicture = {...picture.picture, title, description};
+        this.updatePicture(newPicture)
+            .then(
+                rep => {
+                    this.closeEditMode(picture.id)();
+                },
+                err => {}
+            );
+    };
+
+    updatePicture = (picture) => {
         let { params: { albumId, username} } = this.props;
+        let toSave = {...picture};
+        delete toSave['file'];
+        delete toSave['thumbnail'];
         let url = `/api/accounts/${username}/albums/${albumId}/pictures/${picture.id}`;
-        let oldPicture = Object.assign({}, picture.picture);
-        delete oldPicture['file'];
-        let newPicture = Object.assign({}, oldPicture, {title, description});
-        Http.put(url, newPicture)
+        return Http.put(url, toSave)
             .then(
                 rep => {
                     this.props.addPicture(rep);
-                    this.closeEditMode(picture.id)();
+                    this.props.discardAlbums()
                 },
                 err => {}
             );
@@ -226,11 +240,11 @@ class Album extends Component {
         })
     };
 
-    rotatePicture = id => () => {
+    rotatePicture = (id, rotation) => () => {
         let { params: { albumId, username} } = this.props;
         let url = `/api/accounts/${username}/albums/${albumId}/pictures/${id}/_actions`;
         Http
-            .post(url, {type: 'rotate'})
+            .post(url, {type: 'rotate', value: rotation})
             .then(
                 picture => {
                     this.props.addPicture(picture);
@@ -239,6 +253,25 @@ class Album extends Component {
                     console.log(err);
                 }
             );
+    };
+
+    setPreview = (picture) => () => {
+        console.log('setPreview', picture)
+        if(picture.picture.preview) {
+            picture.picture.preview = false;
+            this.updatePicture(picture.picture)
+        } else {
+            const currentPreview = this.getPictures().map(p => p.picture).find(p => p.preview);
+            if(currentPreview) {
+                currentPreview.preview = false;
+                this.updatePicture(currentPreview)
+
+            }
+            if(picture.picture) {
+                picture.picture.preview = true;
+                this.updatePicture(picture.picture)
+            }
+        }
     };
 
     getImage = (picture, index) => {
@@ -277,7 +310,7 @@ class Album extends Component {
                                 <div className="row middle-xs">
                                     <div className="col-xs">
                                         <div className="box" style={{textAlign: 'left'}}>
-                                            <TextField hintText="Titre"
+                                            <TextField name="Titre" hintText="Titre"
                                                        defaultValue={picture.picture.title}
                                                        floatingLabelText="Titre"
                                                        fullWidth={true} onChange={this.setTitle}
@@ -289,7 +322,7 @@ class Album extends Component {
                                 <div className="row">
                                     <div className="col-xs">
                                         <div className="box" style={{textAlign: 'left'}}>
-                                            <TextField hintText="Description"
+                                            <TextField name="Description" hintText="Description"
                                                        floatingLabelText="Description"
                                                        defaultValue={picture.picture.description}
                                                        fullWidth={true}
@@ -331,15 +364,14 @@ class Album extends Component {
                                 </div>
                                 <div className="row middle-xs">
                                     <div className="col-xs">
-                                        <div className="box" style={{textAlign: 'left'}}>
-                                            <span className="strong">{this.truncate(this.getTitle(picture))}</span>
-                                        </div>
-                                    </div>
-                                    <div className="col-xs">
-                                        <div className="box" style={{textAlign:'right'}}>
+                                        <div style={{textAlign:'right'}}>
                                             <Habilitations account={user} role={Roles.ADMIN}>
-                                                <IconButton tooltip="Rotate" onClick={this.rotatePicture(picture.id)}>
-                                                    <RotateIcon />
+                                                <Checkbox label="Preview" labelPosition="left" defaultChecked={picture.picture.preview} style={{display: 'inline-table', maxWidth:80}} onCheck={this.setPreview(picture)}/>
+                                                <IconButton tooltip="Rotate right" onClick={this.rotatePicture(picture.id, 'right')}>
+                                                    <RotateRight />
+                                                </IconButton>
+                                                <IconButton tooltip="Rotate left" onClick={this.rotatePicture(picture.id, 'left')}>
+                                                    <RotateLeft />
                                                 </IconButton>
                                                 <IconButton tooltip="Edit" onClick={this.editMode(picture.id)}>
                                                     <EditIcon />
@@ -348,6 +380,9 @@ class Album extends Component {
                                                     <DeleteIcon />
                                                 </IconButton>
                                             </Habilitations>
+                                        </div>
+                                        <div style={{textAlign: 'left'}}>
+                                            <span className="strong">{this.truncate(this.getTitle(picture))}</span>
                                         </div>
                                     </div>
 
@@ -404,8 +439,8 @@ class Album extends Component {
     };
 
     truncate = (text) => {
-        if (text.length > 20) {
-            return `${text.substring(0, 20)} ...`
+        if (text.length > 15) {
+            return `${text.substring(0, 15)} ...`
         } else {
             return text;
         }
@@ -442,7 +477,7 @@ class Album extends Component {
     render() {
         let { params:{username}, album: { album: { title } }, account:{user} } = this.props;
         return (
-            <div className="row" style={{background:Colors.grey50}}>
+            <div className="row" style={{background:grey50}}>
                 <div className="col-xs">
                     <div className="box">
                         <div className="row center-xs">
@@ -469,7 +504,7 @@ class Album extends Component {
                             <Habilitations account={user} role={Roles.ADMIN}>
                                 <div className="box">
                                     <div className="col-lg-12">
-                                        <span>Lien facebook : </span><TextField inputStyle={{width:'600'}} value={this.previewLink()} />
+                                        <span>Lien facebook : </span><input name="fbLink" style={{width:'600'}} defaultValue={this.previewLink()} />
                                     </div>
                                 </div>
                             </Habilitations>
@@ -478,7 +513,7 @@ class Album extends Component {
                             <Habilitations account={user} role={Roles.ADMIN}>
                                 <div className="box">
                                     <div className="col-lg-12">
-                                        <span>Lien autre : </span><TextField inputStyle={{width:'800'}} value={this.mdpLink()} />
+                                        <span>Lien autre : </span><input name="shareLink" style={{width:'600'}} defaultValue={this.mdpLink()} />
                                     </div>
                                 </div>
                             </Habilitations>
@@ -546,6 +581,9 @@ export default connect(
         },
         updateRawPicture: (picture) => {
             dispatch(updateRawPicture(picture))
+        },
+        discardAlbums: (id, picture) => {
+            dispatch(discardAlbums())
         },
         loadingPictures: () => {
             dispatch(loadingPictures())

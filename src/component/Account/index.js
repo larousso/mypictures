@@ -6,7 +6,7 @@ import RaisedButton                     from 'material-ui/lib/raised-button';
 import GridList                         from 'material-ui/lib/grid-list/grid-list';
 import GridTile                         from 'material-ui/lib/grid-list/grid-tile';
 import IconButton                       from 'material-ui/lib/icon-button';
-import Colors                           from 'material-ui/lib/styles/colors'
+import {grey50, white}                  from 'material-ui/lib/styles/colors'
 import AddIcon                          from 'material-ui/lib/svg-icons/content/add'
 import EditIcon                         from 'material-ui/lib/svg-icons/image/edit';
 import DeleteIcon                       from 'material-ui/lib/svg-icons/action/delete';
@@ -135,8 +135,10 @@ class Account extends Component {
     getThumbnail = album => {
         if (album) {
             let [first] = album.thumbnails;
-            if (first && first.thumbnail) {
-                return first.thumbnail;
+            let preview = album.thumbnails.find(t => t.preview) || first;
+
+            if (preview && preview.thumbnail) {
+                return preview.thumbnail;
             } else {
                 return '/image-not-found.png';
             }
@@ -177,7 +179,7 @@ class Account extends Component {
     render() {
         let {params:{username}, albums:{albums}, account:{user}} = this.props;
         return (
-            <div className="row center-xs" style={{background:Colors.grey50}}>
+            <div className="row center-xs" style={{background:grey50}}>
                 <div className="col-xs-12 col-lg-8">
                     <div className="box">
                         <div className="row">
@@ -206,10 +208,10 @@ class Account extends Component {
                                                       title={album.title}
                                                       actionIcon={<Habilitations account={user} role={Roles.ADMIN}>
                                                 <Link to={`/account/${username}/EditAlbum/${album.id}`}>
-                                                    <EditIcon color={Colors.white}/>
+                                                    <EditIcon color={white}/>
                                                 </Link>
                                                 <IconButton tooltip="Delete" onClick={this.deleteAlbum(album.id)}>
-                                                    <DeleteIcon color={Colors.white}/>
+                                                    <DeleteIcon color={white}/>
                                                 </IconButton>
                                               </Habilitations>}
                                             >
