@@ -110,20 +110,8 @@ app.get('/album/preview/:albumId',
                     const userAgent = req.headers['user-agent'];
                     if (userAgent == 'Facebot' || userAgent == 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)' || userAgent == 'facebookexternalhit/1.1') {
 
-                        let thumbnail = album
-                            .thumbnails
-                            .sort( (a, b) => {
-                                if(a.preview) {
-                                    return 1;
-                                }
-                                if(b.preview) {
-                                    return -1;
-                                }
-                                return 0;
-                            })
-                            .map(t => `<meta property="og:image" content="${__BASEURL__}/album/preview/${album.id}/thumbnails/${t.id}" />`)
-                            .find(_ => true) || '';
-
+                        let preview = album.thumbnails.find(t => t.preview) || album.thumbnails[0];
+                        let thumbnail = `<meta property="og:image" content="${__BASEURL__}/album/preview/${album.id}/thumbnails/${preview.id}" />`;
                         let content = `
                         <html>
                             <meta property="og:url"                content="${__BASEURL__}/album/preview/${album.id}" />
