@@ -112,6 +112,15 @@ app.get('/album/preview/:albumId',
 
                         let thumbnail = album
                             .thumbnails
+                            .sort( (a, b) => {
+                                if(a.preview) {
+                                    return 1;
+                                }
+                                if(b.preview) {
+                                    return -1;
+                                }
+                                return 0;
+                            })
                             .map(t => `<meta property="og:image" content="${__BASEURL__}/album/preview/${album.id}/thumbnails/${t.id}" />`)
                             .find(_ => true) || '';
 
