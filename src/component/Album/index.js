@@ -5,6 +5,7 @@ import { replacePath }                 from 'redux-simple-router'
 import rx                               from 'rx'
 import Http                             from '../http'
 import IconButton                       from 'material-ui/lib/icon-button';
+import CircularProgress                 from 'material-ui/lib/circular-progress';
 import {grey50}                           from 'material-ui/lib/styles/colors'
 import ArrowBack                        from 'material-ui/lib/svg-icons/navigation/chevron-left';
 import AppBar                           from 'material-ui/lib/app-bar';
@@ -213,7 +214,13 @@ class Album extends Component {
                 return `http://${location}/login?redirect=/account/${username}/${albumId}`;
             }
         }
-    }
+    };
+
+    displayIf = (test) => (fn) => {
+        if(test) {
+            return fn();
+        }
+    };
 
     render() {
         let { params:{username}, album: { album: { title, id } }, account:{user} } = this.props;
@@ -259,6 +266,9 @@ class Album extends Component {
                                 </div>
                             </Habilitations>
                         </div>
+                        {this.displayIf(this.props.pictures.loading)(_ =>
+                            <CircularProgress mode="indeterminate"/>
+                        )}
                         <div className="row top-xs" id="pictures">
                             {this.getPictures().sort(sortImage).map((picture, index) =>
                                 (<div key={picture.id} className="col-xs-6 col-md-6 col-lg-4">
