@@ -2,9 +2,9 @@ import express                                  from 'express'
 import User                                     from '../repository/user'
 import Album                                    from '../repository/album'
 import Picture                                  from '../repository/picture'
+import Comment                                  from '../repository/comments'
 import Roles                                    from '../authentication/roles'
 import multer                                   from 'multer'
-import Jimp                                     from 'jimp'
 import fs                                       from 'fs'
 import rx                                       from 'rx'
 import HttpUtils                                from './HttpUtils'
@@ -25,6 +25,12 @@ export default () => {
                     err => res.json(err).code(400)
                 );
         });
+
+
+    /******************************************************************
+     *             ALBUMS
+     ******************************************************************/
+
 
     app.get('/albums',
         HttpUtils.isAuthenticated,
@@ -124,11 +130,17 @@ export default () => {
                 );
         });
 
-    app.get('/accounts/:username/albums/:albumId/pictures',
+
+
+    /******************************************************************
+     *             THUMBNAILS
+     ******************************************************************/
+
+    app.get('/accounts/:username/albums/:albumId/thumbnails',
         HttpUtils.isAuthenticated,
         upload.array(),
         (req, res) => {
-            Picture.listByAlbum(req.params.albumId).toArray().subscribe(
+            Picture.listThumbnailsByAlbum(req.params.albumId).toArray().subscribe(
                 pictures => res.json(pictures).end(),
                 err => {
                     HttpUtils.handleErrors(err, res);
@@ -136,11 +148,16 @@ export default () => {
             );
         });
 
-    app.get('/accounts/:username/albums/:albumId/thumbnails',
+
+    /******************************************************************
+     *             PICTURES
+     ******************************************************************/
+
+    app.get('/accounts/:username/albums/:albumId/pictures',
         HttpUtils.isAuthenticated,
         upload.array(),
         (req, res) => {
-            Picture.listThumbnailsByAlbum(req.params.albumId).toArray().subscribe(
+            Picture.listByAlbum(req.params.albumId).toArray().subscribe(
                 pictures => res.json(pictures).end(),
                 err => {
                     HttpUtils.handleErrors(err, res);
@@ -234,6 +251,65 @@ export default () => {
         });
 
 
+    /******************************************************************
+     *             COMMENTS
+     ******************************************************************/
+
+    app.get('/accounts/:username/albums/:albumId/pictures/:id/comments',
+        HttpUtils.isAuthenticated,
+        (req, res) => {
+            Comment.listByPicture(req.params.id)
+                .toArray()
+                .subscribe(
+                    comments => res.json(comments).end(),
+                    err => {
+                        HttpUtils.handleErrors(err, res);
+                    }
+                );
+        });
+
+    app.post('/accounts/:username/albums/:albumId/pictures/:id/comments',
+        HttpUtils.isAuthenticated,
+        (req, res) => {
+            new Comment(req.body)
+                .save()
+                .subscribe(
+                    comment => res.json(comment).end(),
+                    err => {
+                        HttpUtils.handleErrors(err, res);
+                    }
+                );
+        });
+
+    app.put('/accounts/:username/albums/:albumId/pictures/:id/comments/:commentId',
+        HttpUtils.isAuthenticated,
+        (req, res) => {
+            logger.info('updating comment ', req.params.commentId);
+            new Comment(req.body)
+                .save(req.params.commentId)
+                .subscribe(
+                    comment => res.json(comment).end(),
+                    err => {
+                        HttpUtils.handleErrors(err, res);
+                    }
+                );
+        });
+
+    app.delete('/accounts/:username/albums/:albumId/pictures/:id/comments/:commentId',
+        HttpUtils.isAuthenticated,
+        (req, res) => {
+            logger.info('deleting comment ', req.params.commentId);
+            Comment
+                .delete(req.params.commentId)
+                .subscribe(
+                    _ => res.json({}).end(),
+                    err => {
+                        HttpUtils.handleErrors(err, res);
+                    }
+                );
+        });
+
     return app;
+
 
 }

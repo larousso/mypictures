@@ -6,6 +6,7 @@ import rx from 'rx'
 import jsonschema from 'jsonschema'
 import levelQuery from 'level-queryengine'
 import jsonqueryEngine from 'jsonquery-engine'
+import logger from '../logger'
 
 const levelupDB = levelup(__DBLOCATION__, { valueEncoding: 'json' });
 const db = Sublevel(levelupDB);
@@ -91,12 +92,18 @@ export default class Database {
     delete(id) {
         let deleteId = id || this.data.id;
         if(deleteId) {
+            logger.info('Deleting', deleteId);
             let context = this;
             return rx.Observable.create(observer => {
                 context.db.del(deleteId, (error) => {
-                    if (error) observer.onError(error);
-                    observer.onNext();
-                    observer.onCompleted();
+                    if (error) {
+                        logger.error('Error deleting', deleteId, error);
+                        observer.onError(error);
+                    } else {
+                        logger.info('Deleting ok', deleteId);
+                        observer.onNext();
+                        observer.onCompleted();
+                    }
                 })
             })
         } else {

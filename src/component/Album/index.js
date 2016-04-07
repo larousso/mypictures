@@ -4,33 +4,21 @@ import { connect }                      from 'react-redux'
 import { replacePath }                 from 'redux-simple-router'
 import rx                               from 'rx'
 import Http                             from '../http'
-import CircularProgress                 from 'material-ui/lib/circular-progress';
 import IconButton                       from 'material-ui/lib/icon-button';
 import {grey50}                           from 'material-ui/lib/styles/colors'
 import ArrowBack                        from 'material-ui/lib/svg-icons/navigation/chevron-left';
-import Check                            from 'material-ui/lib/svg-icons/navigation/check';
-import Cancel                           from 'material-ui/lib/svg-icons/navigation/close';
-import RotateRight                      from 'material-ui/lib/svg-icons/image/rotate-right';
-import RotateLeft                       from 'material-ui/lib/svg-icons/image/rotate-left';
-import EditIcon                         from 'material-ui/lib/svg-icons/image/edit';
-import DeleteIcon                       from 'material-ui/lib/svg-icons/action/delete';
 import AppBar                           from 'material-ui/lib/app-bar';
-import Paper                            from 'material-ui/lib/paper';
-import TextField                        from 'material-ui/lib/text-field';
-import FlatButton                       from 'material-ui/lib/flat-button';
-import Checkbox                         from 'material-ui/lib/checkbox';
 import Habilitations                    from '../Habiliations'
 import Roles                            from '../../authentication/roles';
 import {addAlbum}                       from '../../reducer/albums'
 import {loadingAlbum, loadAlbumFail, loadAlbum}      from '../../reducer/album'
-import {discardAlbums}      from '../../reducer/albums'
 import {loadingAccount, loadAccountFail, loadAccount}   from '../../reducer/account'
-import {addRawPicture, addPicture, updateRawPicture, pictureCreated, pictureCreationError, loadingPictures, loadPictures, loadPicturesFail, deletePicture}   from '../../reducer/pictures'
+import {addRawPicture, pictureCreated, pictureCreationError, loadingPictures, loadPictures, loadPicturesFail}   from '../../reducer/pictures'
 import uuid from 'node-uuid'
 import Theme                            from '../theme';
 import getMuiTheme                      from 'material-ui/lib/styles/getMuiTheme';
 import Viewer                           from 'viewerjs'
-
+import ImagePreview                     from './image'
 
 class Album extends Component {
 
@@ -158,6 +146,7 @@ class Album extends Component {
         } else if (e.target) {
             files = e.target.files;
         }
+        console.log(files);
         if (files) {
             let { params: { albumId, username }} = this.props;
             filesToObservable(files)
@@ -169,6 +158,7 @@ class Album extends Component {
                 .map(triplet => ({...triplet, blob: dataURLToBlob(triplet.src)}))
                 .flatMap(args => {
                     let {blob, file, id} = args;
+                    console.log('Ready to upload !!!');
                     var data = new FormData();
                     data.append('file', blob);
                     data.append('type', file.type);
@@ -192,258 +182,9 @@ class Album extends Component {
         }
     };
 
-    closeEditMode = id => () => {
-        this.setState({edit:null,title:null,description:null});
-    };
-
-    editMode = id => event => {
-        this.setState({edit:id});
-    };
-
-    savePicture = picture => () => {
-        let { title, description } = this.state;
-        let newPicture = {...picture.picture, title, description};
-        this.updatePicture(newPicture)
-            .then(
-                rep => {
-                    this.closeEditMode(picture.id)();
-                },
-                err => {}
-            );
-    };
-
-    updatePicture = (picture) => {
-        let { params: { albumId, username} } = this.props;
-        let toSave = {...picture};
-        delete toSave['file'];
-        delete toSave['thumbnail'];
-        let url = `/api/accounts/${username}/albums/${albumId}/pictures/${picture.id}`;
-        return Http.put(url, toSave)
-            .then(
-                rep => {
-                    this.props.addPicture(rep);
-                    this.props.discardAlbums()
-                },
-                err => {}
-            );
-    };
-
-    setTitle = (value) => {
-        this.setState({
-            title: value.target.value
-        })
-    };
-
-    setDescription = (value) => {
-        this.setState({
-            description: value.target.value
-        })
-    };
-
-    rotatePicture = (id, rotation) => () => {
-        let { params: { albumId, username} } = this.props;
-        let url = `/api/accounts/${username}/albums/${albumId}/pictures/${id}/_actions`;
-        Http
-            .post(url, {type: 'rotate', value: rotation})
-            .then(
-                picture => {
-                    this.props.addPicture(picture);
-                },
-                err => {
-                    console.log(err);
-                }
-            );
-    };
-
-    setPreview = (picture) => () => {
-        console.log('setPreview', picture)
-        if(picture.picture.preview) {
-            picture.picture.preview = false;
-            this.updatePicture(picture.picture)
-        } else {
-            const currentPreview = this.getPictures().map(p => p.picture).find(p => p.preview);
-            if(currentPreview) {
-                currentPreview.preview = false;
-                this.updatePicture(currentPreview)
-
-            }
-            if(picture.picture) {
-                picture.picture.preview = true;
-                this.updatePicture(picture.picture)
-            }
-        }
-    };
-
-    getImage = (picture, index) => {
-        let { account:{user} } = this.props;
-        if (picture.creating && !picture.created) {
-            if (picture.raw.src) {
-                return (
-                    <div key={picture.id}>
-                        <img src={picture.raw.src} height="200px"/>
-                        <CircularProgress mode="indeterminate"/>
-                    </div>
-                );
-            } else {
-                return (
-                    <div>
-                        <CircularProgress mode="indeterminate"/>
-                    </div>
-                );
-            }
-        } else if (this.state.edit == picture.id) {
-            return (
-                <div className="row center-xs" key={picture.id} style={{marginTop:'10px'}}>
-                    <div className="col-xs">
-                        <div className="box">
-                            <Paper style={{padding:'5px'}}>
-                                <div className="row">
-                                    <div className="col-xs">
-                                        <div className="box">
-                                            <a>
-                                                <img style={{cursor:'pointer'}} src={picture.picture.file}
-                                                     className="picture" width="100%" alt={this.getTitle(picture)}/>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="row middle-xs">
-                                    <div className="col-xs">
-                                        <div className="box" style={{textAlign: 'left'}}>
-                                            <TextField name="Titre" hintText="Titre"
-                                                       defaultValue={picture.picture.title}
-                                                       floatingLabelText="Titre"
-                                                       fullWidth={true} onChange={this.setTitle}
-                                                       errorText={this.state.titreError}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="row">
-                                    <div className="col-xs">
-                                        <div className="box" style={{textAlign: 'left'}}>
-                                            <TextField name="Description" hintText="Description"
-                                                       floatingLabelText="Description"
-                                                       defaultValue={picture.picture.description}
-                                                       fullWidth={true}
-                                                       multiLine={true}
-                                                       rows={2}
-                                                       onChange={this.setDescription}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="row">
-                                    <div className="col-xs">
-                                        <div className="box" style={{textAlign: 'left'}}>
-                                            <FlatButton icon={<Check />} label="Enregistrer" primary={true} onClick={this.savePicture(picture)} />
-                                            <FlatButton icon={<Cancel />} label="Annuler" onClick={this.closeEditMode(picture.id)} />
-                                        </div>
-                                    </div>
-                                </div>
-                            </Paper>
-                        </div>
-                    </div>
-                </div>
-            );
-        } else if (picture.picture && picture.picture.file) {
-            return (
-                <div className="row center-xs" key={picture.id} style={{marginTop:'10px'}}>
-                    <div className="col-xs">
-                        <div className="box">
-                            <Paper style={{padding:'5px'}}>
-                                <div className="row">
-                                    <div className="col-xs">
-                                        <div className="box">
-                                            <a>
-                                                <img style={{cursor:'pointer'}} src={picture.picture.file}
-                                                     className="picture" width="100%" alt={this.getTitle(picture)}/>
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="row middle-xs">
-                                    <div className="col-xs">
-                                        <div style={{textAlign:'right'}}>
-                                            <Habilitations account={user} role={Roles.ADMIN}>
-                                                <Checkbox label="Preview" labelPosition="left" defaultChecked={picture.picture.preview} style={{display: 'inline-table', maxWidth:80}} onCheck={this.setPreview(picture)}/>
-                                                <IconButton tooltip="Rotate right" onClick={this.rotatePicture(picture.id, 'right')}>
-                                                    <RotateRight />
-                                                </IconButton>
-                                                <IconButton tooltip="Rotate left" onClick={this.rotatePicture(picture.id, 'left')}>
-                                                    <RotateLeft />
-                                                </IconButton>
-                                                <IconButton tooltip="Edit" onClick={this.editMode(picture.id)}>
-                                                    <EditIcon />
-                                                </IconButton>
-                                                <IconButton tooltip="Delete" onClick={this.deletePicture(picture.id)}>
-                                                    <DeleteIcon />
-                                                </IconButton>
-                                            </Habilitations>
-                                        </div>
-                                        <div style={{textAlign: 'left'}}>
-                                            <span className="strong">{this.truncate(this.getTitle(picture))}</span>
-                                        </div>
-                                    </div>
-
-                                </div>
-                                <div className="row top-xs">
-                                    <div className="col-xs">
-                                        <div className="box" style={{textAlign: 'left'}}>
-                                            <span style={{fontSize:'100%'}} className="thin">{picture.picture.description}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </Paper>
-                        </div>
-                    </div>
-                </div>
-            );
-        }
-    };
-
     getPictures = () => {
         let { pictures: {pictures = {} } } = this.props;
         return Object.keys(pictures).filter(key => pictures.hasOwnProperty(key)).map(key => pictures[key]);
-    };
-
-    deletePicture = id => () => {
-        let { params: { albumId, username }} = this.props;
-        Http.delete(`/api/accounts/${username}/albums/${albumId}/pictures/${id}`)
-            .then(
-                _ => this.props.deletePicture(id),
-                err => {
-                });
-    };
-
-    editPicture = id => () => {
-        if (id && this.props.pictures.pictures && this.props.pictures.pictures[id]) {
-            let picture = this.props.pictures.pictures[id].picture;
-            this.setState({picture, open: true});
-        }
-    };
-
-    handleClose = () => {
-        this.setState({open: false});
-    };
-
-    getTitle = picture => {
-        if (picture.raw && picture.raw.file && picture.raw.file.name) {
-            return picture.raw.file.name;
-        } else if (picture.picture && picture.picture.title) {
-            return picture.picture.title;
-        } else if (picture.picture && picture.picture.filename) {
-            return picture.picture.filename;
-        }
-        return 'Image';
-    };
-
-    truncate = (text) => {
-        if (text.length > 15) {
-            return `${text.substring(0, 15)} ...`
-        } else {
-            return text;
-        }
     };
 
     previewLink = () => {
@@ -475,7 +216,7 @@ class Album extends Component {
     }
 
     render() {
-        let { params:{username}, album: { album: { title } }, account:{user} } = this.props;
+        let { params:{username}, album: { album: { title, id } }, account:{user} } = this.props;
         return (
             <div className="row" style={{background:grey50}}>
                 <div className="col-xs">
@@ -519,10 +260,10 @@ class Album extends Component {
                             </Habilitations>
                         </div>
                         <div className="row top-xs" id="pictures">
-                            {this.getPictures().sort((p1, p2) => p1.id < p2.id).map((picture, index) =>
+                            {this.getPictures().sort(sortImage).map((picture, index) =>
                                 (<div key={picture.id} className="col-xs-6 col-md-6 col-lg-4">
                                     <div className="box">
-                                        {this.getImage(picture, index)}
+                                        <ImagePreview picture={picture} albumId={id} username={username}/>
                                     </div>
                                 </div>)
                             )}
@@ -531,6 +272,14 @@ class Album extends Component {
                 </div>
             </div>
         )
+    }
+}
+
+function sortImage(i1, i2) {
+    if(i1.id < i2.id) {
+        return 1;
+    } else {
+        return -1;
     }
 }
 
@@ -576,15 +325,6 @@ export default connect(
         addRawPicture: (picture) => {
             dispatch(addRawPicture(picture))
         },
-        addPicture: (picture) => {
-            dispatch(addPicture(picture))
-        },
-        updateRawPicture: (picture) => {
-            dispatch(updateRawPicture(picture))
-        },
-        discardAlbums: (id, picture) => {
-            dispatch(discardAlbums())
-        },
         loadingPictures: () => {
             dispatch(loadingPictures())
         },
@@ -600,9 +340,6 @@ export default connect(
         pictureCreationError: (err) => {
             dispatch(pictureCreationError(err))
         },
-        deletePicture: (id) => {
-            dispatch(deletePicture(id))
-        }
     })
 )(Album);
 
@@ -633,7 +370,7 @@ function resize(current_file, maxWidth = 1024, maxHeight = 1024) {
     return rx.Observable.create(observer => {
         var reader = new FileReader();
         if (current_file.type.indexOf('image') == 0) {
-            reader.onload = function (event) {
+            reader.onload = (event) => {
                 var image = new Image();
                 image.src = event.target.result;
 
@@ -668,6 +405,8 @@ function resize(current_file, maxWidth = 1024, maxHeight = 1024) {
                 }
             };
             reader.readAsDataURL(current_file);
+        } else {
+            observer.onError('No image found');
         }
     });
 
