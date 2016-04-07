@@ -25,12 +25,17 @@ class Comments extends Component {
         this.state = {
             comments: [],
             nbComments: 0,
-            edit:{}
+            edit:{},
         }
     }
 
     componentDidMount() {
         const {username, albumId, pictureId} = this.props;
+        if(this.props.user.username !== 'invite') {
+            this.setState({
+                name:this.props.user.username
+            });
+        }
         Http.get(`/api/accounts/${username}/albums/${albumId}/pictures/${pictureId}/comments`)
             .then(comments => {
                 this.setState({comments, nbComments: comments.length})
@@ -50,6 +55,12 @@ class Comments extends Component {
         });
     };
 
+    setCurrentName = (event) => {
+        this.setState({
+            name: event.target.value,
+        });
+    };
+
     setCurrentComment = (event) => {
         this.setState({
             comment: event.target.value,
@@ -57,11 +68,11 @@ class Comments extends Component {
     };
 
     send = () => {
-        const {comment, comments} = this.state;
+        const {name, comment, comments} = this.state;
         if(comment) {
             const date = new Date();
             const {username, albumId, pictureId} = this.props;
-            const newComment = {comment, name:this.props.user.username, date, pictureId};
+            const newComment = {comment, name, date, pictureId};
             Http.post(`/api/accounts/${username}/albums/${albumId}/pictures/${pictureId}/comments`, newComment)
                 .then(rep => {
                     this.setState({
@@ -133,7 +144,15 @@ class Comments extends Component {
                     style={{maxWidth:'400px', overflowY: 'scroll'}}
                 >
                     <div style={{padding: 20}}>
-                        <strong>{this.props.user.username} :</strong><br/>
+                        {this.displayIf(this.props.user.username !== 'invite')(_ =>
+                            [<strong>{this.state.name} :</strong>, <br/>]
+                        )}
+                        {this.displayIf(this.props.user.username === 'invite')(_ =>
+                            <TextField hintText="Nom"
+                                       defaultValue={this.state.name}
+                                       onChange={this.setCurrentName}
+                            />
+                        )}
                         <TextField hintText="Commenter"
                                    multiLine={true}
                                    value={this.state.comment}
@@ -177,7 +196,7 @@ class Comments extends Component {
                                                            rows={1}
                                                            onChange={this.editComment(c.id)}
                                                 />
-                                                <IconButton tooltip="Cancel" onClick={this.cancel(c.id)}>
+                                                <IconButton tooltip="Annuler" onClick={this.cancel(c.id)}>
                                                     <Cancel />
                                                 </IconButton>
                                                 <IconButton tooltip="Envoyer" onClick={this.update(c.id)}>
