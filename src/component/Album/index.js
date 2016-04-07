@@ -108,9 +108,10 @@ class Album extends Component {
                 err => this.props.loadPicturesFail(err))
 
         }
+        this.applyViewer();
     }
 
-    componentDidUpdate() {
+    applyViewer = () => {
         let pictures = document.querySelectorAll('.picture');
         if (pictures.length > 0) {
             if (this.viewer) {
@@ -127,6 +128,10 @@ class Album extends Component {
             });
             Viewer.noConflict();
         }
+    };
+
+    componentDidUpdate() {
+        this.applyViewer();
     }
 
     componentWillUnmount() {

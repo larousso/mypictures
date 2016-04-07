@@ -145,7 +145,7 @@ class Comments extends Component {
                 >
                     <div style={{padding: 20}}>
                         {this.displayIf(this.props.user.username !== 'invite')(_ =>
-                            [<strong>{this.state.name} :</strong>, <br/>]
+                            <div><strong>{this.state.name} :</strong><br/></div>
                         )}
                         {this.displayIf(this.props.user.username === 'invite')(_ =>
                             <TextField hintText="Nom"
