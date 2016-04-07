@@ -130,11 +130,12 @@ class Comments extends Component {
                     anchorOrigin={{horizontal: 'left', vertical: 'bottom'}}
                     targetOrigin={{horizontal: 'left', vertical: 'top'}}
                     onRequestClose={this.handleRequestClose}
-                    style={{maxWidth:'400px'}}
+                    style={{maxWidth:'400px', overflowY: 'scroll'}}
                 >
                     <div style={{padding: 20}}>
                         <strong>{this.props.user.username} :</strong><br/>
                         <TextField hintText="Commenter"
+                                   multiLine={true}
                                    value={this.state.comment}
                                    onChange={this.setCurrentComment}
                         />
