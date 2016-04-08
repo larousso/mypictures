@@ -95,13 +95,13 @@ class Album extends Component {
                 err => this.props.loadAccountFail(err))
 
         }
-        if (username && albumId && (!album.album || album.album.albumId != albumId)) {
+        if (username && albumId && (!album.album || album.album.id != albumId)) {
             this.props.loadingAlbum();
             Http.get(`/api/accounts/${username}/albums/${albumId}`).then(
                 albums => this.props.loadAlbum(albums),
                 err => this.props.loadAlbumFail(err))
         }
-        if (username && albumId && (!pictures.pictures || album.album.albumId != albumId)) {
+        if (username && albumId && (!pictures.pictures || album.album.id != albumId)) {
             this.props.loadingPictures();
             Http.get(`/api/accounts/${username}/albums/${albumId}/pictures`).then(
                 pictures => this.props.loadPictures(pictures),
