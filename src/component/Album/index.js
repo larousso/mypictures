@@ -228,7 +228,7 @@ class Album extends Component {
     };
 
     render() {
-        let { params:{username}, album: { album: { title, id } }, account:{user} } = this.props;
+        let { params:{username, albumId}, album: { album: { title } }, account:{user} } = this.props;
         return (
             <div className="row" style={{background:grey50}}>
                 <div className="col-xs">
@@ -278,7 +278,7 @@ class Album extends Component {
                             {this.getPictures().sort(sortImage).map((picture, index) =>
                                 (<div key={picture.id} className="col-xs-6 col-md-6 col-lg-4">
                                     <div className="box">
-                                        <ImagePreview picture={picture} albumId={id} username={username}/>
+                                        <ImagePreview picture={picture} albumId={albumId} username={username}/>
                                     </div>
                                 </div>)
                             )}
