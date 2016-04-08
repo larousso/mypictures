@@ -26,6 +26,7 @@ class Comments extends Component {
             comments: [],
             nbComments: 0,
             edit:{},
+            nameError:''
         }
     }
 
@@ -69,7 +70,11 @@ class Comments extends Component {
 
     send = () => {
         const {name, comment, comments} = this.state;
-        if(comment) {
+        if(!name) {
+            this.setState({
+                nameError: 'Le nom est obligatoire'
+            });
+        } else if(comment) {
             const date = new Date();
             const {username, albumId, pictureId} = this.props;
             const newComment = {comment, name, date, pictureId};
@@ -151,6 +156,7 @@ class Comments extends Component {
                             <TextField hintText="Nom"
                                        defaultValue={this.state.name}
                                        onChange={this.setCurrentName}
+                                       errorText={this.state.nameError}
                             />
                         )}
                         <TextField hintText="Commenter"
