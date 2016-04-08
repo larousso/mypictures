@@ -24,7 +24,6 @@ class Comments extends Component {
         super();
         this.state = {
             comments: [],
-            nbComments: 0,
             edit:{},
             nameError:''
         }
@@ -32,15 +31,18 @@ class Comments extends Component {
 
     componentDidMount() {
         const {username, albumId, pictureId} = this.props;
-        if(this.props.user.username !== 'invite') {
-            this.setState({
-                name:this.props.user.username
-            });
-        }
+        this.isUnmounted = false;
         Http.get(`/api/accounts/${username}/albums/${albumId}/pictures/${pictureId}/comments`)
             .then(comments => {
-                this.setState({comments, nbComments: comments.length})
+                if(!this.isUnmounted) {
+                    const name = this.props.user.username !== 'invite' ? this.props.user.username : undefined;
+                    this.setState({comments, name});
+                }
             }, err => console.log(err));
+    }
+
+    componentWillUnmount() {
+        this.isUnmounted = true;
     }
 
     openComments = (event) => {
