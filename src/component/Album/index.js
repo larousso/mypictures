@@ -109,6 +109,13 @@ class Album extends Component {
 
         }
         this.applyViewer();
+        if(this.props.user.role !== Roles.ADMIN) {
+            document.addEventListener("contextmenu", function(e){
+                if (e.target.nodeName === "IMG") {
+                    e.preventDefault();
+                }
+            }, false);
+        }
     }
 
     applyViewer = () => {

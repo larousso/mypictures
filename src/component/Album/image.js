@@ -164,20 +164,11 @@ class Image extends Component {
         let { account:{user}, picture , albumId, username} = this.props;
         
         if (picture.creating && !picture.created) {
-            if (picture.raw.src) {
-                return (
-                    <div key={picture.id}>
-                        <img src={picture.raw.src} height="200px"/>
-                        <CircularProgress mode="indeterminate"/>
-                    </div>
-                );
-            } else {
-                return (
-                    <div>
-                        <CircularProgress mode="indeterminate"/>
-                    </div>
-                );
-            }
+            return (
+                <div>
+                    <CircularProgress mode="indeterminate"/>
+                </div>
+            );
         } else if (this.state.edit == picture.id) {
             return (
                 <div className="row center-xs" key={picture.id} style={{marginTop:'10px'}}>
