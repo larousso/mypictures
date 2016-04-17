@@ -203,7 +203,7 @@ class Account extends Component {
                             <div className="col-xs">
                                 <div className="box">
                                     <GridList cellHeight={200} cols={4}>
-                                        {albums.sort( (a1, a2) => a1.id > a2.id ).map(album => (
+                                        {albums.sort(sortAlbum).map(album => (
                                             <GridTile key={album.id}
                                                       title={album.title}
                                                       actionIcon={<Habilitations account={user} role={Roles.ADMIN}>
@@ -227,6 +227,24 @@ class Account extends Component {
                 </div>
             </div>
         )
+    }
+}
+
+function sortAlbum(a1, a2) {
+    console.log(a1, a2);
+    if(!a1.date && !a2.date) {
+        return 0;
+    }
+    if(!a1.date) {
+        return 1;
+    }
+    if(!a2.date) {
+        return -1;
+    }
+    if(a1.date > a2.date) {
+        return -2;
+    } else {
+        return 2;
     }
 }
 

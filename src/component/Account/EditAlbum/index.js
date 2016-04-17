@@ -89,8 +89,8 @@ class EditAlbum extends Component {
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.album) {
-            let { album: { id, title, description } } = nextProps;
-            this.setState({id, title, description});
+            let { album: { id, title, description, date } } = nextProps;
+            this.setState({id, title, description, date});
         }
     }
 
@@ -112,14 +112,14 @@ class EditAlbum extends Component {
             })
         } else {
             let url, response;
-            let {title, description} = this.state;
+            let {title, description, date = new Date()} = this.state;
             let {params:{albumId, username}} = this.props;
             if (albumId) {
                 url = `/api/accounts/${username}/albums/${albumId}`;
-                response = Http.put(url, {albumId, title, description})
+                response = Http.put(url, {albumId, title, description, date})
             } else {
                 url = `/api/accounts/${username}/albums`;
-                response = Http.post(url, {title, description})
+                response = Http.post(url, {title, description, date})
             }
             response
                 .then(

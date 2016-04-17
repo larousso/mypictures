@@ -1,5 +1,6 @@
 
 export default {
     ADMIN: 'Admin',
-    GUEST: 'Guest'
+    GUEST: 'Guest',
+    SUPER_GUEST: 'Superguest'
 }

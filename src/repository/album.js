@@ -20,6 +20,10 @@ const Schema = {
         description: {
             type: 'string',
             required: false
+        },
+        date: {
+            type: 'string',
+            required: false
         }
     }
 };

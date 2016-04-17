@@ -109,7 +109,7 @@ class Album extends Component {
 
         }
         this.applyViewer();
-        if(this.props.user.role !== Roles.ADMIN) {
+        if(this.props.user.role == Roles.GUEST) {
             document.addEventListener("contextmenu", function(e){
                 if (e.target.nodeName === "IMG") {
                     e.preventDefault();
