@@ -1,6 +1,6 @@
-const LOADING = 'account/LOADING';
-const LOAD_SUCCESS = 'account/LOAD_SUCCESS';
-const LOAD_FAIL = 'account/LOAD_FAIL';
+export const LOADING = 'account/LOADING';
+export const LOAD_SUCCESS = 'account/LOAD_SUCCESS';
+export const LOAD_FAIL = 'account/LOAD_FAIL';
 
 const initialState = {
     loaded: false,

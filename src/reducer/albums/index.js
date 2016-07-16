@@ -1,9 +1,9 @@
-const LOADING = 'albums/LOADING';
-const ADD_ALBUM = 'albums/ADD_ALBUM';
-const DELETE_ALBUM = 'albums/DELETE_ALBUM';
-const LOAD_SUCCESS = 'albums/LOAD_SUCCESS';
-const LOAD_FAIL = 'albums/LOAD_FAIL';
-const DISCARD_ALBUMS = 'albums/DISCARD_ALBUMS';
+export const LOADING = 'albums/LOADING';
+export const ADD_ALBUM = 'albums/ADD_ALBUM';
+export const DELETE_ALBUM = 'albums/DELETE_ALBUM';
+export const LOAD_SUCCESS = 'albums/LOAD_SUCCESS';
+export const LOAD_FAIL = 'albums/LOAD_FAIL';
+export const DISCARD_ALBUMS = 'albums/DISCARD_ALBUMS';
 
 const initialState = {
     loaded: false,
@@ -69,45 +69,4 @@ export default function reducer(state = initialState, action = {}) {
         default:
             return state;
     }
-}
-
-
-export function addAlbum(album) {
-    return {
-        type: ADD_ALBUM,
-        result: album
-    };
-}
-
-export function loadingAlbums() {
-    return {
-        type: LOADING
-    };
-}
-
-export function loadAlbumsFail(error) {
-    return {
-        type: LOAD_FAIL,
-        error: error
-    };
-}
-
-export function loadAlbums(albums) {
-    return {
-        type: LOAD_SUCCESS,
-        result: albums
-    };
-}
-
-export function deleteAlbum(id) {
-    return {
-        type: DELETE_ALBUM,
-        result: id
-    };
-}
-
-export function discardAlbums() {
-    return {
-        type: DISCARD_ALBUMS
-    };
 }

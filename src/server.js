@@ -1,14 +1,12 @@
 import express                                  from 'express'
 import bodyParser                               from 'body-parser'
+import cookieParser                             from 'cookie-parser'
 import methodOverride                           from 'method-override'
 import session                                  from 'express-session'
-import morgan                                   from 'morgan'
 import path                                     from 'path'
 import React                                    from 'react'
-import qs                                       from 'query-string'
 import passportInit                             from './authentication'
 import handleRequest                            from './handleRequest'
-import Roles                                    from './authentication/roles'
 import api                                      from './routes/api'
 import cookieSession                            from 'cookie-session'
 import httpConfig                               from './httpConfig'
@@ -20,6 +18,7 @@ import User                                     from './repository/user'
 import DailyRotateFile                          from 'winston-daily-rotate-file'
 import Album                                    from './repository/album'
 import Picture                                  from './repository/picture'
+import http                                     from './component/http'
 
 logger.info('__DEVELOPMENT__', __DEVELOPMENT__);
 logger.info('__DBLOCATION__', __DBLOCATION__);
@@ -53,6 +52,7 @@ app.use(cookieSession({
     keys: ['key1', 'key2']
 }));
 app.use(bodyParser.json({limit: '50mb'}));
+app.use(cookieParser());
 app.use(methodOverride());
 app.use(session({
     secret: 'mypicturessecret',
@@ -72,6 +72,27 @@ app.use(function(req, res, next) {
         userAgent: req.headers['user-agent']
     };
     next();
+});
+
+app.use(function(req, res, next) {
+    req.getAuthToken = () => {
+        if(req.cookies && req.cookies._sessiondata) {
+            return req.cookies._sessiondata;
+        }
+    };
+    if(req.cookies && req.cookies._sessiondata) {
+        http.get('http://localhost:9000/api/session', req.cookies._sessiondata)
+            .then( r => {
+                req.userSession = r;
+                next();
+            });
+    } else {
+        next();
+    }
+});
+
+app.get('/test', (req, resp) => {
+   resp.json(req.userSession).end();
 });
 
 app.get('/auth/facebook', (req, res, next) => {

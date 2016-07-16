@@ -1,20 +1,15 @@
 import React, { Component, PropTypes }  from 'react';
 import { connect }                      from 'react-redux'
-import { replacePath }                 from 'redux-simple-router'
-import {addAlbum}                       from '../../../reducer/albums'
-import {loadingAlbum, loadAlbumFail, loadAlbum}      from '../../../reducer/album'
-import {loadingAccount, loadAccountFail, loadAccount}   from '../../../reducer/account'
-import { Link }                         from 'react-router'
+import { replacePath }                  from 'redux-simple-router'
+import {fetchAlbum}                     from '../../../actions/album'
+import {saveAlbum}                      from '../../../actions/albums'
 import FlatButton                       from 'material-ui/lib/flat-button';
 import IconButton                       from 'material-ui/lib/icon-button';
-import Dialog                           from 'material-ui/lib/dialog';
 import TextField                        from 'material-ui/lib/text-field';
-import NavigationClose                  from 'material-ui/lib/svg-icons/navigation/close';
 import ArrowBack                        from 'material-ui/lib/svg-icons/navigation/chevron-left';
 import Check                            from 'material-ui/lib/svg-icons/navigation/check';
 import Cancel                           from 'material-ui/lib/svg-icons/navigation/close';
 import AppBar                           from 'material-ui/lib/app-bar';
-import Http                             from '../../http';
 import Theme                            from '../../theme';
 import getMuiTheme                      from 'material-ui/lib/styles/getMuiTheme';
 
@@ -22,69 +17,30 @@ import getMuiTheme                      from 'material-ui/lib/styles/getMuiTheme
 class EditAlbum extends Component {
 
     static propTypes = {
-        addAlbum: PropTypes.func,
+        saveAlbum: PropTypes.func,
+        changeRoute: PropTypes.func,
         album: PropTypes.object
     };
+
     getChildContext = () => {
         return {
             muiTheme: getMuiTheme(Theme)
         };
     };
-    static preRender = (store, renderProps) => {
-        if (__SERVER__) {
-            import User     from '../../../repository/user';
-            import Album    from '../../../repository/album';
 
-            let { params: { username, albumId } } = renderProps;
-            if (username) {
-                if (albumId) {
-                    return store.dispatch(dispatch =>
-                        User.findByName(username).map(rep => rep.data).toPromise()
-                            .then(
-                                user => dispatch(loadAccount(user)),
-                                err => dispatch(loadAccountFail(err)))
-                            .then(_ =>
-                                Album.get(albumId).toPromise())
-                            .then(
-                                album => dispatch(loadAlbum(album)),
-                                err => dispatch(loadAlbumFail(err))
-                            )
-                    );
-                } else {
-                    return Promise.resolve();
-                }
-            } else {
-                return Promise.resolve(loadAccountFail({message: 'no user'}));
-            }
-        }
+    static preRender = (store, props) => {
+        let { params: { albumId, username }} = props;
+        return store.dispatch(fetchAlbum(username, albumId));
     };
 
-    constructor(args) {
-        super(args);
+    constructor(args, context) {
+        super(args, context);
         this.state = {};
     }
 
 
     componentDidMount() {
-        let { params: { albumId, username }, account} = this.props;
-        let promises = [];
-        if (username && !account.loaded) {
-            this.props.loadingAccount();
-            promises.push(
-                Http.get(`/api/accounts/${username}`).then(
-                    user => this.props.loadAccount(user),
-                    err => this.props.loadAccountFail(err))
-            );
-        }
-        if (username && albumId) {
-            this.props.loadingAlbum();
-            promises.push(
-                Http.get(`/api/accounts/${username}/albums/${albumId}`).then(
-                    albums => this.props.loadAlbum(albums),
-                    err => this.props.loadAlbumFail(err))
-            );
-        }
-        Promise.all(promises);
+        EditAlbum.preRender(this.context.store, this.props);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -111,25 +67,9 @@ class EditAlbum extends Component {
                 titreError: 'Le titre est obligatoire'
             })
         } else {
-            let url, response;
             let {title, description, date = new Date()} = this.state;
             let {params:{albumId, username}} = this.props;
-            if (albumId) {
-                url = `/api/accounts/${username}/albums/${albumId}`;
-                response = Http.put(url, {albumId, title, description, date})
-            } else {
-                url = `/api/accounts/${username}/albums`;
-                response = Http.post(url, {title, description, date})
-            }
-            response
-                .then(
-                    rep => {
-                        this.props.addAlbum(rep);
-                        this.props.changeRoute(`/account/${username}`);
-                    },
-                    err => {
-                    }
-                );
+            this.props.saveAlbum({title, description, date}, username, albumId, `/account/${username}`);
         }
     };
 
@@ -201,37 +141,21 @@ EditAlbum.childContextTypes = {
     muiTheme: React.PropTypes.object
 };
 
+EditAlbum.contextTypes = {
+    store: React.PropTypes.object.isRequired
+};
 
 export default connect(
     state => ({
         routing: state.routing,
-        account: state.account,
         album: state.album.album,
     }),
     dispatch => ({
         changeRoute: (route) => {
             dispatch(replacePath(route))
         },
-        loadAccount: (user) => {
-            dispatch(loadAccount(user))
-        },
-        loadingAccount: () => {
-            dispatch(loadingAccount())
-        },
-        loadAccountFail: (err) => {
-            dispatch(loadAccountFail(err))
-        },
-        loadAlbum: (user) => {
-            dispatch(loadAlbum(user))
-        },
-        loadingAlbum: () => {
-            dispatch(loadingAlbum())
-        },
-        loadAlbumFail: (err) => {
-            dispatch(loadAlbumFail(err))
-        },
-        addAlbum: (album) => {
-            dispatch(addAlbum(album))
+        saveAlbum: (album, username, albumId, redirect) => {
+            dispatch(saveAlbum(album, username, albumId, redirect))
         }
     })
 )(EditAlbum);

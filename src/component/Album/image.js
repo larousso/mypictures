@@ -1,6 +1,7 @@
 import React, { Component, PropTypes }  from 'react';
 import { connect }                      from 'react-redux'
-import Http                             from '../http'
+import config                           from '../../clientConfig'
+import Http                             from '../../actions/http'
 import CircularProgress                 from 'material-ui/lib/circular-progress';
 import IconButton                       from 'material-ui/lib/icon-button';
 import Check                            from 'material-ui/lib/svg-icons/navigation/check';
@@ -15,8 +16,8 @@ import FlatButton                       from 'material-ui/lib/flat-button';
 import Checkbox                         from 'material-ui/lib/checkbox';
 import Habilitations                    from '../Habiliations'
 import Roles                            from '../../authentication/roles';
-import {discardAlbums}                  from '../../reducer/albums'
-import {addPicture, deletePicture}      from '../../reducer/pictures'
+import {discardAlbums}                  from '../../actions/albums'
+import {addPicture, deletePicture}      from '../../actions/pictures'
 import Theme                            from '../theme';
 import getMuiTheme                      from 'material-ui/lib/styles/getMuiTheme';
 import Comments                         from './comments'
@@ -123,9 +124,9 @@ class Image extends Component {
 
     rotatePicture = (id, rotation) => () => {
         let { albumId, username } = this.props;
-        let url = `/api/accounts/${username}/albums/${albumId}/pictures/${id}/_actions`;
+        let url = `/api/accounts/${username}/albums/${albumId}/pictures/${id}/_rotation`;
         Http
-            .post(url, {type: 'rotate', value: rotation})
+            .post(url, {rotation})
             .then(
                 picture => {
                     this.props.addPicture(picture);
@@ -224,7 +225,7 @@ class Image extends Component {
                     </div>
                 </div>
             );
-        } else if (picture.picture && picture.picture.file) {
+        } else if (picture.picture) {
             return (
                 <div className="row center-xs" key={picture.id} style={{marginTop:'10px'}}>
                     <div className="col-xs">
@@ -234,7 +235,7 @@ class Image extends Component {
                                     <div className="col-xs">
                                         <div className="box">
                                             <a>
-                                                <img style={{cursor:'pointer'}} src={picture.picture.file}
+                                                <img style={{cursor:'pointer'}} src={`${config.api.baseUrl}/static/images/${picture.picture.id}`}
                                                      className="picture" width="100%" alt={this.getTitle(picture)}/>
                                             </a>
                                         </div>

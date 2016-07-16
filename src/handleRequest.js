@@ -4,18 +4,16 @@ import { match, RoutingContext }                from 'react-router'
 import {Provider}                               from 'react-redux';
 import getRoutes                                from './routes'
 import Html                                     from './layout/Html'
-import createHistory                            from 'history/lib/createMemoryHistory';
-import {loadUser}                               from './reducer/auth'
 import configureStore                           from './store/configureStore'
 
 export default (req, res) => {
-    const store = configureStore({currentLocation: {location: req.get('host')}});
-    const user = req.user;
-
-    if(req.isAuthenticated()) {
-        store.dispatch(loadUser(user));
+    const authToken = req.getAuthToken();
+    if(authToken) {
+        const user = req.userSession;
+        const store = configureStore({auth:{ loading: false, loaded: true, user}, authToken, currentLocation: {location: req.get('host')}});
         handleRequest(req, res, store);
     } else {
+        const store = configureStore({authToken, currentLocation: {location: req.get('host')}});
         handleRequest(req, res, store);
     }
 }

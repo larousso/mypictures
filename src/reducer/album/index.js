@@ -1,6 +1,6 @@
-const LOADING = 'album/LOADING';
-const LOAD_SUCCESS = 'album/LOAD_SUCCESS';
-const LOAD_FAIL = 'album/LOAD_FAIL';
+export const LOADING = 'album/LOADING';
+export const LOAD_SUCCESS = 'album/LOAD_SUCCESS';
+export const LOAD_FAIL = 'album/LOAD_FAIL';
 
 const initialState = {
     loaded: false,

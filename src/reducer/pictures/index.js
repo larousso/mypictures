@@ -1,13 +1,13 @@
-const LOADING = 'pictures/LOADING';
-const CREATE_PICTURE = 'pictures/CREATE_PICTURE';
-const RAW_PICTURE = 'pictures/RAW_PICTURE';
-const UPDATE_RAW_PICTURE = 'pictures/UPDATE_RAW_PICTURE';
-const PICTURE_CREATED = 'pictures/PICTURE_CREATED';
-const PICTURE_CREATION_ERROR = 'pictures/PICTURE_CREATION_ERROR';
-const ADD_PICTURE = 'pictures/ADD_PICTURE';
-const DELETE_PICTURE = 'pictures/DELETE_PICTURE';
-const LOAD_SUCCESS = 'pictures/LOAD_SUCCESS';
-const LOAD_FAIL = 'pictures/LOAD_FAIL';
+export const LOADING = 'pictures/LOADING';
+export const CREATE_PICTURE = 'pictures/CREATE_PICTURE';
+export const RAW_PICTURE = 'pictures/RAW_PICTURE';
+export const UPDATE_RAW_PICTURE = 'pictures/UPDATE_RAW_PICTURE';
+export const PICTURE_CREATED = 'pictures/PICTURE_CREATED';
+export const PICTURE_CREATION_ERROR = 'pictures/PICTURE_CREATION_ERROR';
+export const ADD_PICTURE = 'pictures/ADD_PICTURE';
+export const DELETE_PICTURE = 'pictures/DELETE_PICTURE';
+export const LOAD_SUCCESS = 'pictures/LOAD_SUCCESS';
+export const LOAD_FAIL = 'pictures/LOAD_FAIL';
 
 const initialState = {
     loaded: false,
@@ -103,69 +103,4 @@ export default function reducer(state = initialState, action = {}) {
         default:
             return state;
     }
-}
-
-export function addRawPicture(picture) {
-    return {
-        type: RAW_PICTURE,
-        result: picture
-    };
-}
-export function updateRawPicture(picture) {
-    return {
-        type: UPDATE_RAW_PICTURE,
-        result: picture
-    };
-}
-export function pictureCreated(picture) {
-    return {
-        type: PICTURE_CREATED,
-        result: picture
-    };
-}
-
-export function pictureCreationError(error) {
-    return {
-        type: PICTURE_CREATION_ERROR,
-        result: {error, creating: false, created:false}
-    };
-}
-
-export function addPicture(picture) {
-    return {
-        type: ADD_PICTURE,
-        result: picture
-    };
-}
-
-export function loadingPictures() {
-    return {
-        type: LOADING
-    };
-}
-
-export function loadPicturesFail(error) {
-    return {
-        type: LOAD_FAIL,
-        error: error
-    };
-}
-
-export function loadPictures(pictures) {
-    return {
-        type: LOAD_SUCCESS,
-        result: pictures
-            .map(picture => ({picture, id: picture.id, name: picture.filename, creating: false, created:true}))
-            .reduce((acc, elt) => {
-                acc[elt.id] = elt;
-                return acc;
-            }, {})
-    };
-}
-
-export function deletePicture(id) {
-    return {
-        type: DELETE_PICTURE,
-        result: id
-    };
 }

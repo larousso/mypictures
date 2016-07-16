@@ -9,6 +9,10 @@ import pictures                 from './pictures'
 import currentLocation          from './currentLocation'
 
 
-export default combineReducers(Object.assign({}, {auth, account, album, albums, pictures, currentLocation}, {
+function authToken(state = {}, action = {}) {
+    return state;
+}
+
+export default combineReducers(Object.assign({}, {authToken, auth, account, album, albums, pictures, currentLocation}, {
     routing: routeReducer
 }));

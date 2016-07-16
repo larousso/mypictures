@@ -34,7 +34,7 @@ class Comments extends Component {
         this.isUnmounted = false;
         Http.get(`/api/accounts/${username}/albums/${albumId}/pictures/${pictureId}/comments`)
             .then(comments => {
-                if(!this.isUnmounted) {
+                if(!this.isUnmounted && comments) {
                     const name = this.props.user.username !== 'invite' ? this.props.user.username : undefined;
                     this.setState({comments, name});
                 }
@@ -170,7 +170,7 @@ class Comments extends Component {
                             <Done />
                         </IconButton>
                         {
-                            this.state.comments
+                            []
                                 .sort((c1, c2) => {
                                     if (new Date(c1.date) > new Date(c2.date)) {
                                         return -1;

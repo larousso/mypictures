@@ -1,9 +1,5 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux'
-import {loadingAlbum, loadAlbumFail, loadAlbum}      from '../../reducer/album'
-import {loadingAccount, loadAccountFail, loadAccount}   from '../../reducer/account'
-
-
 
 let Habiliation = (props) => {
     let {role, account, user} = props;

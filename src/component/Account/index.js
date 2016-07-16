@@ -14,8 +14,9 @@ import rx                               from 'rx';
 import Http                             from '../http'
 import Habilitations                    from '../Habiliations'
 import Roles                            from '../../authentication/roles';
-import {loadingAccount, loadAccountFail, loadAccount}   from '../../reducer/account';
-import {loadingAlbums, loadAlbumsFail, loadAlbums, deleteAlbum}      from '../../reducer/albums';
+import {fetchAccount}   from '../../actions/account';
+import {fetchAlbums, fetchDeleteAlbum}      from '../../actions/albums';
+import config                           from '../../clientConfig'
 
 class Account extends Component {
 
@@ -24,72 +25,30 @@ class Account extends Component {
         routing: PropTypes.object.isRequired,
         account: PropTypes.object.isRequired,
         albums: PropTypes.object.isRequired,
-        loadAccount: PropTypes.func.isRequired,
-        loadingAccount: PropTypes.func.isRequired,
-        loadAccountFail: PropTypes.func.isRequired,
-        loadAlbums: PropTypes.func.isRequired,
-        loadingAlbums: PropTypes.func.isRequired,
-        loadAlbumsFail: PropTypes.func.isRequired
+        changeRoute: PropTypes.func.isRequired,
+        fetchAccount: PropTypes.func.isRequired,
+        fetchAlbums: PropTypes.func.isRequired,
+        deleteAlbum: PropTypes.func.isRequired,
     };
 
-    constructor(args) {
-        super(args);
+    constructor(props, context) {
+        super(props, context);
         this.state = {
             open: false
         }
     }
 
-    static preRender = (store, renderProps) => {
-        if (__SERVER__) {
-            import User from '../../repository/user';
-            import Album from '../../repository/album';
-            import Picture from '../../repository/picture';
-
-            let {params:{username}} = renderProps;
-            return store.dispatch(dispatch => {
-                if (username) {
-                    return User
-                        .findByName(username).map(rep => rep.data).toPromise().then(
-                            user => dispatch(loadAccount(user)),
-                            err => dispatch(loadAccountFail(err)))
-                        .then(_ => Album.listByUsername(username)
-                            .flatMap(album => Picture.listThumbnailsByAlbum(album.id).toArray().map(thumbnails => ({thumbnails, ...album})))
-                            .toArray()
-                            .toPromise())
-                        .then(
-                            albums => dispatch(loadAlbums(albums)),
-                            err => {
-                                console.log('Error', error);
-                                return dispatch(loadAlbumsFail(err))
-                            }
-                        );
-                }
-                else {
-                    return Promise.resolve(loadAccountFail({message: 'no user'}));
-                }
-            });
-        }
+    static preRender = (store, props) => {
+        let {params:{username}} = props;
+        return Promise.all([
+            store.dispatch(fetchAccount(username)),
+            store.dispatch(fetchAlbums(username))
+        ]);
     };
 
     componentDidMount() {
-        let {params:{username}, account, albums} = this.props;
-        if (username && !account.loaded) {
-            this.props.loadingAccount();
-            Http.get(`/api/accounts/${username}`)
-                .then(
-                    user => this.props.loadAccount(user),
-                    err => this.props.loadAccountFail(err)
-                );
-        }
-        if (username && (!albums || !albums.loaded)) {
-            console.log('Component did mount');
-            this.props.loadingAlbums();
-            Http.get(`/api/accounts/${username}/albums`)
-                .then(
-                    albums => this.props.loadAlbums(albums),
-                    err => this.props.loadAlbumsFail(err)
-                );
-        }
+        console.log('Store', this.context);
+        Account.preRender(this.context.store, this.props);
     }
 
     componentWillUnmount() {
@@ -101,13 +60,10 @@ class Account extends Component {
     };
 
     displayAlbumResume = album => () => {
-        let {params:{username}} = this.props;
         let observable =
             rx.Observable.zip(
-                rx.Observable
-                    .fromPromise(Http.get(`/api/accounts/${username}/albums/${album.id}/thumbnails`))
-                    .flatMap(resp => rx.Observable.fromArray(resp))
-                    .map(p => p.thumbnail),
+                rx.Observable.fromArray(album.pictures)
+                    .map(p => `${config.api.baseUrl}/static/thumbnails/${p.id}`),
                 rx.Observable.timer(0, 700),
                 (t, i) => t
                 )
@@ -134,11 +90,11 @@ class Account extends Component {
 
     getThumbnail = album => {
         if (album) {
-            let [first] = album.thumbnails;
-            let preview = album.thumbnails.find(t => t.preview) || first;
+            let [first] = album.pictures;
+            let preview = album.pictures.find(t => t.preview) || first;
 
-            if (preview && preview.thumbnail) {
-                return preview.thumbnail;
+            if (preview) {
+                return `${config.api.baseUrl}/static/thumbnails/${preview.id}`;
             } else {
                 return '/image-not-found.png';
             }
@@ -146,8 +102,8 @@ class Account extends Component {
         return '/image-not-found.png';
     };
 
-    getImage = (album) => {
-        if (album && album.thumbnails) {
+    displayImage = (album) => {
+        if (album) {
             let thumbnail;
             if (this.state.currentAlbumId && album.id == this.state.currentAlbumId) {
                 thumbnail = this.state.thumbnail || this.getThumbnail(album);
@@ -166,10 +122,7 @@ class Account extends Component {
 
     deleteAlbum = id => () => {
         let {params:{username}} = this.props;
-        Http.delete(`/api/accounts/${username}/albums/${id}`)
-            .then(
-                _ => this.props.deleteAlbum(id),
-                err => console.log("Err", err));
+        this.props.deleteAlbum(username, id);
     };
 
     createAlbum = () => {
@@ -216,7 +169,7 @@ class Account extends Component {
                                               </Habilitations>}
                                             >
                                                 <Link
-                                                    to={`/account/${username}/${album.id}`}>{this.getImage(album)}</Link>
+                                                    to={`/account/${username}/${album.id}`}>{this.displayImage(album)}</Link>
                                             </GridTile>
                                         ))}
                                     </GridList>
@@ -231,7 +184,6 @@ class Account extends Component {
 }
 
 function sortAlbum(a1, a2) {
-    console.log(a1, a2);
     if(!a1.date && !a2.date) {
         return 0;
     }
@@ -248,8 +200,14 @@ function sortAlbum(a1, a2) {
     }
 }
 
+Account.contextTypes = {
+    store: React.PropTypes.object.isRequired
+};
+
 export default connect(
     state => ({
+        store: state,
+        authToken: state.authToken,
         user: state.auth.user,
         routing: state.routing,
         account: state.account,
@@ -259,26 +217,14 @@ export default connect(
         changeRoute: (route) => {
             dispatch(replacePath(route))
         },
-        loadAccount: (user) => {
-            dispatch(loadAccount(user))
+        fetchAccount: (user) => {
+            dispatch(fetchAccount(user))
         },
-        loadingAccount: () => {
-            dispatch(loadingAccount())
+        fetchAlbums: (user) => {
+            dispatch(fetchAlbums(user))
         },
-        loadAccountFail: (err) => {
-            dispatch(loadAccountFail(err))
-        },
-        loadAlbums: (user) => {
-            dispatch(loadAlbums(user))
-        },
-        loadingAlbums: () => {
-            dispatch(loadingAlbums())
-        },
-        loadAlbumsFail: (err) => {
-            dispatch(loadAlbumsFail(err))
-        },
-        deleteAlbum: (id) => {
-            dispatch(deleteAlbum(id))
+        deleteAlbum: (username, id) => {
+            dispatch(fetchDeleteAlbum(username, id))
         }
     })
 )(Account);

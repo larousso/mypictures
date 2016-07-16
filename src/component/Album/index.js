@@ -3,18 +3,18 @@ import {findDOMNode}                    from 'react-dom';
 import { connect }                      from 'react-redux'
 import { replacePath }                 from 'redux-simple-router'
 import rx                               from 'rx'
-import Http                             from '../http'
+import Http                             from '../../actions/http'
 import IconButton                       from 'material-ui/lib/icon-button';
 import CircularProgress                 from 'material-ui/lib/circular-progress';
-import {grey50}                           from 'material-ui/lib/styles/colors'
+import {grey50}                         from 'material-ui/lib/styles/colors'
 import ArrowBack                        from 'material-ui/lib/svg-icons/navigation/chevron-left';
 import AppBar                           from 'material-ui/lib/app-bar';
 import Habilitations                    from '../Habiliations'
 import Roles                            from '../../authentication/roles';
-import {addAlbum}                       from '../../reducer/albums'
-import {loadingAlbum, loadAlbumFail, loadAlbum}      from '../../reducer/album'
-import {loadingAccount, loadAccountFail, loadAccount}   from '../../reducer/account'
-import {addRawPicture, pictureCreated, pictureCreationError, loadingPictures, loadPictures, loadPicturesFail}   from '../../reducer/pictures'
+import {fetchPictures, addRawPicture, pictureCreated, pictureCreationError}                  from '../../actions/pictures'
+import {fetchAlbum}                     from '../../actions/album'
+import {addAlbum}                     from '../../actions/albums'
+import {fetchAccount}                   from '../../actions/account'
 import uuid from 'node-uuid'
 import Theme                            from '../theme';
 import getMuiTheme                      from 'material-ui/lib/styles/getMuiTheme';
@@ -27,12 +27,9 @@ class Album extends Component {
         routing: PropTypes.object.isRequired,
         account: PropTypes.object.isRequired,
         album: PropTypes.object.isRequired,
-        loadAccount: PropTypes.func,
-        loadingAccount: PropTypes.func,
-        loadAccountFail: PropTypes.func,
-        loadAlbum: PropTypes.func,
-        loadingAlbum: PropTypes.func,
-        loadAlbumFail: PropTypes.func
+        fetchPictures: PropTypes.func,
+        fetchAlbum: PropTypes.func,
+        fetchAccount: PropTypes.func
     };
 
     getChildContext = () => {
@@ -52,62 +49,17 @@ class Album extends Component {
         }
     }
 
-    static preRender = (store, renderProps) => {
-        if (__SERVER__) {
-            import User     from '../../repository/user';
-            import Album    from '../../repository/album';
-            import Picture  from '../../repository/picture';
-
-            let { params: { username, albumId } } = renderProps;
-            if (username) {
-                return store.dispatch(dispatch =>
-                    User.findByName(username).map(rep => rep.data).toPromise()
-                        .then(
-                            user => dispatch(loadAccount(user)),
-                            err => dispatch(loadAccountFail(err)))
-                        .then(_ =>
-                            Album.get(albumId).toPromise())
-                        .then(
-                            album => dispatch(loadAlbum(album)),
-                            err => dispatch(loadAlbumFail(err)))
-                        .then(_ => {
-                            dispatch(loadingPictures());
-                            return Picture.listByAlbum(albumId).toArray().toPromise();
-                        })
-                        .then(
-                            pictures => dispatch(loadPictures(pictures)),
-                            err => dispatch(loadPicturesFail(err)))
-                        .then(_ => {
-
-                        }));
-            } else {
-                return Promise.resolve(loadAccountFail({message: 'no user'}));
-            }
-        }
+    static preRender = (store, props) => {
+        let {params:{ albumId, username}} = props;
+        return Promise.all([
+            store.dispatch(fetchAccount(username)),
+            store.dispatch(fetchAlbum(username)),
+            store.dispatch(fetchPictures(username, albumId))
+        ]);
     };
 
     componentDidMount() {
-        let { params: { albumId, username }, account, pictures, album} = this.props;
-        if (username && !account.loaded) {
-            this.props.loadingAccount();
-            Http.get(`/api/accounts/${username}`).then(
-                user => this.props.loadAccount(user),
-                err => this.props.loadAccountFail(err))
-
-        }
-        if (username && albumId && (!album.album || album.album.id != albumId)) {
-            this.props.loadingAlbum();
-            Http.get(`/api/accounts/${username}/albums/${albumId}`).then(
-                albums => this.props.loadAlbum(albums),
-                err => this.props.loadAlbumFail(err))
-        }
-        if (username && albumId && (!pictures.pictures || album.album.id != albumId)) {
-            this.props.loadingPictures();
-            Http.get(`/api/accounts/${username}/albums/${albumId}/pictures`).then(
-                pictures => this.props.loadPictures(pictures),
-                err => this.props.loadPicturesFail(err))
-
-        }
+        Album.preRender(this.context.store, this.props);
         this.applyViewer();
         if(this.props.user.role == Roles.GUEST) {
             document.addEventListener("contextmenu", function(e){
@@ -180,11 +132,13 @@ class Album extends Component {
                 })
                 .subscribe(
                     picture => {
+                        console.log("DONE", picture);
                         if (picture && picture.id) {
                             this.props.pictureCreated(picture)
                         }
                     },
                     err => {
+                        console.log("DONE", err);
                         this.props.pictureCreationError(err);
                         console.log('Error', err)
                     },
@@ -308,7 +262,9 @@ function sortImage(i1, i2) {
 Album.childContextTypes = {
     muiTheme: React.PropTypes.object
 };
-
+Album.contextTypes = {
+    store: React.PropTypes.object.isRequired
+};
 
 export default connect(
     state => ({
@@ -323,38 +279,11 @@ export default connect(
         changeRoute: (route) => {
             dispatch(replacePath(route))
         },
-        loadAccount: (user) => {
-            dispatch(loadAccount(user))
-        },
-        loadingAccount: () => {
-            dispatch(loadingAccount())
-        },
-        loadAccountFail: (err) => {
-            dispatch(loadAccountFail(err))
-        },
         addAlbum: (album) => {
             dispatch(addAlbum(album))
         },
-        loadAlbum: (user) => {
-            dispatch(loadAlbum(user))
-        },
-        loadingAlbum: () => {
-            dispatch(loadingAlbum())
-        },
-        loadAlbumFail: (err) => {
-            dispatch(loadAlbumFail(err))
-        },
         addRawPicture: (picture) => {
             dispatch(addRawPicture(picture))
-        },
-        loadingPictures: () => {
-            dispatch(loadingPictures())
-        },
-        loadPictures: pictures => {
-            dispatch(loadPictures(pictures))
-        },
-        loadPicturesFail: error => {
-            dispatch(loadPicturesFail(error))
         },
         pictureCreated: (picture) => {
             dispatch(pictureCreated(picture))

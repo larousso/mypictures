@@ -1,35 +1,31 @@
 import React, { Component, PropTypes }      from 'react';
 import { connect }                          from 'react-redux'
-import { pushPath }                         from 'redux-simple-router'
 import TextField                            from 'material-ui/lib/text-field'
 import FlatButton                           from 'material-ui/lib/flat-button'
-import {loadUser}                           from '../../reducer/auth'
-import Http                                 from '../http'
+import {login}                           from '../../actions/auth'
 
 class Login extends Component {
+
     static propTypes = {
         routing: PropTypes.object,
         login: PropTypes.func,
         goTo: PropTypes.func
     };
+
     constructor() {
         super();
-        this.state = { errors: {}};
+        this.state = {}
     }
 
     login = () => {
         let {username, password} = this.state;
-        Http.post('/api/login', {username, password})
-            .then(user => {
-                this.props.login(user);
-                let { query: { redirect } } = this.props.location;
-                this.props.goTo(redirect || '/account/'+user.username);
-            }).catch(err => {
-                this.setState({errors: {
-                    login: 'Mauvais login ou mot de passe',
-                    password: 'Mauvais login ou mot de passe'
-                }});
-            });
+        let { query: { redirect } } = this.props.location;
+        let res = this.props.login({username, password}, redirect);
+        console.log(res);
+    };
+
+    getErrors = () => {
+        return this.props.loginError || {};
     };
 
     setUsername = (value) => {
@@ -56,12 +52,12 @@ class Login extends Component {
                         <div className="box">
                             <TextField hintText="Login" floatingLabelText="Login" ref="username"
                                        fullWidth={true} onChange={this.setUsername}
-                                       errorText={this.state.errors.login}
+                                       errorText={this.getErrors().login}
                             />
                             <br />
                             <TextField hintText="Mot de passe" floatingLabelText="Mot de passe" ref="password"
                                        type="password" fullWidth={true} onChange={this.setPassword}
-                                       errorText={this.state.errors.password}
+                                       errorText={this.getErrors().password}
                             />
                         </div>
                     </div>
@@ -78,14 +74,13 @@ class Login extends Component {
 
 export default connect(
     state => ({
-        routing: state.routing
+        routing: state.routing,
+        user: state.auth.user,
+        loginError: state.auth.loginError,
     }),
     dispatch => ({
-        login: (user) => {
-            dispatch(loadUser(user))
+        login: (user, redirect) => {
+            return dispatch(login(user, redirect))
         },
-        goTo: (path) => {
-            dispatch(pushPath(path))
-        }
     })
 )(Login);
