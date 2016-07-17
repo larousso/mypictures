@@ -74,7 +74,7 @@ class Image extends Component {
     };
 
     savePicture = picture => () => {
-        let { title, description } = this.state;
+        let { title = picture.picture.title, description = picture.picture.description} = this.state;
         let newPicture = {...picture.picture, title, description};
         this.updatePicture(newPicture)
             .then(
@@ -87,11 +87,8 @@ class Image extends Component {
 
     updatePicture = (picture) => {
         let { albumId, username } = this.props;
-        let toSave = {...picture};
-        delete toSave['file'];
-        delete toSave['thumbnail'];
         let url = `/api/accounts/${username}/albums/${albumId}/pictures/${picture.id}`;
-        return Http.put(url, toSave)
+        return Http.put(url, picture)
             .then(
                 rep => {
                     this.props.addPicture(rep);
@@ -129,7 +126,8 @@ class Image extends Component {
             .post(url, {rotation})
             .then(
                 picture => {
-                    this.props.addPicture(picture);
+                    let timestamp = new Date().getTime();
+                    this.props.addPicture({timestamp, ...picture});
                 },
                 err => {
                     console.log(err);
@@ -160,6 +158,10 @@ class Image extends Component {
         return Object.keys(pictures).filter(key => pictures.hasOwnProperty(key)).map(key => pictures[key]);
     };
 
+    getPictureSrc = (picture) => {
+        return `${config.api.baseUrl}/static/images/${picture.picture.id}?ts=${picture.picture.timestamp}`;
+    };
+
 
     render() {
         let { account:{user}, picture , albumId, username} = this.props;
@@ -180,7 +182,7 @@ class Image extends Component {
                                     <div className="col-xs">
                                         <div className="box">
                                             <a>
-                                                <img style={{cursor:'pointer'}} src={picture.picture.file}
+                                                <img style={{cursor:'pointer'}} src={this.getPictureSrc(picture)}
                                                      className="picture" width="100%" alt={this.getTitle(picture)}/>
                                             </a>
                                         </div>
@@ -235,7 +237,7 @@ class Image extends Component {
                                     <div className="col-xs">
                                         <div className="box">
                                             <a>
-                                                <img style={{cursor:'pointer'}} src={`${config.api.baseUrl}/static/images/${picture.picture.id}`}
+                                                <img style={{cursor:'pointer'}} src={this.getPictureSrc(picture)}
                                                      className="picture" width="100%" alt={this.getTitle(picture)}/>
                                             </a>
                                         </div>

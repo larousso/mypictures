@@ -10,7 +10,7 @@ import Popover                          from 'material-ui/lib/popover/popover';
 import Done                             from 'material-ui/lib/svg-icons/action/done';
 import TextField                        from 'material-ui/lib/text-field';
 import Divider                          from 'material-ui/lib/divider';
-import Http                             from '../http'
+import Http                             from '../../actions/http'
 
 class Comments extends Component {
 

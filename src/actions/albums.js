@@ -90,15 +90,21 @@ export function saveAlbum(album, username, id, redirect) {
         }
         return response
             .then(
-                rep =>{
-                    dispatch(addAlbum(rep));
-                    if(redirect) {
-                        dispatch(replacePath(redirect));
-                    }
-                },
+                album => Http
+                    .get(`/api/accounts/${username}/albums/${album.id}/pictures`, store().authToken)
+                    .then(pictures => ({pictures, ...album}))
+                    .then(
+                        rep => {
+                            dispatch(addAlbum(rep));
+                            if(redirect) {
+                                dispatch(replacePath(redirect));
+                            }
+                        },
+                        err => {}
+                    ),
                 err => {}
-
             );
+
     };
 
 }
