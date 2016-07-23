@@ -40,6 +40,9 @@ export default {
         .then(rep => rep.json());
     },
     post(url, body, sessionData) {
+        return this.rawPost(url, body, sessionData).then(rep => rep.json());
+    },
+    rawPost(url, body, sessionData) {
         const theOptions = getOptions(sessionData);
         console.log('posting {} to {} with {}', body, url, theOptions);
         return fetch(buildUrl(url), {
@@ -47,8 +50,7 @@ export default {
             body: JSON.stringify(body),
             ...theOptions
         })
-        .then(handleErrors)
-        .then(rep => rep.json());
+        .then(handleErrors);
     },
     postData(url, data, sessionData) {
         let headers = {};

@@ -121,10 +121,21 @@ app.post('/api/login',
 app.get('/album/preview/:albumId',
     (req, res) => {
         logger.info('Album', req.params.albumId);
-        Promise.all([
-            http.get(`/api/accounts/${req.userSession.username}/albums/${req.params.albumId}`, req.cookies._sessiondata),
-            http.get(`/api/accounts/${req.userSession.username}/albums/${req.params.albumId}/pictures`, req.cookies._sessiondata)
-        ]).then(
+        http.rawPost('/api/login', config.usertech)
+        .then(
+            response => {
+                const cookies = response.headers.get('set-cookie');
+                const regExp = /^_sessiondata=(.*); Path=.*/gm;
+                const session = regExp.exec(cookies)[1];
+                console.log('Album id', req.params.albumId);
+                return Promise.all([
+                    http.get(`/api/albums/${req.params.albumId}`, session),
+                    http.get(`/api/albums/${req.params.albumId}/pictures`, session)
+                ]);
+            },
+            err => []
+        )
+        .then(
             ([album, pictures]) => {
                 if(pictures) {
                     const userAgent = req.headers['user-agent'];
@@ -159,6 +170,55 @@ app.get('/album/preview/:albumId',
         );
 });
 
+app.get('/picture/preview/:albumId/:pictureId',
+    (req, res) => {
+        http.rawPost('/api/login', config.usertech)
+        .then(
+            response => {
+                const cookies = response.headers.get('set-cookie');
+                const regExp = /^_sessiondata=(.*); Path=.*/gm;
+                const session = regExp.exec(cookies)[1];
+                console.log('Album id', req.params.albumId);
+                return Promise.all([
+                    http.get(`/api/albums/${req.params.albumId}`, session),
+                    http.get(`/api/pictures/${req.params.pictureId}`, session)
+                ]);
+            },
+            err => []
+        )
+        .then(
+            ([album, picture]) => {
+                if(picture) {
+                    const userAgent = req.headers['user-agent'];
+                    if (userAgent == 'Facebot' || userAgent == 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)' || userAgent == 'facebookexternalhit/1.1') {
+
+                        let thumbnail = `<meta property="og:image" content="${clientConfig.api.baseUrl}/static/thumbnails/${picture.id}" />`;
+                        let content = `
+                        <html>
+                            <meta property="og:url"                content="${__BASEURL__}/picture/preview/${album.id}/${picture.id}" />
+                            <meta property="og:type"               content="album" />
+                            <meta property="og:title"              content="${picture.title || picture.filename || ""}" />
+                            <meta property="og:description"        content="${picture.description || ""}" />
+                            ${thumbnail}
+                        </html>
+                        `;
+
+                        logger.info('Facebook robot', content);
+                        res.send(content);
+                        res.end();
+                    } else {
+                        const url = `${__BASEURL__}/auth/facebook?redirect=/account/${album.username}/${album.id}/${picture.id}`;
+                        logger.info('Sending redirect to album', url, userAgent);
+                        res.redirect(url)
+                    }
+                }
+            },
+            err => {
+                logger.error(err);
+                res.status(500).send(err).end();
+            }
+        );
+    });
 
 app.use('/api', api());
 
