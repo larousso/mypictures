@@ -133,7 +133,6 @@ export function postAllImages(username, albumId, files) {
                 .map(triplet => ({...triplet, blob: dataURLToBlob(triplet.src, triplet.file)}))
                 .flatMap(args => {
                     let {blob, file, id} = args;
-                    console.log('Ready to upload !!!');
                     var data = new FormData();
                     data.append('file', blob, file.name);
                     data.append('type', file.type);
@@ -155,12 +154,11 @@ export function postAllImages(username, albumId, files) {
                 .toArray()
                 .toPromise()
                 .then(
-                    _ => {
-                        console.log("END");
+                    any => {
+                        return any;
                     },
                     err => {
-                        console.log('Error', err)
-                        dispatch(pictureCreationError(err));
+                        return dispatch(pictureCreationError(err));
                     }
                 );
         } else {
