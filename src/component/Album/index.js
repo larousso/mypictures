@@ -2,8 +2,6 @@ import React, { Component, PropTypes }  from 'react';
 import {findDOMNode}                    from 'react-dom';
 import { connect }                      from 'react-redux'
 import { replacePath }                 from 'redux-simple-router'
-import rx                               from 'rx'
-import Http                             from '../../actions/http'
 import IconButton                       from 'material-ui/lib/icon-button';
 import CircularProgress                 from 'material-ui/lib/circular-progress';
 import {grey50}                         from 'material-ui/lib/styles/colors'
@@ -11,11 +9,9 @@ import ArrowBack                        from 'material-ui/lib/svg-icons/navigati
 import AppBar                           from 'material-ui/lib/app-bar';
 import Habilitations                    from '../Habiliations'
 import Roles                            from '../../authentication/roles';
-import {fetchPictures, addRawPicture, pictureCreated, pictureCreationError}                  from '../../actions/pictures'
+import {fetchPictures, postAllImages}                  from '../../actions/pictures'
 import {fetchAlbum}                     from '../../actions/album'
-import {addAlbum, addPictureToAlbum}    from '../../actions/albums'
 import {fetchAccount}                   from '../../actions/account'
-import uuid from 'node-uuid'
 import Theme                            from '../theme';
 import getMuiTheme                      from 'material-ui/lib/styles/getMuiTheme';
 import Viewer                           from 'viewerjs'
@@ -105,47 +101,14 @@ class Album extends Component {
 
     onFilesChange = e => {
         e.preventDefault();
-
         var files;
         if (e.dataTransfer) {
             files = e.dataTransfer.files;
         } else if (e.target) {
             files = e.target.files;
         }
-        console.log(files);
-        if (files) {
-            let { params: { albumId, username }} = this.props;
-            filesToObservable(files)
-                .map(file => ({id: uuid.v1(), file}))
-                .do(pair => {
-                    this.props.addRawPicture(pair);
-                })
-                .flatMap(pair => resize(pair.file).map(url => ({...pair, src: url})))
-                .map(triplet => ({...triplet, blob: dataURLToBlob(triplet.src)}))
-                .flatMap(args => {
-                    let {blob, file, id} = args;
-                    console.log('Ready to upload !!!');
-                    var data = new FormData();
-                    data.append('file', blob);
-                    data.append('type', file.type);
-                    data.append('filename', file.name);
-                    return rx.Observable.fromPromise(Http.postData(`/api/accounts/${username}/albums/${albumId}/pictures/${id}`, data));
-                })
-                .subscribe(
-                    picture => {
-                        console.log("DONE", picture);
-                        if (picture && picture.id) {
-                            this.props.pictureCreated(picture);
-                            this.props.addPictureToAlbum(picture);
-                        }
-                    },
-                    err => {
-                        console.log("DONE", err);
-                        this.props.pictureCreationError(err);
-                        console.log('Error', err)
-                    }
-                );
-        }
+        let {params: {username, albumId}} = this.props;
+        this.props.postAllImages(username, albumId, files);
     };
 
     getPictures = () => {
@@ -278,99 +241,8 @@ export default connect(
         changeRoute: (route) => {
             dispatch(replacePath(route))
         },
-        addAlbum: (album) => {
-            dispatch(addAlbum(album))
-        },
-        addRawPicture: (picture) => {
-            dispatch(addRawPicture(picture))
-        },
-        pictureCreated: (picture) => {
-            dispatch(pictureCreated(picture))
-        },
-        addPictureToAlbum: (picture) => {
-            dispatch(addPictureToAlbum(picture))
-        },
-        pictureCreationError: (err) => {
-            dispatch(pictureCreationError(err))
-        },
+        postAllImages: (username, albumId, files) => {
+            dispatch(postAllImages(username, albumId, files))
+        }
     })
 )(Album);
-
-
-function dataURLToBlob(dataURL) {
-    var BASE64_MARKER = ';base64,';
-    if (dataURL.indexOf(BASE64_MARKER) == -1) {
-        const parts = dataURL.split(',');
-        const contentType = parts[0].split(':')[1];
-        const raw = parts[1];
-        return new Blob([raw], {type: contentType});
-    } else {
-        const parts = dataURL.split(BASE64_MARKER);
-        const contentType = parts[0].split(':')[1];
-        const raw = window.atob(parts[1]);
-        const rawLength = raw.length;
-        let uInt8Array = new Uint8Array(rawLength);
-
-        for (var i = 0; i < rawLength; ++i) {
-            uInt8Array[i] = raw.charCodeAt(i);
-        }
-
-        return new Blob([uInt8Array], {type: contentType});
-    }
-}
-
-function resize(current_file, maxWidth = 1024, maxHeight = 1024) {
-    return rx.Observable.create(observer => {
-        var reader = new FileReader();
-        if (current_file.type.indexOf('image') == 0) {
-            reader.onload = (event) => {
-                var image = new Image();
-                image.src = event.target.result;
-
-                image.onload = function () {
-                    var imageWidth = image.width,
-                        imageHeight = image.height;
-
-
-                    if (imageWidth > imageHeight) {
-                        if (imageWidth > maxWidth) {
-                            imageHeight *= maxWidth / imageWidth;
-                            imageWidth = maxWidth;
-                        }
-                    }
-                    else {
-                        if (imageHeight > maxHeight) {
-                            imageWidth *= maxHeight / imageHeight;
-                            imageHeight = maxHeight;
-                        }
-                    }
-
-                    var canvas = document.createElement('canvas');
-                    canvas.width = imageWidth;
-                    canvas.height = imageHeight;
-                    image.width = imageWidth;
-                    image.height = imageHeight;
-                    var ctx = canvas.getContext("2d");
-                    ctx.drawImage(this, 0, 0, imageWidth, imageHeight);
-
-                    observer.onNext(canvas.toDataURL(current_file.type));
-                    observer.onCompleted();
-                }
-            };
-            reader.readAsDataURL(current_file);
-        } else {
-            observer.onError('No image found');
-        }
-    });
-
-}
-
-function filesToObservable(files) {
-    return rx.Observable.create(observer => {
-        for (var i = 0; i < files.length; i++) {
-            let file = files[i];
-            observer.onNext(file);
-        }
-        observer.onCompleted();
-    })
-}

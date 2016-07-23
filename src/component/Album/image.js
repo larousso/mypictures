@@ -1,7 +1,6 @@
 import React, { Component, PropTypes }  from 'react';
 import { connect }                      from 'react-redux'
 import config                           from '../../clientConfig'
-import Http                             from '../../actions/http'
 import CircularProgress                 from 'material-ui/lib/circular-progress';
 import IconButton                       from 'material-ui/lib/icon-button';
 import Check                            from 'material-ui/lib/svg-icons/navigation/check';
@@ -16,8 +15,7 @@ import FlatButton                       from 'material-ui/lib/flat-button';
 import Checkbox                         from 'material-ui/lib/checkbox';
 import Habilitations                    from '../Habiliations'
 import Roles                            from '../../authentication/roles';
-import {discardAlbums}                  from '../../actions/albums'
-import {addPicture, deletePicture}      from '../../actions/pictures'
+import {serverDeletePicture, serverUpdatePicture, rotatePicture}      from '../../actions/pictures'
 import Theme                            from '../theme';
 import getMuiTheme                      from 'material-ui/lib/styles/getMuiTheme';
 import Comments                         from './comments'
@@ -87,24 +85,12 @@ class Image extends Component {
 
     updatePicture = (picture) => {
         let { albumId, username } = this.props;
-        let url = `/api/accounts/${username}/albums/${albumId}/pictures/${picture.id}`;
-        return Http.put(url, picture)
-            .then(
-                rep => {
-                    this.props.addPicture(rep);
-                    this.props.discardAlbums()
-                },
-                err => {}
-            );
+        this.props.updatePicture(username, albumId, picture);
     };
 
     deletePicture = id => () => {
         let { albumId, username } = this.props;
-        Http.delete(`/api/accounts/${username}/albums/${albumId}/pictures/${id}`)
-            .then(
-                _ => this.props.deletePicture(id),
-                err => {
-                });
+        this.props.deletePicture(username, albumId, id);
     };
 
     setTitle = (value) => {
@@ -121,18 +107,7 @@ class Image extends Component {
 
     rotatePicture = (id, rotation) => () => {
         let { albumId, username } = this.props;
-        let url = `/api/accounts/${username}/albums/${albumId}/pictures/${id}/_rotation`;
-        Http
-            .post(url, {rotation})
-            .then(
-                picture => {
-                    let timestamp = new Date().getTime();
-                    this.props.addPicture({timestamp, ...picture});
-                },
-                err => {
-                    console.log(err);
-                }
-            );
+        this.props.rotatePicture(username, albumId, id, rotation);
     };
 
     setPreview = (picture) => () => {
@@ -301,14 +276,14 @@ export default connect(
         pictures: state.pictures
     }),
     dispatch => ({
-        addPicture: (picture) => {
-            dispatch(addPicture(picture))
+        updatePicture: (username, albumId, picture) => {
+            dispatch(serverUpdatePicture(username, albumId, picture))
         },
-        discardAlbums: () => {
-            dispatch(discardAlbums())
+        deletePicture: (username, albumId, id) => {
+            dispatch(serverDeletePicture(username, albumId, id))
         },
-        deletePicture: (id) => {
-            dispatch(deletePicture(id))
+        rotatePicture: (username, albumId, id, rotation) => {
+            dispatch(rotatePicture(username, albumId, id, rotation))
         }
     })
 )(Image);
