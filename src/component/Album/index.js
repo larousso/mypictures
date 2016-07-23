@@ -13,7 +13,7 @@ import Habilitations                    from '../Habiliations'
 import Roles                            from '../../authentication/roles';
 import {fetchPictures, addRawPicture, pictureCreated, pictureCreationError}                  from '../../actions/pictures'
 import {fetchAlbum}                     from '../../actions/album'
-import {addAlbum}                     from '../../actions/albums'
+import {addAlbum, addPictureToAlbum}    from '../../actions/albums'
 import {fetchAccount}                   from '../../actions/account'
 import uuid from 'node-uuid'
 import Theme                            from '../theme';
@@ -51,9 +51,10 @@ class Album extends Component {
 
     static preRender = (store, props) => {
         let {params:{ albumId, username}} = props;
+        console.log(albumId, username);
         return Promise.all([
             store.dispatch(fetchAccount(username)),
-            store.dispatch(fetchAlbum(username)),
+            store.dispatch(fetchAlbum(username, albumId)),
             store.dispatch(fetchPictures(username, albumId))
         ]);
     };
@@ -134,17 +135,15 @@ class Album extends Component {
                     picture => {
                         console.log("DONE", picture);
                         if (picture && picture.id) {
-                            this.props.pictureCreated(picture)
+                            this.props.pictureCreated(picture);
+                            this.props.addPictureToAlbum(picture);
                         }
                     },
                     err => {
                         console.log("DONE", err);
                         this.props.pictureCreationError(err);
                         console.log('Error', err)
-                    },
-                    () => Http.get(`/api/accounts/${username}/albums/${albumId}`)
-                            .then(album => this.props.addAlbum(album))
-
+                    }
                 );
         }
     };
@@ -287,6 +286,9 @@ export default connect(
         },
         pictureCreated: (picture) => {
             dispatch(pictureCreated(picture))
+        },
+        addPictureToAlbum: (picture) => {
+            dispatch(addPictureToAlbum(picture))
         },
         pictureCreationError: (err) => {
             dispatch(pictureCreationError(err))

@@ -1,6 +1,6 @@
 import Http                                 from './http'
 import { replacePath }                 from 'redux-simple-router'
-import {LOADING, LOAD_FAIL, LOAD_SUCCESS, ADD_ALBUM, DELETE_ALBUM, DISCARD_ALBUMS}   from '../reducer/albums'
+import {LOADING, LOAD_FAIL, LOAD_SUCCESS, ADD_ALBUM, DELETE_ALBUM, DISCARD_ALBUMS, ADD_PICTURE_TO_ALBUM}   from '../reducer/albums'
 //import logger                               from '../logger'
 
 export function addAlbum(album) {
@@ -40,6 +40,13 @@ export function deleteAlbum(id) {
 export function discardAlbums() {
     return {
         type: DISCARD_ALBUMS
+    };
+}
+
+export function addPictureToAlbum(picture) {
+    return {
+        type: ADD_PICTURE_TO_ALBUM,
+        result: picture
     };
 }
 

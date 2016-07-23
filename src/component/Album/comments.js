@@ -170,7 +170,7 @@ class Comments extends Component {
                             <Done />
                         </IconButton>
                         {
-                            []
+                            this.state.comments
                                 .sort((c1, c2) => {
                                     if (new Date(c1.date) > new Date(c2.date)) {
                                         return -1;

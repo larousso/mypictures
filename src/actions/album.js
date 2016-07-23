@@ -1,5 +1,5 @@
 import Http                                 from './http'
-import {LOADING, LOAD_FAIL, LOAD_SUCCESS}   from '../reducer/album'
+import {LOADING, LOAD_FAIL, LOAD_SUCCESS, ADD_TO_ALBUM}   from '../reducer/album'
 
 
 export function loadingAlbum() {

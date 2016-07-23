@@ -1,10 +1,12 @@
-export const LOADING = 'account/LOADING';
-export const LOAD_SUCCESS = 'account/LOAD_SUCCESS';
-export const LOAD_FAIL = 'account/LOAD_FAIL';
+export const LOADING = 'picture/LOADING';
+export const LOAD_SUCCESS = 'picture/LOAD_SUCCESS';
+export const LOAD_FAIL = 'picture/LOAD_FAIL';
+export const ADD_PICTURE = 'picture/ADD_PICTURE';
 
 const initialState = {
     loaded: false,
-    loading: false
+    loading: false,
+    picture: {}
 };
 
 export default function reducer(state = initialState, action = {}) {
@@ -14,7 +16,7 @@ export default function reducer(state = initialState, action = {}) {
                 ...state,
                 loading: false,
                 loaded: true,
-                user: action.result
+                picture: action.result
             };
         case LOAD_FAIL:
             return {
@@ -28,7 +30,7 @@ export default function reducer(state = initialState, action = {}) {
                 ...state,
                 loading: true,
                 loaded: false,
-                user: {}
+                picture: {}
             };
         default:
             return state;

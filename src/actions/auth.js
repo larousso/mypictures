@@ -7,9 +7,8 @@ export function login ({username, password}, redirect) {
         http
             .post('/api/login', {username, password})
             .then(user => {
-                console.log('Login response', user);
-                dispatch(loadUser(user));
-                dispatch(pushPath(redirect || '/account/'+user.username));
+                dispatch(loadUser(user.user));
+                dispatch(pushPath(redirect || '/account/'+user.user.username));
             }).catch(_ => {
                 dispatch(authError({
                     login: 'Mauvais login ou mot de passe',

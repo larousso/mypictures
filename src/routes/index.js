@@ -6,6 +6,7 @@ import Home                 from '../component/Home'
 import Account              from '../component/Account'
 import EditAlbum            from '../component/Account/EditAlbum'
 import Album                from '../component/Album'
+import Picture              from '../component/Picture'
 import Login                from '../component/Login'
 import NotFound             from '../component/NotFound'
 import Unauthorized         from '../component/Unauthorized'
@@ -36,6 +37,7 @@ export default  (store) => {
             <Route onEnter={isAuthenticated()} path="account/:username/createAlbum" component={EditAlbum}/>
             <Route onEnter={isAuthenticated()} path="account/:username/editAlbum/:albumId" component={EditAlbum}/>
             <Route onEnter={isAuthenticated()} path="account/:username/:albumId" component={Album}/>
+            <Route onEnter={isAuthenticated()} path="account/:username/:albumId/:pictureId" component={Picture}/>
             <Route path="login" component={Login}/>
             <Route path="unauthorized" component={Unauthorized}/>
             <Route path="forbidden" component={Forbidden}/>

@@ -9,19 +9,11 @@ import fs                                       from 'fs'
 import rx                                       from 'rx'
 import HttpUtils                                from './HttpUtils'
 import logger                                   from '../logger'
-import http                                     from '../component/http'
 
 const upload = multer({ dest: 'uploads/' });
 
 export default () => {
     const app = express();
-
-    app.get('/proxy/accounts', (req, res) => {
-        http.get('http://localhost:9000/api/accounts/alex')
-            .then( r =>
-                res.json(r)
-            )
-    });
 
     app.get('/accounts/:username',
         HttpUtils.isAuthenticated,

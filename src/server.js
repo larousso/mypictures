@@ -14,11 +14,12 @@ import expressWinston                           from 'express-winston'
 import logger, {winston}                        from './logger'
 import rx                                       from 'rx'
 import config                                   from './config'
+import clientConfig                              from './clientConfig'
 import User                                     from './repository/user'
 import DailyRotateFile                          from 'winston-daily-rotate-file'
 import Album                                    from './repository/album'
 import Picture                                  from './repository/picture'
-import http                                     from './component/http'
+import http                                     from './actions/http'
 
 logger.info('__DEVELOPMENT__', __DEVELOPMENT__);
 logger.info('__DBLOCATION__', __DBLOCATION__);
@@ -81,19 +82,20 @@ app.use(function(req, res, next) {
         }
     };
     if(req.cookies && req.cookies._sessiondata) {
-        http.get('http://localhost:9000/api/session', req.cookies._sessiondata)
+        http.get(`/api/session`, req.cookies._sessiondata)
             .then( r => {
                 req.userSession = r;
                 next();
+            },
+            e => {
+                next();
+                console.log("error getting session", e)
             });
     } else {
         next();
     }
 });
 
-app.get('/test', (req, resp) => {
-   resp.json(req.userSession).end();
-});
 
 app.get('/auth/facebook', (req, res, next) => {
     req.session.redirect = req.query.redirect;
@@ -119,26 +121,23 @@ app.post('/api/login',
 app.get('/album/preview/:albumId',
     (req, res) => {
         logger.info('Album', req.params.albumId);
-        Album
-            .get(req.params.albumId)
-            .flatMap(album => Picture
-                .listThumbnailsByAlbum(req.params.albumId)
-                .toArray()
-                .map(thumbnails => ({thumbnails,...album}))
-            )
-            .subscribe(
-                album => {
+        Promise.all([
+            http.get(`/api/accounts/${req.userSession.username}/albums/${req.params.albumId}`, req.cookies._sessiondata),
+            http.get(`/api/accounts/${req.userSession.username}/albums/${req.params.albumId}/pictures`, req.cookies._sessiondata)
+        ]).then(
+            ([album, pictures]) => {
+                if(pictures) {
                     const userAgent = req.headers['user-agent'];
                     if (userAgent == 'Facebot' || userAgent == 'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)' || userAgent == 'facebookexternalhit/1.1') {
 
-                        let preview = album.thumbnails.find(t => t.preview) || album.thumbnails[0];
-                        let thumbnail = `<meta property="og:image" content="${__BASEURL__}/album/preview/${album.id}/thumbnails/${preview.id}" />`;
+                        let preview = pictures.find(t => t.preview) || pictures[0];
+                        let thumbnail = `<meta property="og:image" content="${clientConfig.api.baseUrl}/static/thumbnails/${preview.id}" />`;
                         let content = `
                         <html>
                             <meta property="og:url"                content="${__BASEURL__}/album/preview/${album.id}" />
                             <meta property="og:type"               content="album" />
                             <meta property="og:title"              content="${album.title}" />
-                            <meta property="og:description"        content="${album.description}" />
+                            <meta property="og:description"        content="${album.description || ""}" />
                             ${thumbnail}
                         </html>
                         `;
@@ -151,35 +150,14 @@ app.get('/album/preview/:albumId',
                         logger.info('Sending redirect to album', url, userAgent);
                         res.redirect(url)
                     }
-                },
-                err => {
-                    logger.error(err);
-                    res.status(500).send(err).end();
                 }
-            );
-
+            },
+            err => {
+                logger.error(err);
+                res.status(500).send(err).end();
+            }
+        );
 });
-
-app.get('/album/preview/:albumId/thumbnails/:id',
-    (req, res) => {
-        Picture
-            .getPicture(req.params.id, req.params.albumId)
-            .map(str => ({base64: str.substring(str.indexOf(',')), type:str.substring(5, str.indexOf(';base64'))}))
-            .subscribe(
-                rep => {
-                    let {base64, type} = rep;
-                    var img = new Buffer(base64, 'base64');
-                    res.writeHead(200, {
-                        'Content-Type': type,
-                        'Content-Length': img.length
-                    });
-                    res.end(img, 'binary');
-                },
-                err => {
-                    logger.error(err);
-                    res.status(500).send('').end();
-                }
-        )});
 
 
 app.use('/api', api());

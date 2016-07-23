@@ -11,7 +11,6 @@ import AddIcon                          from 'material-ui/lib/svg-icons/content/
 import EditIcon                         from 'material-ui/lib/svg-icons/image/edit';
 import DeleteIcon                       from 'material-ui/lib/svg-icons/action/delete';
 import rx                               from 'rx';
-import Http                             from '../http'
 import Habilitations                    from '../Habiliations'
 import Roles                            from '../../authentication/roles';
 import {fetchAccount}   from '../../actions/account';
@@ -47,7 +46,6 @@ class Account extends Component {
     };
 
     componentDidMount() {
-        console.log('Store', this.context);
         Account.preRender(this.context.store, this.props);
     }
 
@@ -89,7 +87,7 @@ class Account extends Component {
     };
 
     getThumbnail = album => {
-        if (album) {
+        if (album && album.pictures) {
             let [first] = album.pictures;
             let preview = album.pictures.find(t => t.preview) || first;
 
@@ -156,8 +154,8 @@ class Account extends Component {
                             <div className="col-xs">
                                 <div className="box">
                                     <GridList cellHeight={200} cols={4}>
-                                        {albums.sort(sortAlbum).map(album => (
-                                            <GridTile key={album.id}
+                                        {albums.sort(sortAlbum).map((album,i) => (
+                                            <GridTile key={i}
                                                       title={album.title}
                                                       actionIcon={<Habilitations account={user} role={Roles.ADMIN}>
                                                 <Link to={`/account/${username}/EditAlbum/${album.id}`}>
