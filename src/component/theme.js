@@ -1,5 +1,5 @@
 import {cyan500, cyan700, lightBlack, red700, grey500, darkBlack, white, grey300} from 'material-ui/styles/colors';
-import ColorManipulator from 'material-ui/utils/colorManipulator';
+import {fade} from 'material-ui/utils/colorManipulator';
 import Spacing from 'material-ui/styles/spacing';
 import zIndex from 'material-ui/styles/zIndex';
 
@@ -18,7 +18,7 @@ export default {
         alternateTextColor: white,
         canvasColor: white,
         borderColor: grey300,
-        disabledColor: ColorManipulator.fade(darkBlack, 0.3),
+        disabledColor: fade(darkBlack, 0.3),
         pickerHeaderColor: cyan500,
     }
 };
