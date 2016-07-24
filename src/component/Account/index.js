@@ -134,7 +134,6 @@ class Account extends Component {
     };
 
     render() {
-        console.log('Render', this.props);
         let {params:{username}, albums:{albums}, account:{user}} = this.props;
         return (
             <div className="row center-xs" style={{background: grey50}}>

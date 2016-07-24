@@ -137,6 +137,19 @@ class Image extends Component {
         return `${config.api.baseUrl}/static/images/${picture.picture.id}?ts=${picture.picture.timestamp}`;
     };
 
+    previewLink = () => {
+        if(!__SERVER__) {
+            let { albumId, picture} = this.props;
+            if(albumId) {
+                return `http://${window.location.host}/picture/preview/${albumId}/${picture.id}`;
+            }
+        } else {
+            let { albumId , currentLocation: {location}, picture} = this.props;
+            if(albumId) {
+                return `http://${location}/picture/preview/${albumId}/${picture.id}`;
+            }
+        }
+    };
 
     render() {
         let { account:{user}, picture , albumId, username} = this.props;
@@ -238,6 +251,13 @@ class Image extends Component {
                                             </Habilitations>
                                         </div>
                                         <div style={{textAlign: 'left'}}>
+                                            <Habilitations account={user} role={Roles.ADMIN}>
+                                            <div>
+                                                <span>Lien facebook : </span><input name="fbLink" style={{width:'100%'}} defaultValue={this.previewLink()} />
+                                            </div>
+                                            </Habilitations>
+                                        </div>
+                                        <div style={{textAlign: 'left'}}>
                                             <span className="strong">{this.truncate(this.getTitle(picture))}</span>
                                         </div>
                                     </div>
@@ -273,7 +293,8 @@ Image.childContextTypes = {
 export default connect(
     state => ({
         account: state.account,
-        pictures: state.pictures
+        pictures: state.pictures,
+        currentLocation: state.currentLocation
     }),
     dispatch => ({
         updatePicture: (username, albumId, picture) => {
