@@ -1,6 +1,6 @@
 import React, {Component, PropTypes}  from 'react';
-import Block                            from 'material-ui/lib/svg-icons/content/block'
-import {red500}                           from 'material-ui/lib/styles/colors'
+import Block                            from 'material-ui/svg-icons/content/block'
+import {red500}                           from 'material-ui/styles/colors'
 
 export default () => {
     return (

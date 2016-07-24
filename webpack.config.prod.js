@@ -12,7 +12,11 @@ var config = {
     },
     module: {
         loaders: [
-            {test: /\.js?$/, exclude: /node_modules/, loaders: ['babel?stage=0&optional=runtime']},
+            {
+                test: /\.js?$/,
+                exclude: /node_modules/,
+                loaders: ['babel']
+            },
             // LESS
             {
                 test: /\.less$/,
