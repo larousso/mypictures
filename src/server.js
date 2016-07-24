@@ -119,6 +119,7 @@ app.post('/api/login',
 
 app.get('/album/preview/:albumId',
     (req, res) => {
+        console.log('Ici');
         logger.info('Album', req.params.albumId);
         http.rawPost('/api/login', config.usertech)
         .then(
@@ -153,12 +154,11 @@ app.get('/album/preview/:albumId',
                         `;
 
                         logger.info('Facebook robot', content);
-                        res.send(content);
-                        res.end();
+                        res.send(content).end();
                     } else {
                         const url = `${__BASEURL__}/auth/facebook?redirect=/account/${album.username}/${album.id}`;
                         logger.info('Sending redirect to album', url, userAgent);
-                        res.redirect(url)
+                        res.redirect(url).end();
                     }
                 }
             },
@@ -203,12 +203,11 @@ app.get('/picture/preview/:albumId/:pictureId',
                         `;
 
                         logger.info('Facebook robot', content);
-                        res.send(content);
-                        res.end();
+                        res.send(content).end();
                     } else {
                         const url = `${__BASEURL__}/auth/facebook?redirect=/account/${album.username}/${album.id}/${picture.id}`;
                         logger.info('Sending redirect to album', url, userAgent);
-                        res.redirect(url)
+                        res.redirect(url).end();
                     }
                 }
             },
