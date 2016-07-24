@@ -40,6 +40,9 @@ var config = {
     plugins: [
         new webpack.NoErrorsPlugin(), new ExtractTextPlugin('styles.css'),
         new webpack.DefinePlugin({
+            'process.env':{
+                'NODE_ENV': JSON.stringify('production')
+            },
             __NODE_ENV__: JSON.stringify(process.env.NODE_ENV),
             __CLIENT__: true,
             __SERVER__: false

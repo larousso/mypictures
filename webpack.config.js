@@ -44,7 +44,10 @@ var config = {
     plugins: [
         new webpack.NoErrorsPlugin(), new ExtractTextPlugin('styles.css'),
         new webpack.DefinePlugin({
-            __NODE_ENV__: JSON.stringify(process.env.NODE_ENV),
+            'process.env':{
+                'NODE_ENV': JSON.stringify('development')
+            },
+            __NODE_ENV__: JSON.stringify('development'),
             __CLIENT__: true,
             __SERVER__: false
         })

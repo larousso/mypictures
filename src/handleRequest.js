@@ -41,10 +41,23 @@ const handleRequest = (req, res, store) => {
                     renderProps.location.query = qs.parse(renderProps.location.search);
                 }
 
+                const headers = req.headers['user-agent'];
+                let theme = getMuiTheme({}, { userAgent: headers });
+                let original = theme.prepareStyles;
+                theme.prepareStyles = function(style) {
+                    var out = style.muiPrepared ? style : original(style);
+                    if (out && out.muiPrepared) {
+                        delete out.muiPrepared;
+                    }
+                    return out;
+                };
                 // Promise.all in fetchData waits until all Promises from the Components are resolved and only then starts to render the  result.
                 fetchData(store, renderProps).then(() => {
+                    global.navigator = {
+                        userAgent: req.headers['user-agent']
+                    };
                     let component = (
-                        <MuiThemeProvider muiTheme={getMuiTheme({}, {userAgent: req.headers['user-agent']})}>
+                        <MuiThemeProvider muiTheme={theme}>
                             <Provider store={store}>
                                 <RouterContext {...renderProps} />
                             </Provider>

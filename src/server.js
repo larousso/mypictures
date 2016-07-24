@@ -18,7 +18,6 @@ import clientConfig                              from './clientConfig'
 import User                                     from './repository/user'
 import DailyRotateFile                          from 'winston-daily-rotate-file'
 import Album                                    from './repository/album'
-import Picture                                  from './repository/picture'
 import http                                     from './actions/http'
 
 logger.info('__DEVELOPMENT__', __DEVELOPMENT__);

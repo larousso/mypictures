@@ -18,12 +18,20 @@ window.React = React; // For chrome dev tool support
 window.reduxDebug = debug;
 window.reduxDebug.enable('*'); // this should be activated only on development env
 
-console.log('Env', process.env.NODE_ENV);
+
+var theme = getMuiTheme({}, { userAgent: navigator.userAgent });
+var original = theme.prepareStyles;
+theme.prepareStyles = function(style) {
+    var out = style.muiPrepared ? style : original(style);
+    if (out && out.muiPrepared) {
+        delete out.muiPrepared;
+    }
+    return out;
+};
 
 const history = syncHistoryWithStore(browserHistory, store);
-
 render(
-    <MuiThemeProvider muiTheme={getMuiTheme()}>
+    <MuiThemeProvider muiTheme={theme}>
         <Provider store={store}>
             <Router history={history} >
                 {getRoutes(store)}

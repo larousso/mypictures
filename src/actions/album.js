@@ -24,7 +24,7 @@ export function loadAlbum(album) {
 
 export function fetchAlbum(username, albumId) {
     return (dispatch, store) => {
-        if(username && albumId) {
+        if(username && albumId && (!store().album.loaded || store().album.album.id != albumId)) {
             dispatch(loadingAlbum());
             return Http
                 .get(`/api/accounts/${username}/albums/${albumId}`, store().authToken)
