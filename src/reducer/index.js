@@ -1,6 +1,6 @@
 import { combineReducers }      from 'redux';
 //import multireducer             from 'multireducer';
-import { routeReducer }         from 'redux-simple-router'
+import { routerReducer }         from 'react-router-redux'
 import auth                     from './auth'
 import account                  from './account'
 import albums                   from './albums'
@@ -14,6 +14,6 @@ function authToken(state = {}, action = {}) {
     return state;
 }
 
-export default combineReducers(Object.assign({}, {authToken, auth, account, album, albums, pictures, picture, currentLocation}, {
-    routing: routeReducer
-}));
+export default combineReducers(
+    {authToken, auth, account, album, albums, pictures, picture, currentLocation, routing: routerReducer}
+);

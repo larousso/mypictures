@@ -31,8 +31,11 @@ export function fetchAccount(username) {
                 .then(
                     user => dispatch(loadAccount(user)),
                     err => dispatch(loadAccountFail(err))
-                )
-                .catch(err => dispatch(loadAccountFail(err)));
+                );
+                // .catch(err => {
+                //     console.log('Error', err);
+                //     return dispatch(loadAccountFail(err))
+                // });
         } else {
             return Promise.resolve();
         }

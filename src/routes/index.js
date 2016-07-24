@@ -19,14 +19,6 @@ export default  (store) => {
             replaceState(null, '/forbidden');
         }
     };
-    // const hasRole = role => (nextState, replaceState) => {
-    //     const { auth: { user }} = store.getState();
-    //     if (!user) {
-    //         replaceState(null, '/unauthorized');
-    //     } else if (user.role !== role) {
-    //         replaceState(null, '/forbidden');
-    //     }
-    // };
 
     return (
         <Route path="/" component={App}>

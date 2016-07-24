@@ -1,17 +1,17 @@
 import React, { Component, PropTypes }  from 'react';
 import { connect }                      from 'react-redux'
-import { replacePath }                  from 'redux-simple-router'
+import { push }                  from 'react-router-redux'
 import {fetchAlbum}                     from '../../../actions/album'
 import {saveAlbum}                      from '../../../actions/albums'
-import FlatButton                       from 'material-ui/lib/flat-button';
-import IconButton                       from 'material-ui/lib/icon-button';
-import TextField                        from 'material-ui/lib/text-field';
-import ArrowBack                        from 'material-ui/lib/svg-icons/navigation/chevron-left';
-import Check                            from 'material-ui/lib/svg-icons/navigation/check';
-import Cancel                           from 'material-ui/lib/svg-icons/navigation/close';
-import AppBar                           from 'material-ui/lib/app-bar';
+import FlatButton                       from 'material-ui/FlatButton';
+import IconButton                       from 'material-ui/IconButton';
+import TextField                        from 'material-ui/TextField';
+import ArrowBack                        from 'material-ui/svg-icons/navigation/chevron-left';
+import Check                            from 'material-ui/svg-icons/navigation/check';
+import Cancel                           from 'material-ui/svg-icons/navigation/close';
+import AppBar                           from 'material-ui/AppBar';
 import Theme                            from '../../theme';
-import getMuiTheme                      from 'material-ui/lib/styles/getMuiTheme';
+import getMuiTheme                      from 'material-ui/styles/getMuiTheme';
 
 
 class EditAlbum extends Component {
@@ -152,7 +152,7 @@ export default connect(
     }),
     dispatch => ({
         changeRoute: (route) => {
-            dispatch(replacePath(route))
+            dispatch(push(route))
         },
         saveAlbum: (album, username, albumId, redirect) => {
             dispatch(saveAlbum(album, username, albumId, redirect))

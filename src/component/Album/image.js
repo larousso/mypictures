@@ -1,23 +1,23 @@
 import React, { Component, PropTypes }  from 'react';
 import { connect }                      from 'react-redux'
 import config                           from '../../clientConfig'
-import CircularProgress                 from 'material-ui/lib/circular-progress';
-import IconButton                       from 'material-ui/lib/icon-button';
-import Check                            from 'material-ui/lib/svg-icons/navigation/check';
-import Cancel                           from 'material-ui/lib/svg-icons/navigation/close';
-import RotateRight                      from 'material-ui/lib/svg-icons/image/rotate-right';
-import RotateLeft                       from 'material-ui/lib/svg-icons/image/rotate-left';
-import EditIcon                         from 'material-ui/lib/svg-icons/image/edit';
-import DeleteIcon                       from 'material-ui/lib/svg-icons/action/delete';
-import Paper                            from 'material-ui/lib/paper';
-import TextField                        from 'material-ui/lib/text-field';
-import FlatButton                       from 'material-ui/lib/flat-button';
-import Checkbox                         from 'material-ui/lib/checkbox';
+import CircularProgress                 from 'material-ui/CircularProgress';
+import IconButton                       from 'material-ui/IconButton';
+import Check                            from 'material-ui/svg-icons/navigation/check';
+import Cancel                           from 'material-ui/svg-icons/navigation/close';
+import RotateRight                      from 'material-ui/svg-icons/image/rotate-right';
+import RotateLeft                       from 'material-ui/svg-icons/image/rotate-left';
+import EditIcon                         from 'material-ui/svg-icons/image/edit';
+import DeleteIcon                       from 'material-ui/svg-icons/action/delete';
+import Paper                            from 'material-ui/Paper';
+import TextField                        from 'material-ui/TextField';
+import FlatButton                       from 'material-ui/FlatButton';
+import Checkbox                         from 'material-ui/Checkbox';
+import getMuiTheme                      from 'material-ui/styles/getMuiTheme';
 import Habilitations                    from '../Habiliations'
 import Roles                            from '../../authentication/roles';
 import {serverDeletePicture, serverUpdatePicture, rotatePicture}      from '../../actions/pictures'
 import Theme                            from '../theme';
-import getMuiTheme                      from 'material-ui/lib/styles/getMuiTheme';
 import Comments                         from './comments'
 
 class Image extends Component {

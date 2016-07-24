@@ -1,34 +1,34 @@
 import React                                    from 'react'
-import ReactDOM                                 from 'react-dom'
+import {render}                                 from 'react-dom'
 import configureStore                           from './store/configureStore'
-import reducer                                  from './reducer'
-import thunk                                    from 'redux-thunk';
-import { Router}                                from 'react-router'
-import BrowserHistory                           from 'react-router/lib/History'
+import { Router, browserHistory}                from 'react-router'
 import getRoutes                                from './routes'
 import debug                                    from 'debug';
-import createHistory                            from 'history/lib/createBrowserHistory';
-import Html                                     from './layout/Html'
-//import { DevTools, DebugPanel, LogMonitor }     from 'redux-devtools/lib/react';
-import { syncReduxAndRouter }                   from 'redux-simple-router'
+import { syncHistoryWithStore }                 from 'react-router-redux'
 import {Provider}                               from 'react-redux';
 import injectTapEventPlugin                     from 'react-tap-event-plugin';
+import getMuiTheme                              from 'material-ui/styles/getMuiTheme';
+import MuiThemeProvider                         from 'material-ui/styles/MuiThemeProvider';
 
 injectTapEventPlugin();
 
 const store = configureStore(window.__INITIAL_STATE__);
-const history = createHistory();
+//const history = createHistory();
 window.React = React; // For chrome dev tool support
 window.reduxDebug = debug;
 window.reduxDebug.enable('*'); // this should be activated only on development env
 
-syncReduxAndRouter(history, store);
+console.log('Env', process.env.NODE_ENV);
 
-ReactDOM.render(
-    <Provider store={store}>
-        <Router history={history} >
-            {getRoutes(store)}
-        </Router>
-    </Provider>,
+const history = syncHistoryWithStore(browserHistory, store);
+
+render(
+    <MuiThemeProvider muiTheme={getMuiTheme()}>
+        <Provider store={store}>
+            <Router history={history} >
+                {getRoutes(store)}
+            </Router>
+        </Provider>
+    </MuiThemeProvider>,
     document.getElementById('app')
 );

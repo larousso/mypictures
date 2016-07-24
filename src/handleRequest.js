@@ -1,10 +1,15 @@
 import React                                    from 'react'
 import {renderToString}                         from 'react-dom/server'
-import { match, RoutingContext }                from 'react-router'
+import { match, RouterContext }                 from 'react-router'
 import {Provider}                               from 'react-redux';
 import getRoutes                                from './routes'
 import Html                                     from './layout/Html'
 import configureStore                           from './store/configureStore'
+import injectTapEventPlugin                     from 'react-tap-event-plugin';
+import getMuiTheme                              from 'material-ui/styles/getMuiTheme';
+import MuiThemeProvider                         from 'material-ui/styles/MuiThemeProvider';
+
+injectTapEventPlugin();
 
 export default (req, res) => {
     const authToken = req.getAuthToken();
@@ -35,23 +40,24 @@ const handleRequest = (req, res, store) => {
                 if (renderProps.location.search && !renderProps.location.query) {
                     renderProps.location.query = qs.parse(renderProps.location.search);
                 }
+
                 // Promise.all in fetchData waits until all Promises from the Components are resolved and only then starts to render the  result.
                 fetchData(store, renderProps).then(() => {
                     let component = (
-                        <Provider store={store}>
-                            <RoutingContext {...renderProps} />
-                        </Provider>
+                        <MuiThemeProvider muiTheme={getMuiTheme({}, {userAgent: req.headers['user-agent']})}>
+                            <Provider store={store}>
+                                <RouterContext {...renderProps} />
+                            </Provider>
+                        </MuiThemeProvider>
                     );
                     const html = renderToString(<Html component={component} store={store}/>);
                     const response = `<!doctype html>\n${html}`;
                     res
-                        .send(response)
-                        .catch((err) => {
-                            console.error('DATA FETCHING ERROR:', pretty.render(err));
-                            res.status(500);
-                            res.send('Not found');
-                        });
-                }).catch((error) => reply(error).code(500));
+                        .send(response);
+                }).catch((error) => {
+                    console.log('Errors', error);
+                    res.send(error).code(500)
+                });
             }
         });
 

@@ -1,19 +1,19 @@
 import React, { Component, PropTypes }  from 'react';
 import {findDOMNode}                    from 'react-dom';
 import { connect }                      from 'react-redux'
-import { replacePath }                 from 'redux-simple-router'
-import IconButton                       from 'material-ui/lib/icon-button';
-import CircularProgress                 from 'material-ui/lib/circular-progress';
-import {grey50}                         from 'material-ui/lib/styles/colors'
-import ArrowBack                        from 'material-ui/lib/svg-icons/navigation/chevron-left';
-import AppBar                           from 'material-ui/lib/app-bar';
+import { push }                         from 'react-router-redux'
+import IconButton                       from 'material-ui/IconButton';
+import CircularProgress                 from 'material-ui/CircularProgress';
+import {grey50}                         from 'material-ui/styles/colors'
+import ArrowBack                        from 'material-ui/svg-icons/navigation/chevron-left';
+import AppBar                           from 'material-ui/AppBar';
+import getMuiTheme                      from 'material-ui/styles/getMuiTheme';
 import Habilitations                    from '../Habiliations'
 import Roles                            from '../../authentication/roles';
 import {fetchPictures, postAllImages}                  from '../../actions/pictures'
 import {fetchAlbum}                     from '../../actions/album'
 import {fetchAccount}                   from '../../actions/account'
 import Theme                            from '../theme';
-import getMuiTheme                      from 'material-ui/lib/styles/getMuiTheme';
 import Viewer                           from 'viewerjs'
 import ImagePreview                     from './image'
 
@@ -180,7 +180,7 @@ class Album extends Component {
                             <Habilitations account={user} role={Roles.ADMIN}>
                                 <div className="box">
                                     <div className="col-lg-12">
-                                        <span>Lien facebook : </span><input name="fbLink" style={{width:'600'}} defaultValue={this.previewLink()} />
+                                        <span>Lien facebook : </span><input name="fbLink" style={{width:600}} defaultValue={this.previewLink()} />
                                     </div>
                                 </div>
                             </Habilitations>
@@ -189,7 +189,7 @@ class Album extends Component {
                             <Habilitations account={user} role={Roles.ADMIN}>
                                 <div className="box">
                                     <div className="col-lg-12">
-                                        <span>Lien autre : </span><input name="shareLink" style={{width:'600'}} defaultValue={this.mdpLink()} />
+                                        <span>Lien autre : </span><input name="shareLink" style={{width:600}} defaultValue={this.mdpLink()} />
                                     </div>
                                 </div>
                             </Habilitations>
@@ -239,7 +239,7 @@ export default connect(
     }),
     dispatch => ({
         changeRoute: (route) => {
-            dispatch(replacePath(route))
+            dispatch(push(route))
         },
         postAllImages: (username, albumId, files) => {
             dispatch(postAllImages(username, albumId, files))

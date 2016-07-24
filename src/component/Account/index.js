@@ -1,20 +1,19 @@
-import React, { Component, PropTypes }  from 'react';
-import { connect }                      from 'react-redux';
-import {Link }                          from 'react-router';
-import { replacePath }                  from 'redux-simple-router'
-import RaisedButton                     from 'material-ui/lib/raised-button';
-import GridList                         from 'material-ui/lib/grid-list/grid-list';
-import GridTile                         from 'material-ui/lib/grid-list/grid-tile';
-import IconButton                       from 'material-ui/lib/icon-button';
-import {grey50, white}                  from 'material-ui/lib/styles/colors'
-import AddIcon                          from 'material-ui/lib/svg-icons/content/add'
-import EditIcon                         from 'material-ui/lib/svg-icons/image/edit';
-import DeleteIcon                       from 'material-ui/lib/svg-icons/action/delete';
+import React, {Component, PropTypes}    from 'react';
+import {connect}                        from 'react-redux';
+import {Link}                           from 'react-router';
+import {push}                           from 'react-router-redux'
+import RaisedButton                     from 'material-ui/RaisedButton';
+import {GridList, GridTile}             from 'material-ui/GridList';
+import IconButton                       from 'material-ui/IconButton';
+import {grey50, white}                  from 'material-ui/styles/colors'
+import AddIcon                          from 'material-ui/svg-icons/content/add'
+import EditIcon                         from 'material-ui/svg-icons/image/edit';
+import DeleteIcon                       from 'material-ui/svg-icons/action/delete';
 import rx                               from 'rx';
 import Habilitations                    from '../Habiliations'
 import Roles                            from '../../authentication/roles';
-import {fetchAccount}   from '../../actions/account';
-import {fetchAlbums, fetchDeleteAlbum}      from '../../actions/albums';
+import {fetchAccount}                   from '../../actions/account';
+import {fetchAlbums, fetchDeleteAlbum}  from '../../actions/albums';
 import config                           from '../../clientConfig'
 
 class Account extends Component {
@@ -64,13 +63,14 @@ class Account extends Component {
                     .map(p => `${config.api.baseUrl}/static/thumbnails/${p.id}`),
                 rx.Observable.timer(0, 700),
                 (t, i) => t
-                )
+            )
                 .doWhile(_ => true)
                 .subscribe(
                     thumbnail => {
                         this.setState({thumbnail})
                     },
-                    err => {},
+                    err => {
+                    },
                     () => {
                         this.setState({thumbnail: null});
                     }
@@ -115,7 +115,13 @@ class Account extends Component {
             );
         }
         return <img src="/image-not-found.png" height="100%"
-                    style={{position: 'absolute', display: 'block',margin: '0 auto', marginRight: 'auto',marginLeft: 'auto'}}/>;
+                    style={{
+                        position: 'absolute',
+                        display: 'block',
+                        margin: '0 auto',
+                        marginRight: 'auto',
+                        marginLeft: 'auto'
+                    }}/>;
     };
 
     deleteAlbum = id => () => {
@@ -128,9 +134,10 @@ class Account extends Component {
     };
 
     render() {
+        console.log('Render', this.props);
         let {params:{username}, albums:{albums}, account:{user}} = this.props;
         return (
-            <div className="row center-xs" style={{background:grey50}}>
+            <div className="row center-xs" style={{background: grey50}}>
                 <div className="col-xs-12 col-lg-8">
                     <div className="box">
                         <div className="row">
@@ -150,21 +157,22 @@ class Account extends Component {
                                 </div>
                             </div>
                         </Habilitations>
-                        <div className="row" style={{marginTop:'10px'}}>
+                        <div className="row" style={{marginTop: '10px'}}>
                             <div className="col-xs">
                                 <div className="box">
                                     <GridList cellHeight={200} cols={4}>
-                                        {albums.sort(sortAlbum).map((album,i) => (
+                                        {albums.sort(sortAlbum).map((album, i) => (
                                             <GridTile key={i}
                                                       title={album.title}
                                                       actionIcon={<Habilitations account={user} role={Roles.ADMIN}>
-                                                <Link to={`/account/${username}/EditAlbum/${album.id}`}>
-                                                    <EditIcon color={white}/>
-                                                </Link>
-                                                <IconButton tooltip="Delete" onClick={this.deleteAlbum(album.id)}>
-                                                    <DeleteIcon color={white}/>
-                                                </IconButton>
-                                              </Habilitations>}
+                                                          <Link to={`/account/${username}/EditAlbum/${album.id}`}>
+                                                              <EditIcon color={white}/>
+                                                          </Link>
+                                                          <IconButton tooltip="Delete"
+                                                                      onClick={this.deleteAlbum(album.id)}>
+                                                              <DeleteIcon color={white}/>
+                                                          </IconButton>
+                                                      </Habilitations>}
                                             >
                                                 <Link
                                                     to={`/account/${username}/${album.id}`}>{this.displayImage(album)}</Link>
@@ -182,16 +190,16 @@ class Account extends Component {
 }
 
 function sortAlbum(a1, a2) {
-    if(!a1.date && !a2.date) {
+    if (!a1.date && !a2.date) {
         return 0;
     }
-    if(!a1.date) {
+    if (!a1.date) {
         return 1;
     }
-    if(!a2.date) {
+    if (!a2.date) {
         return -1;
     }
-    if(a1.date > a2.date) {
+    if (a1.date > a2.date) {
         return -2;
     } else {
         return 2;
@@ -213,7 +221,7 @@ export default connect(
     }),
     dispatch => ({
         changeRoute: (route) => {
-            dispatch(replacePath(route))
+            dispatch(push(route))
         },
         fetchAccount: (user) => {
             dispatch(fetchAccount(user))

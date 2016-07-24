@@ -1,4 +1,4 @@
-import { pushPath }                 from 'redux-simple-router'
+import { push }                 from 'react-router-redux'
 import http                         from './http'
 import {LOGIN_FAIL, LOAD_SUCCESS}   from '../reducer/auth'
 
@@ -8,7 +8,7 @@ export function login ({username, password}, redirect) {
             .post('/api/login', {username, password})
             .then(user => {
                 dispatch(loadUser(user.user));
-                dispatch(pushPath(redirect || '/account/'+user.user.username));
+                dispatch(push(redirect || '/account/'+user.user.username));
             }).catch(_ => {
                 dispatch(authError({
                     login: 'Mauvais login ou mot de passe',

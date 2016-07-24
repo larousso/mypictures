@@ -1,11 +1,11 @@
 import React, { Component, PropTypes }  from 'react';
 import { connect }                      from 'react-redux';
 import config                           from '../../clientConfig'
-import AppBar                           from 'material-ui/lib/app-bar';
-import IconButton                       from 'material-ui/lib/icon-button';
-import ArrowBack                        from 'material-ui/lib/svg-icons/navigation/chevron-left';
-import {grey50}                         from 'material-ui/lib/styles/colors'
-import { replacePath }                  from 'redux-simple-router'
+import AppBar                           from 'material-ui/AppBar';
+import IconButton                       from 'material-ui/IconButton';
+import ArrowBack                        from 'material-ui/svg-icons/navigation/chevron-left';
+import {grey50}                         from 'material-ui/styles/colors'
+import { push }                         from 'react-router-redux'
 import {fetchAccount}                   from '../../actions/account';
 import {fetchPicture}                   from '../../actions/picture';
 
@@ -79,7 +79,7 @@ export default connect(
     }),
     dispatch => ({
         changeRoute: (route) => {
-            dispatch(replacePath(route))
+            dispatch(push(route))
         }
     })
 )(Picture);

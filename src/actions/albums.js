@@ -1,5 +1,5 @@
 import Http                                 from './http'
-import { replacePath }                 from 'redux-simple-router'
+import { push }                      from 'react-router-redux'
 import {LOADING, LOAD_FAIL, LOAD_SUCCESS, ADD_ALBUM, DELETE_ALBUM, DISCARD_ALBUMS, ADD_PICTURE_TO_ALBUM}   from '../reducer/albums'
 //import logger                               from '../logger'
 
@@ -104,7 +104,7 @@ export function saveAlbum(album, username, id, redirect) {
                         rep => {
                             dispatch(addAlbum(rep));
                             if(redirect) {
-                                dispatch(replacePath(redirect));
+                                dispatch(push(redirect));
                             }
                         },
                         err => {}

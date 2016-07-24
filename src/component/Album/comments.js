@@ -1,15 +1,15 @@
 import React, { Component, PropTypes }  from 'react';
 import { connect }                      from 'react-redux'
-import Chat                             from 'material-ui/lib/svg-icons/communication/chat-bubble';
-import Edit                             from 'material-ui/lib/svg-icons/editor/mode-edit';
-import Delete                           from 'material-ui/lib/svg-icons/action/delete';
-import Cancel                           from 'material-ui/lib/svg-icons/navigation/cancel';
-import Badge                            from 'material-ui/lib/badge';
-import IconButton                       from 'material-ui/lib/icon-button';
-import Popover                          from 'material-ui/lib/popover/popover';
-import Done                             from 'material-ui/lib/svg-icons/action/done';
-import TextField                        from 'material-ui/lib/text-field';
-import Divider                          from 'material-ui/lib/divider';
+import Chat                             from 'material-ui/svg-icons/communication/chat-bubble';
+import Edit                             from 'material-ui/svg-icons/editor/mode-edit';
+import Delete                           from 'material-ui/svg-icons/action/delete';
+import Cancel                           from 'material-ui/svg-icons/navigation/cancel';
+import Badge                            from 'material-ui/Badge';
+import IconButton                       from 'material-ui/IconButton';
+import Popover                          from 'material-ui/Popover';
+import Done                             from 'material-ui/svg-icons/action/done';
+import TextField                        from 'material-ui/TextField';
+import Divider                          from 'material-ui/Divider';
 import Http                             from '../../actions/http'
 
 class Comments extends Component {
