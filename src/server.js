@@ -155,7 +155,7 @@ app.get('/album/preview/:albumId',
                         logger.info('Facebook robot', content);
                         res.send(content).end();
                     } else {
-                        const url = `${clientConfig.api.baseUrl}/auth/facebook?redirect=/account/${album.username}/${album.id}`;
+                        const url = `${clientConfig.api.baseUrl}/auth/facebook?redirect=${__BASEURL__}/account/${album.username}/${album.id}`;
                         logger.info('Sending redirect to album', url, userAgent);
                         res.redirect(url).end();
                     }
@@ -204,7 +204,7 @@ app.get('/picture/preview/:albumId/:pictureId',
                         logger.info('Facebook robot', content);
                         res.send(content).end();
                     } else {
-                        const url = `${clientConfig.api.baseUrl}/auth/facebook?redirect=/account/${album.username}/${album.id}/${picture.id}`;
+                        const url = `${clientConfig.api.baseUrl}/auth/facebook?redirect=${__BASEURL__}/account/${album.username}/${album.id}/${picture.id}`;
                         logger.info('Sending redirect to album', url, userAgent);
                         res.redirect(url).end();
                     }
