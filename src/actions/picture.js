@@ -24,7 +24,8 @@ export function loadPictureFail(error) {
 
 export function fetchPicture(username, albumId, pictureId) {
     return (dispatch, store) => {
-        if (username && albumId && pictureId && (!store().picture.loading)) {
+        if (username && albumId && pictureId &&
+                ((!store().picture.loaded && !store().picture.loading) || store().picture.id ==! pictureId)) {
             dispatch(loadingPicture());
             return Http.get(`/api/accounts/${username}/albums/${albumId}/pictures/${pictureId}`, store().authToken)
                 .then(
