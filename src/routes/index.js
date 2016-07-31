@@ -1,6 +1,5 @@
 import React                from 'react';
 import {IndexRoute, Route}  from 'react-router';
-import Roles                from '../authentication/roles'
 import App                  from '../component/App'
 import Home                 from '../component/Home'
 import Account              from '../component/Account'

@@ -5,19 +5,14 @@ import methodOverride                           from 'method-override'
 import session                                  from 'express-session'
 import path                                     from 'path'
 import React                                    from 'react'
-import passportInit                             from './authentication'
 import handleRequest                            from './handleRequest'
-import api                                      from './routes/api'
 import cookieSession                            from 'cookie-session'
 import httpConfig                               from './httpConfig'
 import expressWinston                           from 'express-winston'
-import logger, {winston}                        from './logger'
-import rx                                       from 'rx'
+import logger                        from './logger'
 import config                                   from './config'
 import clientConfig                              from './clientConfig'
-import User                                     from './repository/user'
 import DailyRotateFile                          from 'winston-daily-rotate-file'
-import Album                                    from './repository/album'
 import http                                     from './actions/http'
 
 logger.info('__DEVELOPMENT__', __DEVELOPMENT__);
@@ -36,17 +31,6 @@ app.use(expressWinston.logger({
     colorStatus: true
 }));
 
-if(config.users) {
-    rx.Observable
-        .from(config.users)
-        .flatMap(u => new User(u).save())
-        .toArray()
-        .subscribe(
-            ok => logger.info("Loading users to database done", ok),
-            ko => logger.info("Error while loading users to database", ko)
-        );
-}
-
 app.use(cookieSession({
     name: 'session',
     keys: ['key1', 'key2']
@@ -62,9 +46,6 @@ app.use(session({
     cookie: { secure: false, maxAge:  (60 * 60 * 1000) }
 }));
 
-const passport = passportInit();
-app.use(passport.initialize());
-app.use(passport.session());
 app.use(express.static(path.join(__dirname, '..', 'static')));
 
 app.use(function(req, res, next) {
@@ -93,28 +74,6 @@ app.use(function(req, res, next) {
     } else {
         next();
     }
-});
-
-
-app.get('/auth/facebook', (req, res, next) => {
-    req.session.redirect = req.query.redirect;
-    next();
-}, passport.authenticate('facebook'));
-
-app.get('/auth/facebook/callback',
-    passport.authenticate('facebook', { failureRedirect: '/unauthorized' }),
-    function(req, res) {
-        res.redirect(req.session.redirect || "/");
-        delete req.session.redirect;
-    }
-);
-
-app.post('/api/login',
-    passport.authenticate('local'),
-    (req, res) => {
-        logger.info('Login', req.user);
-        res.json(req.user);
-        res.end();
 });
 
 app.get('/album/preview/:albumId',
@@ -217,7 +176,6 @@ app.get('/picture/preview/:albumId/:pictureId',
         );
     });
 
-app.use('/api', api());
 
 app.use(handleRequest);
 
