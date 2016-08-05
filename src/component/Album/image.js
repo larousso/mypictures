@@ -85,7 +85,7 @@ class Image extends Component {
 
     updatePicture = (picture) => {
         let { albumId, username } = this.props;
-        this.props.updatePicture(username, albumId, picture);
+        return this.props.updatePicture(username, albumId, picture);
     };
 
     deletePicture = id => () => {
@@ -298,13 +298,13 @@ export default connect(
     }),
     dispatch => ({
         updatePicture: (username, albumId, picture) => {
-            dispatch(serverUpdatePicture(username, albumId, picture))
+            return dispatch(serverUpdatePicture(username, albumId, picture));
         },
         deletePicture: (username, albumId, id) => {
-            dispatch(serverDeletePicture(username, albumId, id))
+            return dispatch(serverDeletePicture(username, albumId, id));
         },
         rotatePicture: (username, albumId, id, rotation) => {
-            dispatch(rotatePicture(username, albumId, id, rotation))
+            return dispatch(rotatePicture(username, albumId, id, rotation));
         }
     })
 )(Image);
