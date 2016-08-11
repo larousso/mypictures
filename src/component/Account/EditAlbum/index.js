@@ -41,14 +41,19 @@ class EditAlbum extends Component {
 
     componentDidMount() {
         EditAlbum.preRender(this.context.store, this.props);
+        this.initState(this.props);
     }
 
     componentWillReceiveProps(nextProps) {
-        if (nextProps.album) {
-            let { album: { id, title, description, date } } = nextProps;
+        this.initState(nextProps) ;
+    }
+
+    initState = (props) => {
+        if (props.album) {
+            let { album: { id, title, description, date } } = props;
             this.setState({id, title, description, date});
         }
-    }
+    };
 
     setTitle = (value) => {
         this.setState({

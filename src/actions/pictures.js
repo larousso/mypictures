@@ -1,6 +1,6 @@
 import Http                                 from './http'
 import {RAW_PICTURE, UPDATE_RAW_PICTURE, PICTURE_CREATED, PICTURE_CREATION_ERROR, ADD_PICTURE, LOADING, LOAD_FAIL, LOAD_SUCCESS, DELETE_PICTURE} from '../reducer/pictures'
-import {discardAlbums, addPictureToAlbum}   from './albums';
+import {discardAlbums, addPictureToAlbum, saveAlbum}   from './albums';
 import rx                                   from 'rx'
 import uuid                                 from 'node-uuid'
 
@@ -67,6 +67,47 @@ export function deletePicture(id) {
         type: DELETE_PICTURE,
         result: id
     };
+}
+
+export function reorder(prevImage, newImage, username) {
+    return (dispatch, store) => {
+        const existingPictureIds = getCurrentPictureIds(store().album.album, store().pictures.pictures).filter(id => id != newImage.picture.id);
+        const index = existingPictureIds.indexOf(prevImage.id);
+        const pictureIds = [...existingPictureIds];
+        pictureIds.splice(index, 0, newImage.picture.id);
+        const album = {...store().album.album, pictureIds};
+        return dispatch(saveAlbum(album, username, album.id));
+    };
+}
+
+export function getCurrentPictures(album, pictures) {
+    if(pictures) {
+        return getCurrentPictureIds(album, pictures).map(id => pictures[id]).filter(e => e);
+    } else {
+        return [];
+    }
+}
+
+function getCurrentPictureIds(album, pictures) {
+    const picturesIds = (album || {}).pictureIds;
+    if (picturesIds && picturesIds.length > 0) {
+        return picturesIds;
+    } else {
+        return Object
+            .keys(pictures)
+            .filter(key => pictures.hasOwnProperty(key))
+            .map(key => pictures[key])
+            .sort(sortImageById)
+            .map(p => p.id);
+    }
+}
+
+function sortImageById(i1, i2) {
+    if(i1 && i2 && i1.id < i2.id) {
+        return 1;
+    } else {
+        return -1;
+    }
 }
 
 export function fetchPictures(username, albumId) {

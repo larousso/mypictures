@@ -10,12 +10,14 @@ import AppBar                           from 'material-ui/AppBar';
 import getMuiTheme                      from 'material-ui/styles/getMuiTheme';
 import Habilitations                    from '../Habiliations'
 import Roles                            from '../../authentication/roles';
-import {fetchPictures, postAllImages}                  from '../../actions/pictures'
+import {fetchPictures, postAllImages, reorder, getCurrentPictures}    from '../../actions/pictures'
 import {fetchAlbum}                     from '../../actions/album'
 import {fetchAccount}                   from '../../actions/account'
 import Theme                            from '../theme';
 import Viewer                           from 'viewerjs'
 import ImagePreview                     from './image'
+import Draggable                        from './draggable'
+import Droppable                        from './droppable'
 
 class Album extends Component {
 
@@ -111,11 +113,6 @@ class Album extends Component {
         this.props.postAllImages(username, albumId, files);
     };
 
-    getPictures = () => {
-        let { pictures: {pictures = {} } } = this.props;
-        return Object.keys(pictures).filter(key => pictures.hasOwnProperty(key)).map(key => pictures[key]);
-    };
-
     previewLink = () => {
         if(!__SERVER__) {
             let { params: { albumId}} = this.props;
@@ -144,10 +141,19 @@ class Album extends Component {
         }
     };
 
+    sortedPictures = () => {
+        return getCurrentPictures(this.props.album.album, this.props.pictures.pictures)
+    };
+
     displayIf = (test) => (fn) => {
         if(test) {
             return fn();
         }
+    };
+
+    onDrop = picture => data => {
+        let {params: {username}} = this.props;
+        this.props.reorder(picture, data, username);
     };
 
     render() {
@@ -198,11 +204,15 @@ class Album extends Component {
                             <CircularProgress mode="indeterminate"/>
                         )}
                         <div className="row top-xs" id="pictures">
-                            {this.getPictures().sort(sortImage).map((picture, index) =>
+                            {this.sortedPictures().map((picture, index) =>
                                 (<div key={picture.id} className="col-xs-6 col-md-6 col-lg-4">
-                                    <div className="box">
-                                        <ImagePreview picture={picture} albumId={albumId} username={username}/>
-                                    </div>
+                                    <Droppable onDrop={this.onDrop(picture)} >
+                                        <div className="box">
+                                            <Draggable data={{ picture }}>
+                                                <ImagePreview picture={picture} albumId={albumId} username={username}/>
+                                            </Draggable>
+                                        </div>
+                                    </Droppable>
                                 </div>)
                             )}
                         </div>
@@ -213,13 +223,6 @@ class Album extends Component {
     }
 }
 
-function sortImage(i1, i2) {
-    if(i1.id < i2.id) {
-        return 1;
-    } else {
-        return -1;
-    }
-}
 
 Album.childContextTypes = {
     muiTheme: React.PropTypes.object
@@ -235,7 +238,7 @@ export default connect(
         account: state.account,
         album: state.album,
         pictures: state.pictures,
-        currentLocation: state.currentLocation
+        currentLocation: state.currentLocation,
     }),
     dispatch => ({
         changeRoute: (route) => {
@@ -243,6 +246,9 @@ export default connect(
         },
         postAllImages: (username, albumId, files) => {
             dispatch(postAllImages(username, albumId, files))
+        },
+        reorder: (prevImage, newImage, username) => {
+            dispatch(reorder(prevImage, newImage, username))
         }
     })
 )(Album);

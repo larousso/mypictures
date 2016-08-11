@@ -1,6 +1,7 @@
 import Http                                 from './http'
 import { push }                      from 'react-router-redux'
 import {LOADING, LOAD_FAIL, LOAD_SUCCESS, ADD_ALBUM, DELETE_ALBUM, DISCARD_ALBUMS, ADD_PICTURE_TO_ALBUM}   from '../reducer/albums'
+import {loadAlbum}                  from './album';
 //import logger                               from '../logger'
 
 export function addAlbum(album) {
@@ -102,7 +103,12 @@ export function saveAlbum(album, username, id, redirect) {
                     .then(pictures => ({pictures, ...album}))
                     .then(
                         rep => {
-                            dispatch(addAlbum(rep));
+                            if(store().albums.loaded) {
+                                dispatch(addAlbum(rep));
+                            }
+                            if(id && store().album && store().album.album && store().album.album.id == id) {
+                                dispatch(loadAlbum(rep));
+                            }
                             if(redirect) {
                                 dispatch(push(redirect));
                             }
