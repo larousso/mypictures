@@ -57,6 +57,7 @@ app.use(function(req, res, next) {
 
 app.use(function(req, res, next) {
     req.getAuthToken = () => {
+        console.log('Cookies', req.cookies);
         if(req.cookies && req.cookies._sessiondata) {
             return req.cookies._sessiondata;
         }
@@ -85,7 +86,7 @@ app.get('/album/preview/:albumId',
                 const cookies = response.headers.get('set-cookie');
                 const regExp = /^_sessiondata=(.*); Path=.*/gm;
                 const session = regExp.exec(cookies)[1];
-                console.log('Album id', req.params.albumId);
+                console.log('Album id', req.params.albumId, 'session', session);
                 return Promise.all([
                     http.get(`/api/albums/${req.params.albumId}`, session),
                     http.get(`/api/albums/${req.params.albumId}/pictures`, session)

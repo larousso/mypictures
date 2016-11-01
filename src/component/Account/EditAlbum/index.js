@@ -50,8 +50,8 @@ class EditAlbum extends Component {
 
     initState = (props) => {
         if (props.album) {
-            let { album: { id, title, description, date } } = props;
-            this.setState({id, title, description, date});
+            let { album: { id, title, description, date, pictureIds = [] } } = props;
+            this.setState({id, title, description, date, pictureIds});
         }
     };
 
@@ -72,9 +72,9 @@ class EditAlbum extends Component {
                 titreError: 'Le titre est obligatoire'
             })
         } else {
-            let {title, description, date = new Date()} = this.state;
+            let {title, description, date = new Date(), pictureIds} = this.state;
             let {params:{albumId, username}} = this.props;
-            this.props.saveAlbum({title, description, date}, username, albumId, `/account/${username}`);
+            this.props.saveAlbum({title, description, date, pictureIds}, username, albumId, `/account/${username}`);
         }
     };
 

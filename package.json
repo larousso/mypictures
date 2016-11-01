@@ -30,7 +30,7 @@
     "build": "webpack --verbose --colors --display-error-details --config webpack.config.prod.js",
     "postinstall": "webpack --display-error-details --config webpack.config.prod.js",
     "start-dev": "better-npm-run start-dev",
-    "dev": "concurrent --kill-others \"npm run watch-client\" \"npm run start-dev\""
+    "dev": "concurrent --kill-others \"webpack\" \"npm run start-dev\""
   },
   "betterScripts": {
     "start-prod": {

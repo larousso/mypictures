@@ -11,12 +11,17 @@ const options = {
 
 const getOptions = sessionData => {
     if(sessionData) {
-        const cookie = `_sessiondata=${sessionData};`;
-        const headers = {cookie, ...options.headers};
-        return {headers, credentials: 'include', mode: 'cors'};
-    } else {
-        return options;
+        const regExp = /^(.*)-user=(.*)/gm;
+        const parsed = regExp.exec(sessionData);
+        if(parsed.length > 2) {
+            const hash = parsed[1];
+            const session = parsed[2];
+            const cookie = `_sessiondata=${hash}-user=${encodeURIComponent(session)};`;
+            const headers = {...options.headers, 'Cookie': cookie};
+            return {headers, credentials: 'include', mode: 'cors'};
+        }
     }
+    return options;
 };
 
 const buildUrl = (path) => {
