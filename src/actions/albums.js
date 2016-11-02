@@ -44,7 +44,8 @@ export function discardAlbums() {
     };
 }
 
-export function addPictureToAlbum(picture) {
+export function addPictureToAlbums(picture) {
+    console.log('Add picture to albums', picture)
     return {
         type: ADD_PICTURE_TO_ALBUM,
         result: picture

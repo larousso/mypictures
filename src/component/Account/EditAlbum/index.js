@@ -1,8 +1,7 @@
 import React, { Component, PropTypes }  from 'react';
 import { connect }                      from 'react-redux'
-import { push }                  from 'react-router-redux'
-import {fetchAlbum}                     from '../../../actions/album'
-import {saveAlbum}                      from '../../../actions/albums'
+import { push }                         from 'react-router-redux'
+import {fetchAlbum, saveAlbum}          from '../../../actions/editedAlbum'
 import FlatButton                       from 'material-ui/FlatButton';
 import IconButton                       from 'material-ui/IconButton';
 import TextField                        from 'material-ui/TextField';
@@ -153,7 +152,7 @@ EditAlbum.contextTypes = {
 export default connect(
     state => ({
         routing: state.routing,
-        album: state.album.album,
+        album: state.editedAlbum.album,
     }),
     dispatch => ({
         changeRoute: (route) => {

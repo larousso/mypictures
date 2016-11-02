@@ -57,7 +57,6 @@ app.use(function(req, res, next) {
 
 app.use(function(req, res, next) {
     req.getAuthToken = () => {
-        console.log('Cookies', req.cookies);
         if(req.cookies && req.cookies._sessiondata) {
             return req.cookies._sessiondata;
         }

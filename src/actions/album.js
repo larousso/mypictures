@@ -1,5 +1,5 @@
 import Http                                 from './http'
-import {LOADING, LOAD_FAIL, LOAD_SUCCESS, ADD_TO_ALBUM}   from '../reducer/album'
+import {LOADING, LOAD_FAIL, LOAD_SUCCESS, ADD_TO_ALBUM, REMOVE_FROM_ALBUM}   from '../reducer/album'
 
 
 export function loadingAlbum() {
@@ -19,6 +19,20 @@ export function loadAlbum(album) {
     return {
         type: LOAD_SUCCESS,
         result: album
+    };
+}
+
+export function addPictureToAlbum(picture) {
+    return {
+        type: ADD_TO_ALBUM,
+        result: picture
+    };
+}
+
+export function removePictureFromAlbum(picture) {
+    return {
+        type: REMOVE_FROM_ALBUM,
+        result: picture
     };
 }
 

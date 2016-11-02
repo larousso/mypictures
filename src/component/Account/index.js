@@ -33,7 +33,13 @@ class Account extends Component {
         super(props, context);
         this.state = {
             open: false
-        }
+        };
+        this.displayAlbumResume = this.displayAlbumResume.bind(this);
+        this.stopDisplayingAlbumResume = this.stopDisplayingAlbumResume.bind(this);
+        this.getThumbnail = this.getThumbnail.bind(this);
+        this.displayImage = this.displayImage.bind(this);
+        this.deleteAlbum = this.deleteAlbum.bind(this);
+        this.createAlbum = this.createAlbum.bind(this);
     }
 
     static preRender = (store, props) => {
@@ -52,41 +58,41 @@ class Account extends Component {
         this.stopDisplayingAlbumResume();
     }
 
-    handleClose = () => {
-        this.setState({open: false, album: null});
-    };
+    displayAlbumResume(album) {
+        return () => {
+            let observable =
+                rx.Observable.zip(
+                    rx.Observable.fromArray(album.pictures)
+                        .map(p => `${config.api.baseUrl}/static/thumbnails/${p.id}`),
+                    rx.Observable.timer(0, 700),
+                    (t, i) => t
+                )
+                    .doWhile(_ => true)
+                    .subscribe(
+                        thumbnail => {
+                            this.setState({thumbnail})
+                        },
+                        err => {
+                        },
+                        () => {
+                            this.setState({thumbnail: null});
+                        }
+                    );
 
-    displayAlbumResume = album => () => {
-        let observable =
-            rx.Observable.zip(
-                rx.Observable.fromArray(album.pictures)
-                    .map(p => `${config.api.baseUrl}/static/thumbnails/${p.id}`),
-                rx.Observable.timer(0, 700),
-                (t, i) => t
-            )
-                .doWhile(_ => true)
-                .subscribe(
-                    thumbnail => {
-                        this.setState({thumbnail})
-                    },
-                    err => {
-                    },
-                    () => {
-                        this.setState({thumbnail: null});
-                    }
-                );
+            this.setState({observable, currentAlbumId: album.id, thumbnail: null});
+        };
+    }
 
-        this.setState({observable, currentAlbumId: album.id, thumbnail: null});
-    };
+    stopDisplayingAlbumResume () {
+        return () => {
+            if (this.state.observable) {
+                this.state.observable.dispose();
+                this.setState({thumbnail: null});
+            }
+        };
+    }
 
-    stopDisplayingAlbumResume = () => () => {
-        if (this.state.observable) {
-            this.state.observable.dispose();
-            this.setState({thumbnail: null});
-        }
-    };
-
-    getThumbnail = album => {
+    getThumbnail(album) {
         if (album && album.pictures) {
             let [first] = album.pictures;
             let preview = album.pictures.find(t => t.preview) || first;
@@ -98,9 +104,9 @@ class Account extends Component {
             }
         }
         return '/image-not-found.png';
-    };
+    }
 
-    displayImage = (album) => {
+    displayImage(album) {
         if (album) {
             let thumbnail;
             if (this.state.currentAlbumId && album.id == this.state.currentAlbumId) {
@@ -114,24 +120,26 @@ class Account extends Component {
                      height="100%"/>
             );
         }
-        return <img src="/image-not-found.png" height="100%"
+        return (<img src="/image-not-found.png" height="100%"
                     style={{
                         position: 'absolute',
                         display: 'block',
                         margin: '0 auto',
                         marginRight: 'auto',
                         marginLeft: 'auto'
-                    }}/>;
-    };
+                    }}/>);
+    }
 
-    deleteAlbum = id => () => {
-        let {params:{username}} = this.props;
-        this.props.deleteAlbum(username, id);
-    };
+    deleteAlbum(id){
+        return () => {
+            let {params:{username}} = this.props;
+            this.props.deleteAlbum(username, id);
+        };
+    }
 
-    createAlbum = () => {
+    createAlbum() {
         this.props.changeRoute(`/account/${this.props.params.username}/createAlbum`);
-    };
+    }
 
     render() {
         let {params:{username}, albums:{albums}, account:{user}} = this.props;
@@ -190,7 +198,7 @@ class Account extends Component {
 
 function sortAlbum(a1, a2) {
     if (!a1.date && !a2.date) {
-        return 0;
+        return a1.id > a2.id ? 1 : -1;
     }
     if (!a1.date) {
         return 1;
@@ -199,9 +207,11 @@ function sortAlbum(a1, a2) {
         return -1;
     }
     if (a1.date > a2.date) {
-        return -2;
+        return -1;
+    } else if (a1.date < a2.date) {
+        return 1;
     } else {
-        return 2;
+        return a1.id > a2.id ? 1 : -1;
     }
 }
 

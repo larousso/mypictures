@@ -80,6 +80,13 @@ export default {
         .then(handleErrors)
         .then(rep => rep.json());
     },
+    rawDelete(url, sessionData){
+        return fetch(buildUrl(url), {
+            method: 'delete',
+            ...getOptions(sessionData)
+        })
+        .then(handleErrors)
+    },
     delete(url, sessionData){
         return fetch(buildUrl(url), {
             method: 'delete',

@@ -1,6 +1,7 @@
 import Http                                 from './http'
 import {RAW_PICTURE, UPDATE_RAW_PICTURE, PICTURE_CREATED, PICTURE_CREATION_ERROR, ADD_PICTURE, LOADING, LOAD_FAIL, LOAD_SUCCESS, DELETE_PICTURE} from '../reducer/pictures'
-import {discardAlbums, addPictureToAlbum, saveAlbum}   from './albums';
+import {discardAlbums, addPictureToAlbums, saveAlbum}   from './albums';
+import {removePictureFromAlbum, fetchAlbum}                  from './album';
 import rx                                   from 'rx'
 import uuid                                 from 'node-uuid'
 
@@ -103,10 +104,21 @@ function getCurrentPictureIds(album, pictures) {
 }
 
 function sortImageById(i1, i2) {
+    if(i1.raw && i2.raw) {
+        return i1.id > i2.id ? 1 : -1;
+    }
+    if(i1.raw) {
+        return -1;
+    }
+    if(i2.raw) {
+        return 1;
+    }
     if(i1 && i2 && i1.id < i2.id) {
         return 1;
-    } else {
+    } if(i1 && i2 && i1.id > i2.id) {
         return -1;
+    } else {
+        return 0;
     }
 }
 
@@ -139,10 +151,13 @@ export function serverUpdatePicture(username, albumId, picture) {
 
 export function serverDeletePicture(username, albumId, id) {
     return (dispatch) => {
-        return Http.delete(`/api/accounts/${username}/albums/${albumId}/pictures/${id}`)
+        return Http.rawDelete(`/api/accounts/${username}/albums/${albumId}/pictures/${id}`)
             .then(
-                _ => dispatch(deletePicture(id)),
-                err => {}
+                _ => Promise.all([
+                    dispatch(removePictureFromAlbum(id)),
+                    dispatch(deletePicture(id))
+                ]),
+                err => console.log('Err', err)
             );
     }
 }
@@ -186,7 +201,7 @@ export function postAllImages(username, albumId, files) {
                     if (picture && picture.id) {
                         return rx.Observable.fromPromise(Promise.all([
                             dispatch(pictureCreated(picture)),
-                            dispatch(addPictureToAlbum(picture))
+                            dispatch(addPictureToAlbums(picture))
                         ]));
                     } else {
                         return rx.Observable.empty();
@@ -196,7 +211,10 @@ export function postAllImages(username, albumId, files) {
                 .toPromise()
                 .then(
                     any => {
-                        return any;
+                        return Promise.all([
+                            dispatch(fetchAlbum(username, albumId))
+                            //dispatch(fetchPictures(username, albumId))
+                        ]);
                     },
                     err => {
                         return dispatch(pictureCreationError(err));

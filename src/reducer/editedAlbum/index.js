@@ -1,8 +1,6 @@
-export const LOADING = 'album/LOADING';
-export const LOAD_SUCCESS = 'album/LOAD_SUCCESS';
-export const LOAD_FAIL = 'album/LOAD_FAIL';
-export const ADD_TO_ALBUM = 'album/ADD_TO_ALBUM';
-export const REMOVE_FROM_ALBUM = 'album/REMOVE_FROM_ALBUM';
+export const LOADING = 'editedAlbum/LOADING';
+export const LOAD_SUCCESS = 'editedAlbum/LOAD_SUCCESS';
+export const LOAD_FAIL = 'editedAlbum/LOAD_FAIL';
 
 const initialState = {
     loaded: false,
@@ -32,17 +30,6 @@ export default function reducer(state = initialState, action = {}) {
                 loading: true,
                 loaded: false,
                 album: {}
-            };
-        case ADD_TO_ALBUM:
-            const pictureIds = state.album.pictureIds || [];
-            return {
-                ...state,
-                album: {...state.album, pictureIds: [...pictureIds, action.result.id] }
-            };
-        case REMOVE_FROM_ALBUM:
-            return {
-                ...state,
-                album: {...state.album, pictureIds: state.album.pictureIds.filter(p => p.id != action.result) }
             };
         default:
             return state;

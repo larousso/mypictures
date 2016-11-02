@@ -5,6 +5,7 @@ import auth                     from './auth'
 import account                  from './account'
 import albums                   from './albums'
 import album                    from './album'
+import editedAlbum                    from './editedAlbum'
 import pictures                 from './pictures'
 import picture                  from './picture'
 import currentLocation          from './currentLocation'
@@ -15,5 +16,5 @@ function authToken(state = {}, action = {}) {
 }
 
 export default combineReducers(
-    {authToken, auth, account, album, albums, pictures, picture, currentLocation, routing: routerReducer}
+    {authToken, auth, account, editedAlbum, album, albums, pictures, picture, currentLocation, routing: routerReducer}
 );
