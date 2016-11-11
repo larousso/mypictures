@@ -26,11 +26,14 @@ function buildSession(sessionData, encoded) {
         if (parsed.length > 2) {
             const hash = parsed[1];
             const session = parsed[2];
+            console.log('Session : ', session, 'Encoded', encoded);
             if (encoded) {
                 return `_sessiondata=${hash}-user=${session};`;
             } else {
-                return `_sessiondata=${hash}-user=${encodeURIComponent(session)};`;
+                return `_sessiondata=${hash}-user=${encodeURIComponent(session.replace(/\+/g, ' '))};`;
             }
+        } else {
+            return `_sessiondata=${sessionData};`;
         }
     }
 }
