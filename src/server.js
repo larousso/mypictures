@@ -140,8 +140,8 @@ app.get('/picture/preview/:albumId/:pictureId',
                 const session = regExp.exec(cookies)[1];
                 console.log('Album id', req.params.albumId);
                 return Promise.all([
-                    http.get(`/api/accounts/na/albums/${req.params.albumId}`, session),
-                    http.get(`/api/accounts/na/pictures/${req.params.pictureId}`, session)
+                    http.get(`/api/accounts/na/albums/${req.params.albumId}`, session, true),
+                    http.get(`/api/accounts/na/pictures/${req.params.pictureId}`, session, true)
                 ]);
             },
             err => []
