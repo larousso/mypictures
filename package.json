@@ -89,7 +89,7 @@
     "jsonquery-engine": "^1.0.2",
     "material-ui": "^0.15.2",
     "method-override": "^2.3.5",
-    "mkdirp": "^0.5.1",
+    "mkdirp": "^1.0.0",
     "morgan": "^1.6.1",
     "multer": "^1.1.0",
     "multireducer": "^1.0.2",
@@ -113,7 +113,7 @@
     "webpack-isomorphic-tools": "^2.2.18",
     "whatwg-fetch": "^0.10.1",
     "winston": "^2.1.1",
-    "winston-daily-rotate-file": "^1.0.1"
+    "winston-daily-rotate-file": "^3.0.0"
   },
   "devDependencies": {
     "autoprefixer-loader": "^3.1.0",
