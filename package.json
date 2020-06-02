@@ -107,7 +107,7 @@
     "react-router-redux": "4.0.5",
     "redux-thunk": "2.1.0",
     "rx": "^4.0.7",
-    "serialize-javascript": "^1.1.2",
+    "serialize-javascript": "^3.1.0",
     "serve-favicon": "^2.3.0",
     "viewerjs": "^0.3.0",
     "webpack-isomorphic-tools": "^2.2.18",
