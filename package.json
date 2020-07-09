@@ -94,7 +94,7 @@
     "multer": "^1.1.0",
     "multireducer": "^1.0.2",
     "node-uuid": "^1.4.7",
-    "npm": "^3.5.2",
+    "npm": "^6.14.6",
     "piping": "^0.3.0",
     "query-string": "^3.0.0",
     "react": "^15.0.0",
